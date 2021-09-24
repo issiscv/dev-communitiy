@@ -1,9 +1,7 @@
 package com.example.boardapi.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.example.boardapi.dto.EditMemberDto;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Getter
+@Getter @Setter
 @EntityListeners(AuditingEntityListener.class)
 public class Member {
 
@@ -32,8 +30,11 @@ public class Member {
 
     private int age;
 
-    @Embedded
-    private Address address;
+    private String city;
+
+    private String street;
+
+    private String zipcode;
 
     @CreatedDate
     private LocalDateTime createdDate;
@@ -41,4 +42,12 @@ public class Member {
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
 
+    public void changeMemberInfo(EditMemberDto editMemberDto) {
+        this.password = editMemberDto.getPassword();
+        this.name = editMemberDto.getName();
+        this.age = editMemberDto.getAge();
+        this.city = editMemberDto.getCity();
+        this.street = editMemberDto.getStreet();
+        this.zipcode = editMemberDto.getZipcode();
+    }
 }
