@@ -2,6 +2,7 @@ package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.EditMemberDto;
+import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,11 @@ public class MemberService {
      */
     public Member retrieveOne(Long memberId) {
         Member findMember = memberRepository.findById(memberId).orElse(null);
+
+        if (findMember == null) {
+            throw new NullPointerException("해당 유저는 존재하지 않습니다.");
+        }
+
         return findMember;
     }
 
@@ -58,6 +64,18 @@ public class MemberService {
             memberRepository.deleteById(id);
         } catch (Exception e) {
             throw new NullPointerException("해당 유저는 존재하지 않습니다.");
+        }
+    }
+
+    /**
+     * 중복 아이디 검사
+     */
+    public void findDuplicatedLogin(String loginId) {
+        Member findMember = memberRepository.findByLoginId(loginId).orElse(null);
+
+        //비어있을 경우
+        if (findMember != null) {
+            throw new DuplicateLoginIdException("중복된 아이디가 존재합니다.");
         }
     }
 }

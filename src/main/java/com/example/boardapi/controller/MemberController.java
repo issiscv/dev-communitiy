@@ -27,7 +27,9 @@ public class MemberController {
     //회원 가입 api
     @PostMapping("/members")
     public ResponseEntity createMember(@RequestBody MemberRequestDto memberDto) {
-        
+
+        memberService.findDuplicatedLogin(memberDto.getLoginId());
+
         //memberDto 를 Member 엔티티로 변환
         Member mappedMember = modelMapper.map(memberDto, Member.class);
 
@@ -47,10 +49,6 @@ public class MemberController {
     @GetMapping("/members/{id}")
     public ResponseEntity retrieveMember(@PathVariable Long id) {
         Member member = memberService.retrieveOne(id);
-
-        if (member == null) {
-            throw new NullPointerException("해당 유저는 존재하지 않습니다.");
-        }
 
         MemberResponseDto mappedResponseDto = modelMapper.map(member, MemberResponseDto.class);
 
@@ -75,7 +73,7 @@ public class MemberController {
     public ResponseEntity editMember(@RequestBody EditMemberDto editMemberDto, @PathVariable Long id) {
 
         Member findMember = memberService.retrieveOne(id);
-        if (findMember == null) throw new NullPointerException("해당 유저는 존재하지 않습니다.");
+
         //수정
         memberService.editMember(id, editMemberDto);
 
@@ -90,7 +88,6 @@ public class MemberController {
     //회원 탈퇴 api
     @DeleteMapping("/members/{id}")
     public ResponseEntity deleteMember(@PathVariable Long id) {
-
         memberService.deleteMember(id);
         return ResponseEntity.ok("성공적으로 회원 탈퇴가 되었습니다.");
     }
