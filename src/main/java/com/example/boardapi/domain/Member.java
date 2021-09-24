@@ -32,6 +32,9 @@ public class Member {
 
     private int age;
 
+    @Embedded
+    private Address address;
+
     @CreatedDate
     private LocalDateTime createdDate;
 
