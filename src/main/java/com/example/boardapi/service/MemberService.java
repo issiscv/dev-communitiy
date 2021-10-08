@@ -6,6 +6,7 @@ import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.UserNotFoundException;
 import com.example.boardapi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +18,7 @@ import java.util.List;
 @Service("userDetailsService")
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class MemberService implements UserDetailsService{
 
     private final MemberRepository memberRepository;
@@ -92,6 +94,7 @@ public class MemberService implements UserDetailsService{
                 .orElseThrow(
                         () -> new UserNotFoundException("해당 유저가 없습니다.")
                 );
+        log.info("memberService is implemented");
         return member;
     }
 }

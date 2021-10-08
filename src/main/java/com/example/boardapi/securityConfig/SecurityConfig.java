@@ -30,6 +30,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/**").hasRole("USER")
                 .anyRequest().authenticated() // 그외 나머지 요청은 누구나 접근 가능
                 .and()
+                //permitAll() 의 경로는 필터가 동작하지 않는다.
+//        지정된 필터 앞에 커스텀 필터를 추가 (UsernamePasswordAuthenticationFilter 보다 먼저 실행된다)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), //이 필터를 먼저 타서 토큰을 검사
                         UsernamePasswordAuthenticationFilter.class);            //그리고 이 필터를 타겠다.
         // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 전에 넣는다

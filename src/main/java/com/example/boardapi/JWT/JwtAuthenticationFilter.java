@@ -17,6 +17,8 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
+    // 해당 필터가 UsernamePasswordAuthenticationFilter 보다 먼저 실행된다.
+
     private final JwtTokenProvider jwtTokenProvider;
     
     @Override
@@ -24,10 +26,11 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         String token = jwtTokenProvider.resolveToken((HttpServletRequest) request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            log.info("JwtAuthenticationFilter");
+            log.info("filter is worked");
             //UsernamePasswordAuthenticationToken 의 인증객체이다.
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
 
+            //securityContext 에 인증 객체를 넣어줘야 하는 이유 : securityContext 에 인증 객체가 저장 되어야 인증이 성공했다고 판단해서.
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

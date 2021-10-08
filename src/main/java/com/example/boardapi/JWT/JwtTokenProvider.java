@@ -58,6 +58,7 @@ public class JwtTokenProvider {
         return jwt;
     }
 
+    //필터에서 인증을 위해 사용된다.
     public Authentication getAuthentication(String token) {
         String tokenSubject = getTokenSubject(token); // 토큰을 파싱해서 payload 에 저장되있는 subject 를 받는다
 
