@@ -6,7 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class EditMemberDto {
+public class MemberEditDto {
 
     private String password;
 

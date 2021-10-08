@@ -1,24 +1,22 @@
 package com.example.boardapi.controller;
 
+import com.example.boardapi.JWT.JwtTokenProvider;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.*;
+import com.example.boardapi.exception.UserNotFoundException;
+import com.example.boardapi.repository.MemberRepository;
 import com.example.boardapi.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpSession;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,15 +27,29 @@ public class MemberController {
 
     private final MemberService memberService;
     private final ModelMapper modelMapper;
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     //회원 가입 api
     @PostMapping("/members")
     public ResponseEntity createMember(@RequestBody MemberRequestDto memberDto) {
-        //memberDto 를 Member 엔티티로 변환
-        Member mappedMember = modelMapper.map(memberDto, Member.class);
+
+        Member member = Member.builder()
+                .loginId(memberDto.getLoginId())
+                .password(memberDto.getPassword())
+                .name(memberDto.getName())
+                .age(memberDto.getAge())
+                .city(memberDto.getCity())
+                .street(memberDto.getStreet())
+                .zipcode(memberDto.getZipcode())
+                .password(passwordEncoder.encode(memberDto.getPassword()))
+                .roles(Collections.singletonList("ROLE_USER"))// 최초 가입시 USER 로 설정,
+                                                            // 단 한개의 객체만 저장 가능한 컬렉션을 만들고 싶을 때 사용한다.
+                .build();
 
         //회원 가입 저장
-        Member joinMember = memberService.join(mappedMember);
+        Member joinMember = memberService.join(member);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -47,6 +59,20 @@ public class MemberController {
         MemberResponseDto mappedResponseDto = modelMapper.map(joinMember, MemberResponseDto.class);
 
         return ResponseEntity.created(uri).body(mappedResponseDto);
+    }
+
+    @PostMapping("/members/login")
+    public String login(@RequestBody MemberLoginDto memberLoginDto) {
+        //아이디가 있는지 검증을 한다.
+        Member member = memberRepository.findByLoginId(memberLoginDto.getLoginId()).orElseThrow(
+                () -> new UserNotFoundException()
+        );
+
+        if (!passwordEncoder.matches(memberLoginDto.getPassword(), member.getPassword())) {
+            throw new BadCredentialsException("비밀번호가 틀렸습니다.");
+        }
+
+        return jwtTokenProvider.createToken(member.getLoginId(), member.getRoles());
     }
 
     //단건 조회 api
@@ -74,7 +100,7 @@ public class MemberController {
 
     //회원 정보 수정 api
     @PutMapping("/members/{id}")
-    public ResponseEntity editMember(@RequestBody EditMemberDto editMemberDto, @PathVariable Long id) {
+    public ResponseEntity editMember(@RequestBody MemberEditDto editMemberDto, @PathVariable Long id) {
 
         Member findMember = memberService.retrieveOne(id);
 

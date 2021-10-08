@@ -1,27 +1,23 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Member;
-import com.example.boardapi.dto.EditMemberDto;
+import com.example.boardapi.dto.MemberEditDto;
 import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.UserNotFoundException;
 import com.example.boardapi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Service("userDetailsService")
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class MemberService {
+public class MemberService implements UserDetailsService{
 
     private final MemberRepository memberRepository;
 
@@ -59,7 +55,7 @@ public class MemberService {
      * 회원 정보 수정
      */
     @Transactional
-    public void editMember(Long id, EditMemberDto editMemberDto) {
+    public void editMember(Long id, MemberEditDto editMemberDto) {
         Member findMember = retrieveOne(id);
         findMember.changeMemberInfo(editMemberDto);
     }
@@ -87,5 +83,15 @@ public class MemberService {
             throw new DuplicateLoginIdException("중복된 아이디가 존재합니다.");
         }
     }
-
+    
+    
+    //스프링 시큐리티에서 활용됨
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Member member = memberRepository.findByLoginId(username)
+                .orElseThrow(
+                        () -> new UserNotFoundException("해당 유저가 없습니다.")
+                );
+        return member;
+    }
 }

@@ -26,7 +26,7 @@ class MemberServiceTest {
                 .password("1234")
                 .name("김상운")
                 .age(24)
-                .address(new Address("서울", "강북구", "1-113"))
+                //.address(new Address("서울", "강북구", "1-113"))
                 .build();
 
         Member saveMember = memberService.join(member);
