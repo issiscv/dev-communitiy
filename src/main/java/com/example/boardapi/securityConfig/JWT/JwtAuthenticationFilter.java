@@ -1,4 +1,4 @@
-package com.example.boardapi.JWT;
+package com.example.boardapi.securityConfig.JWT;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

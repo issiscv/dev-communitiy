@@ -1,9 +1,8 @@
 package com.example.boardapi.securityConfig;
 
-import com.example.boardapi.JWT.JwtAuthenticationFilter;
-import com.example.boardapi.JWT.JwtTokenProvider;
+import com.example.boardapi.securityConfig.JWT.JwtAuthenticationFilter;
+import com.example.boardapi.securityConfig.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,6 +26,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests() // 요청에 대한 사용권한 체크
                 .antMatchers(HttpMethod.POST,"/members", "/members/login").permitAll()
+                .antMatchers( "/v2/api-docs", "/configuration/**", "/swagger*/**", "/webjars/**").permitAll()
                 .antMatchers("/**").hasRole("USER")
                 .anyRequest().authenticated() // 그외 나머지 요청은 누구나 접근 가능
                 .and()

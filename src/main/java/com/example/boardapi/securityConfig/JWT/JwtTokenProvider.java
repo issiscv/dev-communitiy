@@ -1,4 +1,4 @@
-package com.example.boardapi.JWT;
+package com.example.boardapi.securityConfig.JWT;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

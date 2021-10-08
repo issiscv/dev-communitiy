@@ -1,6 +1,5 @@
 package com.example.boardapi.service;
 
-import com.example.boardapi.domain.Address;
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Member;
 import org.assertj.core.api.Assertions;

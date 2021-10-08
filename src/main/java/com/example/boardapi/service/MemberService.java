@@ -92,7 +92,7 @@ public class MemberService implements UserDetailsService{
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Member member = memberRepository.findByLoginId(username)
                 .orElseThrow(
-                        () -> new UserNotFoundException("해당 유저가 없습니다.")
+                        () -> {throw new UserNotFoundException("해당 유저가 없습니다.");}
                 );
         log.info("memberService is implemented");
         return member;
