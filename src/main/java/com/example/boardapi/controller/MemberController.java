@@ -1,17 +1,23 @@
 package com.example.boardapi.controller;
 
 import com.example.boardapi.domain.Member;
-import com.example.boardapi.dto.MemberRequestDto;
-import com.example.boardapi.dto.MemberResponseDto;
-import com.example.boardapi.dto.EditMemberDto;
+import com.example.boardapi.dto.*;
 import com.example.boardapi.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.HttpSession;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,16 +29,14 @@ public class MemberController {
 
     private final MemberService memberService;
     private final ModelMapper modelMapper;
-    
+
     //회원 가입 api
     @PostMapping("/members")
     public ResponseEntity createMember(@RequestBody MemberRequestDto memberDto) {
-
-        memberService.findDuplicatedLogin(memberDto.getLoginId());
-
         //memberDto 를 Member 엔티티로 변환
         Member mappedMember = modelMapper.map(memberDto, Member.class);
 
+        //회원 가입 저장
         Member joinMember = memberService.join(mappedMember);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()

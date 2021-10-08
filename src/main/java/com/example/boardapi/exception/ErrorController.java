@@ -12,15 +12,17 @@ import java.time.LocalDateTime;
 public class ErrorController {
 
     @ExceptionHandler
-    public ResponseEntity NullPointerExceptionHandler(NullPointerException ex, WebRequest request) {
-        ErrorResult errorResult = new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+    public ResponseEntity NullPointerExceptionHandler(UserNotFoundException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
 
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
     public ResponseEntity DuplicateLoginIdExceptionHandler(DuplicateLoginIdException ex, WebRequest request) {
-        ErrorResult errorResult = new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
 
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }

@@ -3,11 +3,19 @@ package com.example.boardapi.service;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.EditMemberDto;
 import com.example.boardapi.exception.DuplicateLoginIdException;
+import com.example.boardapi.exception.UserNotFoundException;
 import com.example.boardapi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,6 +30,7 @@ public class MemberService {
      */
     @Transactional
     public Member join(Member member) {
+        findDuplicatedLogin(member.getLoginId());
         Member saveMember = memberRepository.save(member);
         return saveMember;
     }
@@ -33,7 +42,7 @@ public class MemberService {
         Member findMember = memberRepository.findById(memberId).orElse(null);
 
         if (findMember == null) {
-            throw new NullPointerException("해당 유저는 존재하지 않습니다.");
+            throw new UserNotFoundException("해당 유저는 존재하지 않습니다.");
         }
 
         return findMember;
@@ -63,7 +72,7 @@ public class MemberService {
         try {
             memberRepository.deleteById(id);
         } catch (Exception e) {
-            throw new NullPointerException("해당 유저는 존재하지 않습니다.");
+            throw new UserNotFoundException("해당 유저는 존재하지 않습니다.");
         }
     }
 
@@ -78,4 +87,5 @@ public class MemberService {
             throw new DuplicateLoginIdException("중복된 아이디가 존재합니다.");
         }
     }
+
 }
