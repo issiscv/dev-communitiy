@@ -1,9 +1,8 @@
 package com.example.boardapi.securityConfig.JWT;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,16 +10,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Null;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class JwtTokenProvider {
 
     private String secretKey = "balladang";
+    //MemberService 에서 UserDetailsService 를 상속 받았다.
     private final UserDetailsService userDetailsService;
     
     //토큰 유효시간 30분
@@ -28,7 +31,7 @@ public class JwtTokenProvider {
 
     @PostConstruct
     protected void init() {
-        //Base64로 인코딩 하고 문자열로 sign 에 저장한다.
+        //signature 를 Base64로 인코딩한 문자를 저장한다.
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
     
@@ -60,7 +63,7 @@ public class JwtTokenProvider {
 
     //필터에서 인증을 위해 사용된다.
     public Authentication getAuthentication(String token) {
-        String tokenSubject = getTokenSubject(token); // 토큰을 파싱해서 payload 에 저장되있는 subject 를 받는다
+        String tokenSubject = getTokenSubject(token); // 토큰을 파싱해서 payload 에 저장되있는 subject 를 받는다. -> 회원이 로그인 할 때 썼던 아이디
 
         //userDetailsService 를 상속 받아서 쓰는 이유는 인증 객체를 만들어 줄때 userDetails 객체로 넣어야 하니깐.
         UserDetails userDetails = userDetailsService.loadUserByUsername(tokenSubject); // Member 엔티티를 받아야 한다.
@@ -70,7 +73,7 @@ public class JwtTokenProvider {
     //토큰의 payload 에 저장되어 있는 subject 가져옴
     public String getTokenSubject(String token) {
         String subject = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody()//payload 의 claim
-                .getSubject();
+                    .getSubject();
         return subject;
     }
 
@@ -81,13 +84,25 @@ public class JwtTokenProvider {
 
     // 토큰의 유효성 + 만료일자 확인
     // 필터에서 사용 됨
-    public boolean validateToken(String jwtToken) {
+    public boolean validateToken(String jwtToken, HttpServletRequest request) {
         try {
             //토큰을 해석하여 정보 단위로 바꿈 (secretKey 는 서명)
             //payload 에 저장되는 정보단위
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getExpiration();
+
             Date expiration = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getExpiration();
             return expiration.after(new Date());
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
+            log.info("token is expired");
+            request.setAttribute("exception", "token is expired");
+            return false;
+        } catch (MalformedJwtException e) {
+            log.info("token is malformed");
+            request.setAttribute("exception", "token is malformed");
+            return false;
+        } catch (IllegalArgumentException e) {
+            log.info("token is null or empty");
+            request.setAttribute("exception", "token is not null or empty");
             return false;
         }
     }

@@ -47,6 +47,7 @@ public class Member implements UserDetails {
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
 
+    //값을 즉시 채워넣어야 하기 때문에
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles;
 

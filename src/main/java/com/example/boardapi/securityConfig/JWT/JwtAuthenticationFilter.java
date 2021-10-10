@@ -1,5 +1,6 @@
 package com.example.boardapi.securityConfig.JWT;
 
+import com.example.boardapi.exception.EmptyTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -17,16 +18,20 @@ import java.io.IOException;
 @Slf4j
 public class JwtAuthenticationFilter extends GenericFilterBean {
 
+    //우리가 사용하는 Custom Exception 은 Spring 의 영역이다. 그에 반해 Spring Security 는 Spring 이전에 필터링 한다.
+    //그러니까 아무리 Security 단에서 예외가 발생해도 절대 Spring 의 DispatcherServlet 까지 닿을 수가 없다는 말이다.
+
     // 해당 필터가 UsernamePasswordAuthenticationFilter 보다 먼저 실행된다.
 
     private final JwtTokenProvider jwtTokenProvider;
     
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        //회원 가입, 로그인에는 헤더를 끄자
         String token = jwtTokenProvider.resolveToken((HttpServletRequest) request);
 
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            log.info("filter is worked");
+        if (token != null && jwtTokenProvider.validateToken(token, (HttpServletRequest) request)) {
+
             //UsernamePasswordAuthenticationToken 의 인증객체이다.
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
 
