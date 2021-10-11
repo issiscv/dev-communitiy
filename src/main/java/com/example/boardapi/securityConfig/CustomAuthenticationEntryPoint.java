@@ -1,5 +1,6 @@
 package com.example.boardapi.securityConfig;
 
+import com.example.boardapi.exception.TokenErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -22,15 +23,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         String message = (String)request.getAttribute("exception");
         String details = authException.getMessage();
 
-        if (message.equals("token is malformed")) {
-            setResponse(response, message, details);
-        }
-
-        if (message.equals("token is not null or empty")) {
-            setResponse(response, message, details);
-        }
-
-        if (message.equals("token is expired")) {
+        //X-AUTH-TOKEN 헤더를 넣지 않으면 null
+        if (message == null) {
+            setResponse(response, "request header must contain X-AUTH-TOKEN header", details);
+            return;
+        } else {
             setResponse(response, message, details);
         }
     }

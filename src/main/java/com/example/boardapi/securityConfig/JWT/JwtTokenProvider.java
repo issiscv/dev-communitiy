@@ -1,5 +1,7 @@
 package com.example.boardapi.securityConfig.JWT;
 
+import com.example.boardapi.exception.TokenErrorCode;
+import com.example.boardapi.exception.UserNotFoundException;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -94,15 +96,19 @@ public class JwtTokenProvider {
             return expiration.after(new Date());
         } catch (ExpiredJwtException e) {
             log.info("token is expired");
-            request.setAttribute("exception", "token is expired");
+            request.setAttribute("exception", TokenErrorCode.EXPIRED_TOKEN);
             return false;
         } catch (MalformedJwtException e) {
             log.info("token is malformed");
-            request.setAttribute("exception", "token is malformed");
+            request.setAttribute("exception", TokenErrorCode.MALFORMED_TOKEN);
             return false;
         } catch (IllegalArgumentException e) {
             log.info("token is null or empty");
-            request.setAttribute("exception", "token is not null or empty");
+            request.setAttribute("exception", TokenErrorCode.EMPTY_TOKEN);
+            return false;
+        } catch (SignatureException e) {
+            log.info("JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.");
+            request.setAttribute("exception", TokenErrorCode.SIGNATURE_NOT_MATCH_TOKEN);
             return false;
         }
     }
