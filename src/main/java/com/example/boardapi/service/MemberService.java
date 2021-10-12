@@ -1,7 +1,7 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Member;
-import com.example.boardapi.dto.MemberEditDto;
+import com.example.boardapi.dto.request.MemberEditRequestDto;
 import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.UserNotFoundException;
 import com.example.boardapi.repository.MemberRepository;
@@ -57,7 +57,7 @@ public class MemberService implements UserDetailsService{
      * 회원 정보 수정
      */
     @Transactional
-    public void editMember(Long id, MemberEditDto editMemberDto) {
+    public void editMember(Long id, MemberEditRequestDto editMemberDto) {
         Member findMember = retrieveOne(id);
         findMember.changeMemberInfo(editMemberDto);
     }

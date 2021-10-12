@@ -47,6 +47,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
             //securityContext 에 인증 객체를 넣어줘야 하는 이유 : securityContext 에 인증 객체가 저장 되어야 인증이 성공했다고 판단해서.
         }
 
+        //예외가 발생할 경우 doFilter 를 통해 넘어가 핸들링한다.
         chain.doFilter(request, response);
     }
 }

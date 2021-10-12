@@ -1,6 +1,6 @@
 package com.example.boardapi.domain;
 
-import com.example.boardapi.dto.MemberEditDto;
+import com.example.boardapi.dto.request.MemberEditRequestDto;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -62,7 +62,7 @@ public class Member implements UserDetails {
     }
 
     //회원 수정 api 에서 사용됨
-    public void changeMemberInfo(MemberEditDto editMemberDto) {
+    public void changeMemberInfo(MemberEditRequestDto editMemberDto) {
         this.password = editMemberDto.getPassword();
         this.name = editMemberDto.getName();
         this.age = editMemberDto.getAge();

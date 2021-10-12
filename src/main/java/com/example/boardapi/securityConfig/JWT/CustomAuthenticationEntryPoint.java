@@ -1,4 +1,4 @@
-package com.example.boardapi.securityConfig;
+package com.example.boardapi.securityConfig.JWT;
 
 import com.example.boardapi.exception.TokenErrorCode;
 import lombok.extern.slf4j.Slf4j;
