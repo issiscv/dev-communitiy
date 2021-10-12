@@ -1,4 +1,4 @@
-package com.example.boardapi.dto.response;
+package com.example.boardapi.dto.member.response;
 
 import io.swagger.annotations.ApiModel;
 import lombok.*;

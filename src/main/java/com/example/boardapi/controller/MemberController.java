@@ -1,9 +1,9 @@
 package com.example.boardapi.controller;
 
-import com.example.boardapi.dto.request.MemberEditRequestDto;
-import com.example.boardapi.dto.request.MemberLoginRequestDto;
-import com.example.boardapi.dto.request.MemberJoinRequestDto;
-import com.example.boardapi.dto.response.MemberJoinResponseDto;
+import com.example.boardapi.dto.member.request.MemberEditRequestDto;
+import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
+import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
+import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.securityConfig.JWT.JwtTokenProvider;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.exception.UserNotFoundException;

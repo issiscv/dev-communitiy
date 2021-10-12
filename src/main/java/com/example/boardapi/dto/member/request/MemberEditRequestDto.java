@@ -1,4 +1,4 @@
-package com.example.boardapi.dto.request;
+package com.example.boardapi.dto.member.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

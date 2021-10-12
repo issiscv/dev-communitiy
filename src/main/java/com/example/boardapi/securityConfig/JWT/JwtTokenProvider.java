@@ -1,5 +1,6 @@
 package com.example.boardapi.securityConfig.JWT;
 
+import com.example.boardapi.domain.Member;
 import com.example.boardapi.exception.TokenErrorCode;
 import com.example.boardapi.exception.UserNotFoundException;
 import io.jsonwebtoken.*;
@@ -70,6 +71,15 @@ public class JwtTokenProvider {
         //userDetailsService 를 상속 받아서 쓰는 이유는 인증 객체를 만들어 줄때 userDetails 객체로 넣어야 하니깐.
         UserDetails userDetails = userDetailsService.loadUserByUsername(tokenSubject); // Member 엔티티를 받아야 한다.
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+
+    public Member getMember(String token) {
+
+        String tokenSubject = getTokenSubject(token);
+
+        //userDetailsService 를 상속 받아서 쓰는 이유는 인증 객체를 만들어 줄때 userDetails 객체로 넣어야 하니깐.
+        Member member = (Member)userDetailsService.loadUserByUsername(tokenSubject); // Member 엔티티를 받아야 한다.
+        return member;
     }
 
     //토큰의 payload 에 저장되어 있는 subject 가져옴

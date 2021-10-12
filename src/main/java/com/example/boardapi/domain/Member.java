@@ -1,6 +1,6 @@
 package com.example.boardapi.domain;
 
-import com.example.boardapi.dto.request.MemberEditRequestDto;
+import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
