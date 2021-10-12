@@ -1,8 +1,6 @@
 package com.example.boardapi.securityConfig.JWT;
 
 import com.example.boardapi.domain.Member;
-import com.example.boardapi.exception.TokenErrorCode;
-import com.example.boardapi.exception.UserNotFoundException;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Null;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -106,19 +102,19 @@ public class JwtTokenProvider {
             return expiration.after(new Date());
         } catch (ExpiredJwtException e) {
             log.info("token is expired");
-            request.setAttribute("exception", TokenErrorCode.EXPIRED_TOKEN);
+            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.EXPIRED_TOKEN);
             return false;
         } catch (MalformedJwtException e) {
             log.info("token is malformed");
-            request.setAttribute("exception", TokenErrorCode.MALFORMED_TOKEN);
+            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.MALFORMED_TOKEN);
             return false;
         } catch (IllegalArgumentException e) {
             log.info("token is null or empty");
-            request.setAttribute("exception", TokenErrorCode.EMPTY_TOKEN);
+            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.EMPTY_TOKEN);
             return false;
         } catch (SignatureException e) {
             log.info("JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.");
-            request.setAttribute("exception", TokenErrorCode.SIGNATURE_NOT_MATCH_TOKEN);
+            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.SIGNATURE_NOT_MATCH_TOKEN);
             return false;
         }
     }

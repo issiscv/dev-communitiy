@@ -1,6 +1,7 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Board;
+import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,10 @@ public class BoardService {
      * 단건 조회
      */
     public Board retrieveOne(Long boardId) {
-        Board findBoard = boardRepository.findById(boardId).orElse(null);
+        Board findBoard = boardRepository
+                .findById(boardId)
+                .orElseThrow(() -> {throw new BoardNotFoundException("해당 게시글이 존재 하지 않습니다.");
+        });
         return findBoard;
     }
 

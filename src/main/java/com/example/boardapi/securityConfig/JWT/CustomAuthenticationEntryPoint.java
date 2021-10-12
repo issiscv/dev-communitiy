@@ -1,6 +1,5 @@
 package com.example.boardapi.securityConfig.JWT;
 
-import com.example.boardapi.exception.TokenErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -10,8 +9,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Component
@@ -39,5 +36,14 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                         "{ \"timestamp\" : \"" + new Date() + "\"," +
                         " \"message\" : \"" +  message + "\"," +
                         " \"details\" : " + details + "\"");
+    }
+
+    public abstract static class TokenErrorCode {
+
+        public static final String NOT_EXIST_USER_TOKEN = "Token`s subject user does not exist, May be that user is deleted";
+        public static final String EXPIRED_TOKEN = "X-AUTH-HEADER in the request header is expired. Issue new Token";
+        public static final String MALFORMED_TOKEN = "X-AUTH-HEADER in the request header is malformed, Write proper token value";
+        public static final String EMPTY_TOKEN = "X-AUTH-HEADER in the request header is empty. Fill the X-AUTH-HEADER`s value";
+        public static final String SIGNATURE_NOT_MATCH_TOKEN = "JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.";
     }
 }

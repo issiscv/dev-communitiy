@@ -1,4 +1,4 @@
-package com.example.boardapi.exception;
+package com.example.boardapi.exception.exception;
 
 //찾고자하는 유저가 없는 경우
 public class UserNotFoundException extends RuntimeException{

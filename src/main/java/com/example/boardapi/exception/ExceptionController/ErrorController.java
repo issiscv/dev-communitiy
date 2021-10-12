@@ -1,5 +1,9 @@
-package com.example.boardapi.exception;
+package com.example.boardapi.exception.ExceptionController;
 
+import com.example.boardapi.exception.exception.BoardNotFoundException;
+import com.example.boardapi.exception.exception.DuplicateLoginIdException;
+import com.example.boardapi.exception.ErrorResult;
+import com.example.boardapi.exception.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,6 +41,14 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity DuplicateLoginIdExceptionHandler(DuplicateLoginIdException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity DuplicateLoginIdExceptionHandler(BoardNotFoundException ex, WebRequest request) {
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
 

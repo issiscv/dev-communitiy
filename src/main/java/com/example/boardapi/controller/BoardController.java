@@ -12,9 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -55,8 +53,23 @@ public class BoardController {
 
         return ResponseEntity.created(uri).body(boardCreateResponseDto);
     }
+
     //단건 조회 GET
-    
+    @GetMapping("/boards/{id}")
+    public ResponseEntity retrieveBoard(@PathVariable Long id) {
+        
+        //해당 PK 에 해당하는 게시판 엔티티 조회
+        Board board = boardService.retrieveOne(id);
+        
+        //게시판 작성 시 응답 DTO 로 변환(형식이 같아 재사용)
+        BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(board, BoardCreateResponseDto.class);
+        //응답 시 필드 명이 author 이므로 따로 세팅한다.
+        boardCreateResponseDto.setAuthor(board.getMember().getName());
+
+        return ResponseEntity.ok().body(boardCreateResponseDto);
+    }
+
+
     //전체 조회 GET
 
     //수정 PUT

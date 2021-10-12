@@ -1,4 +1,4 @@
-package com.example.boardapi.exception;
+package com.example.boardapi.exception.exception;
 
 public class EmptyTokenException extends RuntimeException {
 
