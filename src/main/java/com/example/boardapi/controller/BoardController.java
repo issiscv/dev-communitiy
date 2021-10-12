@@ -48,6 +48,7 @@ public class BoardController {
         BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(savedBoard, BoardCreateResponseDto.class);
         boardCreateResponseDto.setAuthor(member.getName());
 
+        //데이터베이스에 생성하였기에 주소를 설정해준다 해준다.
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("{/id}")
                 .buildAndExpand(savedBoard.getId()).toUri();
