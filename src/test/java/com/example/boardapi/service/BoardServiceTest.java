@@ -34,7 +34,7 @@ class BoardServiceTest {
 
         Board board = Board.builder()
                 .title("게시판 이용 규칙")
-                .text("1. 모두랑 사이좋게 지내기")
+//                .text("1. 모두랑 사이좋게 지내기")
                 .member(member)
                 .build();
 
