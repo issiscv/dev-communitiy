@@ -102,19 +102,19 @@ public class JwtTokenProvider {
             return expiration.after(new Date());
         } catch (ExpiredJwtException e) {
             log.info("token is expired");
-            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.EXPIRED_TOKEN);
+            request.setAttribute("exception", TokenErrorCode.EXPIRED_TOKEN);
             return false;
         } catch (MalformedJwtException e) {
             log.info("token is malformed");
-            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.MALFORMED_TOKEN);
+            request.setAttribute("exception", TokenErrorCode.MALFORMED_TOKEN);
             return false;
         } catch (IllegalArgumentException e) {
             log.info("token is null or empty");
-            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.EMPTY_TOKEN);
+            request.setAttribute("exception", TokenErrorCode.EMPTY_TOKEN);
             return false;
         } catch (SignatureException e) {
             log.info("JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.");
-            request.setAttribute("exception", CustomAuthenticationEntryPoint.TokenErrorCode.SIGNATURE_NOT_MATCH_TOKEN);
+            request.setAttribute("exception", TokenErrorCode.SIGNATURE_NOT_MATCH_TOKEN);
             return false;
         }
     }

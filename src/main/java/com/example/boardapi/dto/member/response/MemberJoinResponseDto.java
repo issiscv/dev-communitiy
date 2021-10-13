@@ -9,6 +9,8 @@ import lombok.*;
 @ApiModel(description = "회원 가입 응답 DTO")
 public class MemberJoinResponseDto {
 
+    private Long id;
+
     private String loginId;
 
     private String name;

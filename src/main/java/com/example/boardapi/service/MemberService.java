@@ -88,6 +88,7 @@ public class MemberService implements UserDetailsService{
     
     
     //스프링 시큐리티에서 활용됨
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Member member = memberRepository.findByLoginId(username)

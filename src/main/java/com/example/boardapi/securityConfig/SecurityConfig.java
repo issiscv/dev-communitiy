@@ -31,7 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/members", "/members/login").permitAll()
                 .antMatchers( "/v2/api-docs", "/configuration/**", "/swagger*/**", "/webjars/**").permitAll()
                 .antMatchers("/**").hasRole("USER")
-                .anyRequest().authenticated() // 그외 나머지 요청은 누구나 접근 가능
+                .anyRequest().authenticated() // 그외 나머지 요청은 누구나 인증을 해야한다.
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(customAuthenticationEntryPoint)

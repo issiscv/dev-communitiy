@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 @Builder
 public class BoardCreateResponseDto {
 
+    private Long id;
+
     private String author;
 
     private String title;

@@ -1,6 +1,7 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Board;
+import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,29 @@ public class BoardService {
      */
     public List<Board> retrieveAll() {
         return boardRepository.findAll();
+    }
+
+    /**
+     * 게시글 수정
+     */
+    @Transactional
+    public Board editBoard(Long id, BoardEditRequestDto boardEditRequestDto) {
+        //retrieveOne 메서드에서 예외 처리 해줌
+        Board board = retrieveOne(id);
+        
+        board.setTitle(boardEditRequestDto.getTitle());
+        board.setContent(boardEditRequestDto.getContent());
+        return board;
+    }
+
+    /**
+     * 게시글 삭제
+     */
+    @Transactional
+    public void deleteBoard(Long id) {
+        //해당 게시글이 존재하는지 확인하기 위해
+        Board board = retrieveOne(id);
+
+        boardRepository.deleteById(id);
     }
 }
