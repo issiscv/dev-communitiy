@@ -1,5 +1,6 @@
 package com.example.boardapi.dto.board.request;
 
+import io.swagger.annotations.ApiModel;
 import lombok.*;
 
 /**
@@ -10,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter @Setter
 @Builder
+@ApiModel(description = "게시글 수정 DTO")
 public class BoardEditRequestDto {
 
     private String title;

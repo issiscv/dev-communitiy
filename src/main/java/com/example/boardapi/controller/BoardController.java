@@ -8,7 +8,7 @@ import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.securityConfig.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
-import io.swagger.annotations.Api;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -37,8 +37,14 @@ public class BoardController {
     private final ModelMapper modelMapper;
 
     //작성 POST
+    @ApiOperation(value = "게시글 작성", notes = "BoardCreateRequestDto DTO 를 통해 게시글을 생성합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "게시글 생성 성공"),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+    })
     @PostMapping("")
-    public ResponseEntity createBoard(@RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
+    public ResponseEntity createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
                                       HttpServletRequest request) {
         //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
         String token = jwtTokenProvider.resolveToken(request);
@@ -62,8 +68,14 @@ public class BoardController {
     }
 
     //단건 조회 GET
+    @ApiOperation(value = "게시글 단건 조회", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "게시글 조회 성공"),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글입니다.")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity retrieveBoard(@PathVariable Long id) {
+    public ResponseEntity retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long id) {
         
         //해당 PK 에 해당하는 게시판 엔티티 조회
         Board board = boardService.retrieveOne(id);
@@ -77,6 +89,11 @@ public class BoardController {
     }
 
     //전체 조회 GET
+    @ApiOperation(value = "게시글 전체 조회", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "게시글 전체 조회 성공"),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+    })
     @GetMapping("")
     public ResponseEntity retrieveAllBoard() {
 
@@ -95,18 +112,35 @@ public class BoardController {
     }
     
     //수정 PUT
+    @ApiOperation(value = "게시글 수정", notes = "게시글을 수정합니다. BoardEditRequestDto DTO 를 사용합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "게시글이 수정되었습니다."),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity editBoard(@RequestBody BoardEditRequestDto boardEditRequestDto, @PathVariable Long id) {
+    public ResponseEntity editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody BoardEditRequestDto boardEditRequestDto, @PathVariable Long id) {
 
         Board board = boardService.editBoard(id, boardEditRequestDto);
 
         BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(board, BoardCreateResponseDto.class);
         boardCreateResponseDto.setAuthor(board.getMember().getName());
 
-        return ResponseEntity.ok().body(boardCreateResponseDto);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("{/id}")
+                .buildAndExpand(board.getId()).toUri();
+
+        return ResponseEntity.created(uri).body(boardCreateResponseDto);
     }
 
     //삭제 DELETE
+    @ApiOperation(value = "게시글 삭제", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "게시글이 삭제되었습니다.."),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity deleteBoard(@PathVariable Long id) {
         boardService.deleteBoard(id);

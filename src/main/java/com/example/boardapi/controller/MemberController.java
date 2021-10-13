@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Api("MemberController")
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -38,7 +37,7 @@ public class MemberController {
     private final JwtTokenProvider jwtTokenProvider;
 
     //회원 가입 api
-    @ApiOperation(value = "회원가입", notes = "회원 객체 DTO 를 통해 회원가입을 진행합니다.")
+    @ApiOperation(value = "회원가입", notes = "MemberJoinRequestDto DTO 를 통해 회원가입을 진행합니다.")
     @ApiResponses({
             @ApiResponse(code = 201, message = "회원 가입 성공"),
             @ApiResponse(code = 400, message = "중복된 아이디 입니다."),
@@ -115,8 +114,7 @@ public class MemberController {
     //전체 조회 api
     @ApiOperation(value = "회원 전체 조회", notes = "회원의 전체를 조회합니다.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "회원 단건 조회 성공"),
-            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
+            @ApiResponse(code = 200, message = "회원 전체 조회 성공"),
             @ApiResponse(code = 401, message = "토큰 검증 실패")
     })
     @GetMapping("/members")
