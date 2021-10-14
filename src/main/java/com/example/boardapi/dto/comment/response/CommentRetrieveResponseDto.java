@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 @Builder
 public class CommentRetrieveResponseDto {
 
+    private Long id;//댓글 기본키
+
+    private Long boardId;//게시글 기본키
+
     private String author;//댓글 작성자
 
     private String content;

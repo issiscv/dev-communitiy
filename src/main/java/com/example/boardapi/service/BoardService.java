@@ -67,4 +67,11 @@ public class BoardService {
 
         boardRepository.deleteById(id);
     }
+
+    /**
+     * 내가 작성한 게시글
+     */
+    public List<Board> retrieveAllOwnBoard(Long memberId) {
+        return boardRepository.findBoardByMember(memberId);
+    }
 }

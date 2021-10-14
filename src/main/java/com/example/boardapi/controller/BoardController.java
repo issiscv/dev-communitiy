@@ -93,6 +93,8 @@ public class BoardController {
         for (Comment comment : comments) {
 
             CommentRetrieveResponseDto commentRetrieveResponseDto = CommentRetrieveResponseDto.builder()
+                    .id(comment.getId())
+                    .boardId(board.getId())
                     .author(comment.getMember().getName())
                     .content(comment.getContent())
                     .createdDate(comment.getCreatedDate())
@@ -169,6 +171,7 @@ public class BoardController {
 
         return ResponseEntity.ok().body("게시글 삭제 완료");
     }
+
 
     /**
      * 댓글 관련 API
