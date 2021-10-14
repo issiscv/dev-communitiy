@@ -4,7 +4,7 @@ import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
 import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
-import com.example.boardapi.securityConfig.JWT.JwtTokenProvider;
+import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.exception.exception.UserNotFoundException;
 import com.example.boardapi.repository.MemberRepository;

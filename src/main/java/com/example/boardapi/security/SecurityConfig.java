@@ -1,8 +1,8 @@
-package com.example.boardapi.securityConfig;
+package com.example.boardapi.security;
 
-import com.example.boardapi.securityConfig.JWT.CustomAuthenticationEntryPoint;
-import com.example.boardapi.securityConfig.JWT.JwtAuthenticationFilter;
-import com.example.boardapi.securityConfig.JWT.JwtTokenProvider;
+import com.example.boardapi.security.JWT.CustomAuthenticationEntryPoint;
+import com.example.boardapi.security.JWT.JwtAuthenticationFilter;
+import com.example.boardapi.security.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -41,5 +41,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), //이 필터를 먼저 타서 토큰을 검사
                         UsernamePasswordAuthenticationFilter.class);            //그리고 이 필터를 타겠다.
         // JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 전에 넣는다
+
     }
 }

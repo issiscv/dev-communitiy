@@ -43,7 +43,7 @@ class CommentServiceTest {
                 .build();
 
         Comment comment = Comment.builder()
-                .text("좋아요 사이좋게 지내요!")
+//                .text("좋아요 사이좋게 지내요!")
                 .member(member)
                 .board(board)
                 .build();

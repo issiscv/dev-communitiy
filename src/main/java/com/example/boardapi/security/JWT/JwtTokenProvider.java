@@ -1,4 +1,4 @@
-package com.example.boardapi.securityConfig.JWT;
+package com.example.boardapi.security.JWT;
 
 import com.example.boardapi.domain.Member;
 import io.jsonwebtoken.*;

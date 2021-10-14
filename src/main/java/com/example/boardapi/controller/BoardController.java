@@ -1,26 +1,30 @@
 package com.example.boardapi.controller;
 
 import com.example.boardapi.domain.Board;
+import com.example.boardapi.domain.Comment;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
-import com.example.boardapi.repository.BoardRepository;
-import com.example.boardapi.securityConfig.JWT.JwtTokenProvider;
+import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
+import com.example.boardapi.dto.comment.request.CommentCreateRequestDto;
+import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
+import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
+import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
+import com.example.boardapi.service.CommentService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +39,8 @@ public class BoardController {
     private final JwtTokenProvider jwtTokenProvider;
 
     private final ModelMapper modelMapper;
+
+    private final CommentService commentService;
 
     //작성 POST
     @ApiOperation(value = "게시글 작성", notes = "BoardCreateRequestDto DTO 를 통해 게시글을 생성합니다.")
@@ -61,7 +67,7 @@ public class BoardController {
 
         //데이터베이스에 생성하였기에 주소를 설정해준다 해준다.
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("{/id}")
+                .path("/{id}")
                 .buildAndExpand(savedBoard.getId()).toUri();
 
         return ResponseEntity.created(uri).body(boardCreateResponseDto);
@@ -79,13 +85,29 @@ public class BoardController {
         
         //해당 PK 에 해당하는 게시판 엔티티 조회
         Board board = boardService.retrieveOne(id);
+        //게시글에 해당하는 댓글 리스트
+        List<Comment> comments = commentService.retrieveOneByBoardId(id);
+        List<CommentRetrieveResponseDto> commentResponseDtoList = new ArrayList<>();
         
-        //게시판 작성 시 응답 DTO 로 변환(형식이 같아 재사용)
-        BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(board, BoardCreateResponseDto.class);
-        //응답 시 필드 명이 author 이므로 따로 세팅한다.
-        boardCreateResponseDto.setAuthor(board.getMember().getName());
+        //조회한 댓글 엔티티를 DTO 로 변환
+        for (Comment comment : comments) {
 
-        return ResponseEntity.ok().body(boardCreateResponseDto);
+            CommentRetrieveResponseDto commentRetrieveResponseDto = CommentRetrieveResponseDto.builder()
+                    .author(comment.getMember().getName())
+                    .content(comment.getContent())
+                    .createdDate(comment.getCreatedDate())
+                    .lastModifiedDate(comment.getLastModifiedDate())
+                    .build();
+
+            commentResponseDtoList.add(commentRetrieveResponseDto);
+        }
+
+        //게시판 조회 시 해당 DTO 로 변환
+        BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+        //응답 시 필드 명이 author 이므로 따로 세팅한다.
+        boardRetrieveResponseDto.setAuthor(board.getMember().getName());
+        boardRetrieveResponseDto.setComments(commentResponseDtoList);
+        return ResponseEntity.ok().body(boardRetrieveResponseDto);
     }
 
     //전체 조회 GET
@@ -128,7 +150,7 @@ public class BoardController {
         boardCreateResponseDto.setAuthor(board.getMember().getName());
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("{/id}")
+                .path("/{id}")
                 .buildAndExpand(board.getId()).toUri();
 
         return ResponseEntity.created(uri).body(boardCreateResponseDto);
@@ -146,5 +168,42 @@ public class BoardController {
         boardService.deleteBoard(id);
 
         return ResponseEntity.ok().body("게시글 삭제 완료");
+    }
+
+    /**
+     * 댓글 관련 API
+     */
+
+    //특정 게시판에 글을 쓰는 API
+    @PostMapping("/{boardId}/comments")
+    public ResponseEntity createComment(@RequestBody CommentCreateRequestDto commentCreateRequestDto,
+                                        @PathVariable Long boardId, HttpServletRequest request) {
+
+        //글쓴이의 정보(토큰의 정보)
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        //게시글 엔티티 조회
+        Board board = boardService.retrieveOne(boardId);
+
+        //DTO 를 변환 엔티티로 변환
+        Comment comment = modelMapper.map(commentCreateRequestDto, Comment.class);
+        comment.setBoard(board);
+        comment.setMember(member);
+        Comment saveComment = commentService.save(comment);
+
+        //엔티티를 DTO로 변환
+        CommentCreateResponseDto commentResponseDto = modelMapper.map(saveComment, CommentCreateResponseDto.class);
+        commentResponseDto.setAuthor(member.getName());//작성자
+        commentResponseDto.setCommentId(saveComment.getId());//댓글 기본키
+        commentResponseDto.setBoardId(board.getId());//게시글 기본키
+
+        //URI
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(saveComment.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(commentResponseDto);
     }
 }

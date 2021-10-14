@@ -1,6 +1,7 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Comment;
+import com.example.boardapi.exception.exception.UserNotFoundException;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class CommentService {
     }
 
     /**
-     * 단건 조회
+     * 단건 조회 댓글까지
      */
     public Comment retrieveOne(Long commentId) {
         return commentRepository.findById(commentId).orElse(null);
@@ -36,5 +37,17 @@ public class CommentService {
      */
     public List<Comment> retrieveAll() {
         return commentRepository.findAll();
+    }
+
+    public List<Comment> retrieveOneByBoardId(Long boardId) {
+        List<Comment> allByBoardId;
+
+        try {
+            allByBoardId = commentRepository.findAllByBoardId(boardId);
+        } catch (Exception e) {
+            throw new UserNotFoundException("해당 게시글이 존재하지 않습니다.");
+        }
+
+        return allByBoardId;
     }
 }

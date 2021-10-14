@@ -1,4 +1,4 @@
-package com.example.boardapi.securityConfig.JWT;
+package com.example.boardapi.security.JWT;
 
 import com.example.boardapi.exception.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
