@@ -145,7 +145,7 @@ public class BoardController {
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
     @PutMapping("/{id}")
-    public ResponseEntity editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody BoardEditRequestDto boardEditRequestDto, @PathVariable Long id) {
+    public ResponseEntity editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid BoardEditRequestDto boardEditRequestDto, @PathVariable Long id) {
 
         Board board = boardService.editBoard(id, boardEditRequestDto);
 
@@ -159,9 +159,7 @@ public class BoardController {
         return ResponseEntity.created(uri).body(boardCreateResponseDto);
     }
 
-    /**
-     * 수정 필요
-     */
+
     //삭제 DELETE
     @ApiOperation(value = "게시글 삭제", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 삭제합니다.")
     @ApiResponses({
@@ -176,13 +174,13 @@ public class BoardController {
         return ResponseEntity.ok().body("게시글 삭제 완료");
     }
 
-
     /**
-     * 댓글 관련 API
+     * 이 밑으로는 댓글 API
      */
+
     //특정 게시판에 댓글을 쓰는 API
     @PostMapping("/{boardId}/comments")
-    public ResponseEntity createComment(@RequestBody CommentCreateRequestDto commentCreateRequestDto,
+    public ResponseEntity createComment(@RequestBody @Valid CommentCreateRequestDto commentCreateRequestDto,
                                         @PathVariable Long boardId, HttpServletRequest request) {
 
         //글쓴이의 정보(토큰의 정보)
@@ -215,7 +213,8 @@ public class BoardController {
 
     //댓글 수정
     @PutMapping("/{boardId}/comments/{commentId}")
-    public ResponseEntity editComment(@RequestBody CommentEditRequestDto commentEditRequestDto, @PathVariable Long boardId,
+    public ResponseEntity editComment(@RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
+                                      @PathVariable Long boardId,
                                       @PathVariable Long commentId) {
         Comment comment = commentService.editComment(commentId, commentEditRequestDto);
 
@@ -228,5 +227,14 @@ public class BoardController {
                 .toUri();
 
         return ResponseEntity.created(uri).body(commentCreateResponseDto);
+    }
+
+    //댓글 삭제
+    @DeleteMapping("/{boardId}/comments/{commentId}")
+    public ResponseEntity deleteComment(@PathVariable Long boardId, @PathVariable Long commentId) {
+
+        commentService.deleteComment(commentId);
+
+        return ResponseEntity.ok().body("댓글 삭제 완료입니다.");
     }
 }

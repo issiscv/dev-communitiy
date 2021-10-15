@@ -183,7 +183,7 @@ public class MemberController {
 
     //특정 사용자가 작성한 게시글 조회
     @GetMapping("/members/{id}/boards")
-    public ResponseEntity retrieveAllOwn(@PathVariable Long id) {
+    public ResponseEntity retrieveAllOwnBoard(@PathVariable Long id) {
 
         List<Board> boards = boardService.retrieveAllOwnBoard(id);
 
@@ -195,5 +195,25 @@ public class MemberController {
         ).collect(Collectors.toList());
 
         return ResponseEntity.ok().body(boardCreateResponseDtoList);
+    }
+    
+    //특정 사용자가 작성한 모든 댓글
+    @GetMapping("/members/{id}/comments")
+    public ResponseEntity retrieveAllOwnComment(@PathVariable Long id) {
+        List<Comment> comments = commentService.retrieveAllOwnComment(id);
+
+        List<CommentRetrieveResponseDto> commentRetrieveResponseDtoList = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            CommentRetrieveResponseDto commentRetrieveResponseDto =
+                    modelMapper.map(comment, CommentRetrieveResponseDto.class);
+
+            commentRetrieveResponseDto.setAuthor(comment.getMember().getName());
+            commentRetrieveResponseDto.setBoardId(comment.getBoard().getId());
+
+            commentRetrieveResponseDtoList.add(commentRetrieveResponseDto);
         }
+
+        return ResponseEntity.ok().body(commentRetrieveResponseDtoList);
+    }
 }

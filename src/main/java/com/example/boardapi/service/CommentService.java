@@ -65,4 +65,13 @@ public class CommentService {
         comment.setContent(commentEditRequestDto.getContent());
         return comment;
     }
+
+    @Transactional
+    public void deleteComment(Long id) {
+        commentRepository.deleteById(id);
+    }
+
+    public List<Comment> retrieveAllOwnComment(Long id) {
+        return commentRepository.findAllByMemberId(id);
+    }
 }
