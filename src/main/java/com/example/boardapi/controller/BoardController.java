@@ -8,6 +8,7 @@ import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.comment.request.CommentCreateRequestDto;
+import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
@@ -50,7 +51,7 @@ public class BoardController {
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
     @PostMapping("")
-    public ResponseEntity createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
+    public ResponseEntity<BoardCreateResponseDto> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
                                       HttpServletRequest request) {
         //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
         String token = jwtTokenProvider.resolveToken(request);
@@ -158,6 +159,9 @@ public class BoardController {
         return ResponseEntity.created(uri).body(boardCreateResponseDto);
     }
 
+    /**
+     * 수정 필요
+     */
     //삭제 DELETE
     @ApiOperation(value = "게시글 삭제", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 삭제합니다.")
     @ApiResponses({
@@ -176,8 +180,7 @@ public class BoardController {
     /**
      * 댓글 관련 API
      */
-
-    //특정 게시판에 글을 쓰는 API
+    //특정 게시판에 댓글을 쓰는 API
     @PostMapping("/{boardId}/comments")
     public ResponseEntity createComment(@RequestBody CommentCreateRequestDto commentCreateRequestDto,
                                         @PathVariable Long boardId, HttpServletRequest request) {
@@ -198,7 +201,7 @@ public class BoardController {
         //엔티티를 DTO로 변환
         CommentCreateResponseDto commentResponseDto = modelMapper.map(saveComment, CommentCreateResponseDto.class);
         commentResponseDto.setAuthor(member.getName());//작성자
-        commentResponseDto.setCommentId(saveComment.getId());//댓글 기본키
+        commentResponseDto.setId(saveComment.getId());//댓글 기본키
         commentResponseDto.setBoardId(board.getId());//게시글 기본키
 
         //URI
@@ -208,5 +211,22 @@ public class BoardController {
                 .toUri();
 
         return ResponseEntity.created(uri).body(commentResponseDto);
+    }
+
+    //댓글 수정
+    @PutMapping("/{boardId}/comments/{commentId}")
+    public ResponseEntity editComment(@RequestBody CommentEditRequestDto commentEditRequestDto, @PathVariable Long boardId,
+                                      @PathVariable Long commentId) {
+        Comment comment = commentService.editComment(commentId, commentEditRequestDto);
+
+        CommentCreateResponseDto commentCreateResponseDto = modelMapper.map(comment, CommentCreateResponseDto.class);
+        commentCreateResponseDto.setAuthor(comment.getMember().getName());
+        commentCreateResponseDto.setBoardId(boardId);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .build()
+                .toUri();
+
+        return ResponseEntity.created(uri).body(commentCreateResponseDto);
     }
 }

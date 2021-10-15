@@ -1,6 +1,8 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Comment;
+import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
+import com.example.boardapi.exception.exception.CommentNotFoundException;
 import com.example.boardapi.exception.exception.UserNotFoundException;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,10 @@ public class CommentService {
      * 단건 조회 댓글까지
      */
     public Comment retrieveOne(Long commentId) {
-        return commentRepository.findById(commentId).orElse(null);
+        return commentRepository.findById(commentId).orElseThrow(() -> {
+            throw new CommentNotFoundException("해당 댓글이 없습니다.");
+        }
+        );
     }
 
     /**
@@ -39,6 +44,9 @@ public class CommentService {
         return commentRepository.findAll();
     }
 
+    /**
+     * 특정 게시글의 댓글
+     */
     public List<Comment> retrieveOneByBoardId(Long boardId) {
         List<Comment> allByBoardId;
 
@@ -49,5 +57,12 @@ public class CommentService {
         }
 
         return allByBoardId;
+    }
+
+    @Transactional
+    public Comment editComment(Long id, CommentEditRequestDto commentEditRequestDto) {
+        Comment comment = retrieveOne(id);
+        comment.setContent(commentEditRequestDto.getContent());
+        return comment;
     }
 }

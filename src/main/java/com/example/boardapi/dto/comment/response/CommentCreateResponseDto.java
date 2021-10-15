@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CommentCreateResponseDto {
 
-    private Long commentId;//댓글 기본키
+    private Long id;//댓글 기본키
 
     private Long boardId;//게시글 기본키
 
@@ -27,8 +27,4 @@ public class CommentCreateResponseDto {
     private LocalDateTime createdDate;
 
     private LocalDateTime lastModifiedDate;
-
-    private String createdBy;
-
-    private String lastModifiedBy;
 }

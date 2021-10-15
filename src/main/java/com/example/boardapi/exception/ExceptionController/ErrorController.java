@@ -1,6 +1,7 @@
 package com.example.boardapi.exception.ExceptionController;
 
 import com.example.boardapi.exception.exception.BoardNotFoundException;
+import com.example.boardapi.exception.exception.CommentNotFoundException;
 import com.example.boardapi.exception.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.ErrorResult;
 import com.example.boardapi.exception.exception.UserNotFoundException;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 @Slf4j
 public class ErrorController extends ResponseEntityExceptionHandler {
 
+    //사용자를 못찾았을 때
     @ExceptionHandler
     public ResponseEntity userNotFoundExceptionHandler(UserNotFoundException ex, WebRequest request) {
         log.info("exception = {}", ex.getMessage());
@@ -29,7 +31,8 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
-
+    
+    //비밀번호가 틀렸을 때
     @ExceptionHandler
     public ResponseEntity BadCredentialsExceptionHandler(BadCredentialsException ex, WebRequest request) {
         log.info("exception = {}", ex.getMessage());
@@ -39,6 +42,7 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //회원 가입시 아이디가 중복일 때
     @ExceptionHandler
     public ResponseEntity DuplicateLoginIdExceptionHandler(DuplicateLoginIdException ex, WebRequest request) {
         ErrorResult errorResult =
@@ -47,14 +51,25 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //게시글을 찾지 못하였을 때
     @ExceptionHandler
-    public ResponseEntity DuplicateLoginIdExceptionHandler(BoardNotFoundException ex, WebRequest request) {
+    public ResponseEntity boardNotFoundExceptionHandler(BoardNotFoundException ex, WebRequest request) {
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
 
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //댓글을 찾지 못하였을 때
+    @ExceptionHandler
+    public ResponseEntity commentNotFoundExceptionHandler(CommentNotFoundException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+    
+    //검증 오류
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers,
