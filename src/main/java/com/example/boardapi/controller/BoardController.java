@@ -6,6 +6,7 @@ import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
+import com.example.boardapi.dto.board.response.BoardRetrieveOneResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.comment.request.CommentCreateRequestDto;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
@@ -81,13 +82,13 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
             @ApiResponse(code = 400, message = "존재하지 않는 게시글입니다.")
     })
-    @GetMapping("/{id}")
-    public ResponseEntity retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long id) {
+    @GetMapping("/{boardId}")
+    public ResponseEntity<BoardRetrieveResponseDto> retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId) {
         
-        //해당 PK 에 해당하는 게시판 엔티티 조회
-        Board board = boardService.retrieveOne(id);
+        //해당 PK 에 해당하는 게시판 엔티티 조회 및 게시글 조회 검증
+        Board board = boardService.retrieveOne(boardId);
         //게시글에 해당하는 댓글 리스트
-        List<Comment> comments = commentService.retrieveOneByBoardId(id);
+        List<Comment> comments = commentService.retrieveOneByBoardId(boardId);
         List<CommentRetrieveResponseDto> commentResponseDtoList = new ArrayList<>();
         
         //조회한 댓글 엔티티를 DTO 로 변환
@@ -120,20 +121,20 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
     })
     @GetMapping("")
-    public ResponseEntity retrieveAllBoard() {
+    public ResponseEntity<List<BoardRetrieveOneResponseDto>> retrieveAllBoard() {
 
         List<Board> boards = boardService.retrieveAll();
 
         //회원가입 응답 DTO 를 재사용
         //fetch 조인 필요
-        List<BoardCreateResponseDto> boardCreateResponseDtoList = boards.stream().map(board -> {
-            BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(board, BoardCreateResponseDto.class);
-            boardCreateResponseDto.setAuthor(board.getMember().getName());
-            return boardCreateResponseDto;
+        List<BoardRetrieveOneResponseDto> boardRetrieveOneResponseDtoList = boards.stream().map(board -> {
+            BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
+            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+            return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());
 
-        return ResponseEntity.ok().body(boardCreateResponseDtoList);
+        return ResponseEntity.ok().body(boardRetrieveOneResponseDtoList);
     }
     
     //수정 PUT
@@ -144,10 +145,12 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid BoardEditRequestDto boardEditRequestDto, @PathVariable Long id) {
+    @PutMapping("/{boardId}")
+    public ResponseEntity<BoardCreateResponseDto> editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid
+                                                BoardEditRequestDto boardEditRequestDto,
+                                    @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
 
-        Board board = boardService.editBoard(id, boardEditRequestDto);
+        Board board = boardService.editBoard(boardId, boardEditRequestDto);
 
         BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(board, BoardCreateResponseDto.class);
         boardCreateResponseDto.setAuthor(board.getMember().getName());
@@ -167,9 +170,9 @@ public class BoardController {
             @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity deleteBoard(@PathVariable Long id) {
-        boardService.deleteBoard(id);
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity deleteBoard(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
+        boardService.deleteBoard(boardId);
 
         return ResponseEntity.ok().body("게시글 삭제 완료");
     }
@@ -179,9 +182,16 @@ public class BoardController {
      */
 
     //특정 게시판에 댓글을 쓰는 API
+    @ApiOperation(value = "게시글의 댓글 작성", notes = "게시글의 댓글을 추가합니다. CommentCreateRequestDto DTO 를 사용합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "댓글 작성을 완료했습니다."),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+    })
     @PostMapping("/{boardId}/comments")
-    public ResponseEntity createComment(@RequestBody @Valid CommentCreateRequestDto commentCreateRequestDto,
-                                        @PathVariable Long boardId, HttpServletRequest request) {
+    public ResponseEntity<CommentCreateResponseDto> createComment(@RequestBody @Valid @ApiParam(value = "댓글 DTO", required = true) CommentCreateRequestDto commentCreateRequestDto,
+                                        @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
         //글쓴이의 정보(토큰의 정보)
         String token = jwtTokenProvider.resolveToken(request);
@@ -212,10 +222,21 @@ public class BoardController {
     }
 
     //댓글 수정
+    @ApiOperation(value = "게시글의 댓글 수정", notes = "게시글의 댓글을 수정합니다. CommentEditRequestDto DTO 를 사용합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "댓글 수정을 완료했습니다."),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+    })
     @PutMapping("/{boardId}/comments/{commentId}")
-    public ResponseEntity editComment(@RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
-                                      @PathVariable Long boardId,
-                                      @PathVariable Long commentId) {
+    public ResponseEntity<CommentCreateResponseDto> editComment(@ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
+                                      @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
+                                      @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
+        //게시글이 존재하는지 검사
+        boardService.retrieveOne(boardId);
+
+        //댓글 수정
         Comment comment = commentService.editComment(commentId, commentEditRequestDto);
 
         CommentCreateResponseDto commentCreateResponseDto = modelMapper.map(comment, CommentCreateResponseDto.class);
@@ -230,9 +251,19 @@ public class BoardController {
     }
 
     //댓글 삭제
+    @ApiOperation(value = "게시글의 댓글 삭제", notes = "게시글의 댓글을 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "댓글 수정을 완료했습니다."),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+    })
     @DeleteMapping("/{boardId}/comments/{commentId}")
-    public ResponseEntity deleteComment(@PathVariable Long boardId, @PathVariable Long commentId) {
-
+    public ResponseEntity deleteComment(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
+                                        @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
+        //게시글이 존재하는지 검사
+        boardService.retrieveOne(boardId);
+        //삭제
         commentService.deleteComment(commentId);
 
         return ResponseEntity.ok().body("댓글 삭제 완료입니다.");

@@ -3,11 +3,13 @@ package com.example.boardapi.controller;
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
+import com.example.boardapi.dto.board.response.BoardRetrieveOneResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
 import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
+import com.example.boardapi.dto.member.response.MemberEditResponseDto;
+import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
@@ -27,7 +29,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class MemberController {
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
     @PostMapping("/members")
-    public ResponseEntity createMember(@ApiParam(value = "회원 객체 DTO", required = true) @RequestBody @Valid
+    public ResponseEntity<MemberJoinResponseDto> createMember(@ApiParam(value = "회원 객체 DTO", required = true) @RequestBody @Valid
                                                MemberJoinRequestDto memberJoinRequestDto) {
 
         Member member = Member.builder()
@@ -93,7 +94,7 @@ public class MemberController {
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
     @PostMapping("/members/login")
-    public ResponseEntity login(@ApiParam(value = "회원 가입 DTO", required = true) @RequestBody @Valid
+    public ResponseEntity<MemberLoginResponseDto> login(@ApiParam(value = "회원 가입 DTO", required = true) @RequestBody @Valid
                                 MemberLoginRequestDto memberLoginRequestDto) {
         //아이디가 있는지 검증을 한다.
         Member member = memberRepository.findByLoginId(memberLoginRequestDto.getLoginId()).orElseThrow(
@@ -116,13 +117,13 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
             @ApiResponse(code = 401, message = "토큰 검증 실패")
     })
-    @GetMapping("/members/{id}")
-    public ResponseEntity retrieveMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long id) {
-        Member member = memberService.retrieveOne(id);
+    @GetMapping("/members/{memberId}")
+    public ResponseEntity<MemberRetrieveResponseDto> retrieveMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+        Member member = memberService.retrieveOne(memberId);
 
-        MemberJoinResponseDto mappedResponseDto = modelMapper.map(member, MemberJoinResponseDto.class);
+        MemberRetrieveResponseDto memberRetrieveResponseDto = modelMapper.map(member, MemberRetrieveResponseDto.class);
 
-        return ResponseEntity.ok(mappedResponseDto);
+        return ResponseEntity.ok(memberRetrieveResponseDto);
     }
 
     //전체 조회 api
@@ -132,12 +133,12 @@ public class MemberController {
             @ApiResponse(code = 401, message = "토큰 검증 실패")
     })
     @GetMapping("/members")
-    public ResponseEntity retrieveAllMember() {
+    public ResponseEntity<List<MemberRetrieveResponseDto>> retrieveAllMember() {
 
         List<Member> members = memberService.retrieveAll();
 
-        List<MemberJoinResponseDto> collect = members.stream().map(
-                m -> modelMapper.map(m, MemberJoinResponseDto.class))
+        List<MemberRetrieveResponseDto> collect = members.stream().map(
+                m -> modelMapper.map(m, MemberRetrieveResponseDto.class))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(collect);
@@ -151,16 +152,16 @@ public class MemberController {
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
-    @PutMapping("/members/{id}")
-    public ResponseEntity editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid
-                                             MemberEditRequestDto memberEditRequestDto, @ApiParam(value = "회원 PK", required = true) @PathVariable Long id) {
+    @PutMapping("/members/{memberId}")
+    public ResponseEntity<MemberEditResponseDto> editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid
+                                             MemberEditRequestDto memberEditRequestDto, @ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
 
-        Member findMember = memberService.retrieveOne(id);
+        Member findMember = memberService.retrieveOne(memberId);
 
         //수정
-        memberService.editMember(id, memberEditRequestDto);
+        memberService.editMember(memberId, memberEditRequestDto);
 
-        MemberJoinResponseDto mappedResponseDto = modelMapper.map(findMember, MemberJoinResponseDto.class);
+        MemberEditResponseDto mappedResponseDto = modelMapper.map(findMember, MemberEditResponseDto.class);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .build().toUri();
@@ -175,32 +176,51 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
     })
-    @DeleteMapping("/members/{id}")
-    public ResponseEntity deleteMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long id) {
-        memberService.deleteMember(id);
+    @DeleteMapping("/members/{memberId}")
+    public ResponseEntity deleteMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+        memberService.deleteMember(memberId);
         return ResponseEntity.ok("성공적으로 회원 탈퇴가 되었습니다.");
     }
 
     //특정 사용자가 작성한 게시글 조회
-    @GetMapping("/members/{id}/boards")
-    public ResponseEntity retrieveAllOwnBoard(@PathVariable Long id) {
+    @ApiOperation(value = "사용자가 작성한 모든 게시글 조회", notes = "회원의 모든 게시글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "성공적으로 회원 사용자의 게시글을 조회하였습니다.."),
+            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 403, message = "검증 실패"),
+    })
+    @GetMapping("/members/{memberId}/boards")
+    public ResponseEntity<List<BoardRetrieveOneResponseDto>> retrieveAllOwnBoard(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
 
-        List<Board> boards = boardService.retrieveAllOwnBoard(id);
+        List<Board> boards = boardService.retrieveAllOwnBoard(memberId);
 
-        List<BoardCreateResponseDto> boardCreateResponseDtoList = boards.stream().map(board -> {
-                    BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(board, BoardCreateResponseDto.class);
-                    boardCreateResponseDto.setAuthor(board.getMember().getName());
-                    return boardCreateResponseDto;
+        List<BoardRetrieveOneResponseDto> boardRetrieveOneResponseDtoList = boards.stream().map(board -> {
+            BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
+            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+                    return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());
 
-        return ResponseEntity.ok().body(boardCreateResponseDtoList);
+        return ResponseEntity.ok().body(boardRetrieveOneResponseDtoList);
     }
     
     //특정 사용자가 작성한 모든 댓글
-    @GetMapping("/members/{id}/comments")
-    public ResponseEntity retrieveAllOwnComment(@PathVariable Long id) {
-        List<Comment> comments = commentService.retrieveAllOwnComment(id);
+    @ApiOperation(value = "사용자가 작성한 모든 댓글 조회", notes = "회원의 모든 댓글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "성공적으로 회원 사용자의 댓글 조회하였습니다.."),
+            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 403, message = "검증 실패"),
+    })
+    @GetMapping("/members/{memberId}/comments")
+    public ResponseEntity<List<CommentRetrieveResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
+        
+        //해당 유저가 존재하는지 검증을 위해 조회를 해본다.
+        memberService.retrieveOne(memberId);
+
+        //회원의 댓글
+        List<Comment> comments = commentService.retrieveAllOwnComment(memberId);
 
         List<CommentRetrieveResponseDto> commentRetrieveResponseDtoList = new ArrayList<>();
 

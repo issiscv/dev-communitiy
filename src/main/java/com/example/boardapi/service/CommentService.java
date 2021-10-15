@@ -2,6 +2,7 @@ package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
+import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.CommentNotFoundException;
 import com.example.boardapi.exception.exception.UserNotFoundException;
 import com.example.boardapi.repository.CommentRepository;
@@ -53,7 +54,7 @@ public class CommentService {
         try {
             allByBoardId = commentRepository.findAllByBoardId(boardId);
         } catch (Exception e) {
-            throw new UserNotFoundException("해당 게시글이 존재하지 않습니다.");
+            throw new BoardNotFoundException("해당 게시글이 존재하지 않습니다.");
         }
 
         return allByBoardId;
@@ -68,7 +69,11 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long id) {
-        commentRepository.deleteById(id);
+        try {
+            commentRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new CommentNotFoundException("해당 댓글을 찾을 수 없습니다.");
+        }
     }
 
     public List<Comment> retrieveAllOwnComment(Long id) {
