@@ -1,5 +1,6 @@
 package com.example.boardapi.domain;
 
+import com.example.boardapi.domain.enumtype.BoardType;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,6 +30,9 @@ public class Board {
     private String title;
 
     private String content;
+
+    @Enumerated(EnumType.STRING)
+    private BoardType boardType;
 
     @CreatedDate
     private LocalDateTime createdDate;

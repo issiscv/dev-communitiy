@@ -19,10 +19,6 @@ public class MemberRetrieveResponseDto {
     @NotBlank
     private String loginId;
 
-    @ApiModelProperty(required = true, value = "회원 비밀번호", example = "qwer123")
-    @NotBlank
-    private String password;
-
     @ApiModelProperty(required = true, value = "회원 이름", example = "홍길동")
     @NotBlank
     private String name;

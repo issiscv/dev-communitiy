@@ -6,6 +6,8 @@ import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +46,10 @@ public class BoardService {
      */
     public List<Board> retrieveAll() {
         return boardRepository.findAll();
+    }
+
+    public Page<Board> retrieveAllWithPaging(Pageable pageable) {
+        return boardRepository.findAllWithPaging(pageable);
     }
 
     /**

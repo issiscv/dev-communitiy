@@ -5,12 +5,11 @@ import com.example.boardapi.domain.Comment;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
-import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveOneResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
+import com.example.boardapi.dto.board.response.*;
 import com.example.boardapi.dto.comment.request.CommentCreateRequestDto;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
+import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
@@ -19,6 +18,9 @@ import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -75,7 +77,7 @@ public class BoardController {
         return ResponseEntity.created(uri).body(boardCreateResponseDto);
     }
 
-    //단건 조회 GET
+    //단건 조회 및 자세한 조회(댓글 까지) GET
     @ApiOperation(value = "게시글 단건 조회", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 조회합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "게시글 조회 성공"),
@@ -121,20 +123,35 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
     })
     @GetMapping("")
-    public ResponseEntity<List<BoardRetrieveOneResponseDto>> retrieveAllBoard() {
+    public ResponseEntity<BoardRetrieveAllPagingResponseDto> retrieveAllBoard(
+            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page) {
 
-        List<Board> boards = boardService.retrieveAll();
+        int num = 0;
 
-        //회원가입 응답 DTO 를 재사용
-        //fetch 조인 필요
-        List<BoardRetrieveOneResponseDto> boardRetrieveOneResponseDtoList = boards.stream().map(board -> {
-            BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
-            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-            return boardRetrieveOneResponseDto;
+        if (page != null) {
+            num = page - 1;
+        }
+        
+        //페이징 기준
+        PageRequest pageRequest = PageRequest.of(num, 2, Sort.by(Sort.Direction.DESC, "createdDate"));
+        //페이징 방식 대로 조회
+        Page<Board> boardPage = boardService.retrieveAllWithPaging(pageRequest);
+        //총 페이지 수
+        int totalPages = boardPage.getTotalPages();
+        //해당 페이지의 컨텐트들
+        List<Board> content = boardPage.getContent();
+
+        List<BoardRetrieveOneResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
+                    BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
+                    boardRetrieveOneResponseDto.setAuthor(board.getCreatedBy());
+                    return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());
 
-        return ResponseEntity.ok().body(boardRetrieveOneResponseDtoList);
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
+                new BoardRetrieveAllPagingResponseDto(num+1, totalPages, boardRetrieveOneResponseDtoList);
+
+        return ResponseEntity.ok().body(boardRetrieveAllPagingResponseDto);
     }
     
     //수정 PUT
@@ -146,20 +163,20 @@ public class BoardController {
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
     @PutMapping("/{boardId}")
-    public ResponseEntity<BoardCreateResponseDto> editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid
+    public ResponseEntity<BoardEditResponseDto> editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid
                                                 BoardEditRequestDto boardEditRequestDto,
                                     @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
 
         Board board = boardService.editBoard(boardId, boardEditRequestDto);
 
-        BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(board, BoardCreateResponseDto.class);
-        boardCreateResponseDto.setAuthor(board.getMember().getName());
+        BoardEditResponseDto boardEditResponseDto = modelMapper.map(board, BoardEditResponseDto.class);
+        boardEditResponseDto.setAuthor(board.getMember().getName());
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(board.getId()).toUri();
 
-        return ResponseEntity.created(uri).body(boardCreateResponseDto);
+        return ResponseEntity.created(uri).body(boardEditResponseDto);
     }
 
 
@@ -230,7 +247,7 @@ public class BoardController {
             @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
     @PutMapping("/{boardId}/comments/{commentId}")
-    public ResponseEntity<CommentCreateResponseDto> editComment(@ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
+    public ResponseEntity<CommentEditResponseDto> editComment(@ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
                                       @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
                                       @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
         //게시글이 존재하는지 검사
@@ -239,24 +256,23 @@ public class BoardController {
         //댓글 수정
         Comment comment = commentService.editComment(commentId, commentEditRequestDto);
 
-        CommentCreateResponseDto commentCreateResponseDto = modelMapper.map(comment, CommentCreateResponseDto.class);
-        commentCreateResponseDto.setAuthor(comment.getMember().getName());
-        commentCreateResponseDto.setBoardId(boardId);
+        CommentEditResponseDto commentEditResponseDto = modelMapper.map(comment, CommentEditResponseDto.class);
+        commentEditResponseDto.setAuthor(comment.getMember().getName());
+        commentEditResponseDto.setBoardId(boardId);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .build()
                 .toUri();
 
-        return ResponseEntity.created(uri).body(commentCreateResponseDto);
+        return ResponseEntity.created(uri).body(commentEditResponseDto);
     }
 
     //댓글 삭제
     @ApiOperation(value = "게시글의 댓글 삭제", notes = "게시글의 댓글을 삭제합니다.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "댓글 수정을 완료했습니다."),
+            @ApiResponse(code = 200, message = "댓글 삭제를 완료했습니다."),
             @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
             @ApiResponse(code = 401, message = "토큰 검증 실패"),
-            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
     })
     @DeleteMapping("/{boardId}/comments/{commentId}")
     public ResponseEntity deleteComment(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
