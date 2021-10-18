@@ -1,6 +1,7 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Board;
+import com.example.boardapi.domain.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.repository.BoardRepository;
@@ -48,8 +49,16 @@ public class BoardService {
         return boardRepository.findAll();
     }
 
-    public Page<Board> retrieveAllWithPaging(Pageable pageable) {
-        return boardRepository.findAllWithPaging(pageable);
+    public Page<Board> retrieveAllWithPagingByType(Pageable pageable, String type) {
+        Page<Board> allWithPaging = null;
+        if (type.equals("free")) {
+            allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.FREE);
+        } else if (type.equals("qna")) {
+            allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.QNA);
+        } else if (type.equals("tech")) {
+            allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.TECH);
+        }
+        return allWithPaging;
     }
 
     /**

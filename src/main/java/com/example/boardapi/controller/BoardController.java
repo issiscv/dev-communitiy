@@ -3,6 +3,7 @@ package com.example.boardapi.controller;
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.domain.Member;
+import com.example.boardapi.domain.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.*;
@@ -11,6 +12,7 @@ import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
+import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
@@ -55,7 +57,7 @@ public class BoardController {
     })
     @PostMapping("")
     public ResponseEntity<BoardCreateResponseDto> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
-                                      HttpServletRequest request) {
+                                      @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam(required = true) String type, HttpServletRequest request) {
         //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
         String token = jwtTokenProvider.resolveToken(request);
         Member member = jwtTokenProvider.getMember(token);
@@ -63,6 +65,18 @@ public class BoardController {
         //DTO 를 Board 엔티티로 매핑 하고 저장
         Board mappedBoard = modelMapper.map(boardCreateRequestDto, Board.class);
         mappedBoard.setMember(member);
+
+        //쿼리스트링에 맞게 엔티티에 매핑
+        if (type.equals("free")) {
+            mappedBoard.setBoardType(BoardType.FREE);
+        } else if (type.equals("qna")) {
+            mappedBoard.setBoardType(BoardType.QNA);
+        } else if (type.equals("tech")) {
+            mappedBoard.setBoardType(BoardType.TECH);
+        } else {
+            throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
+        }
+
         Board savedBoard = boardService.save(mappedBoard);
 
         //응답 DTO
@@ -124,7 +138,8 @@ public class BoardController {
     })
     @GetMapping("")
     public ResponseEntity<BoardRetrieveAllPagingResponseDto> retrieveAllBoard(
-            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page) {
+            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
+            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
 
         int num = 0;
 
@@ -135,7 +150,7 @@ public class BoardController {
         //페이징 기준
         PageRequest pageRequest = PageRequest.of(num, 2, Sort.by(Sort.Direction.DESC, "createdDate"));
         //페이징 방식 대로 조회
-        Page<Board> boardPage = boardService.retrieveAllWithPaging(pageRequest);
+        Page<Board> boardPage = boardService.retrieveAllWithPagingByType(pageRequest, type);
         //총 페이지 수
         int totalPages = boardPage.getTotalPages();
         //해당 페이지의 컨텐트들

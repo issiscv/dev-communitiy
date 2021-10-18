@@ -58,5 +58,7 @@ public class Board {
         this.content = content;
     }
 
-
+    public void setBoardType(BoardType boardType) {
+        this.boardType = boardType;
+    }
 }

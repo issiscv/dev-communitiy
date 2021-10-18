@@ -1,10 +1,7 @@
 package com.example.boardapi.exception.ExceptionController;
 
-import com.example.boardapi.exception.exception.BoardNotFoundException;
-import com.example.boardapi.exception.exception.CommentNotFoundException;
-import com.example.boardapi.exception.exception.DuplicateLoginIdException;
+import com.example.boardapi.exception.exception.*;
 import com.example.boardapi.exception.ErrorResult;
-import com.example.boardapi.exception.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +18,15 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 @Slf4j
 public class ErrorController extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler
+    public ResponseEntity notValidQueryStringExceptionHandler(NotValidQueryStringException ex, WebRequest request) {
+        log.info("exception = {}", ex.getMessage());
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
 
     //사용자를 못찾았을 때
     @ExceptionHandler
