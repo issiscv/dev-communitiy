@@ -4,6 +4,7 @@ import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
+import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,8 @@ public class BoardService {
             allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.QNA);
         } else if (type.equals("tech")) {
             allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.TECH);
+        } else {
+            throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
         }
         return allWithPaging;
     }
