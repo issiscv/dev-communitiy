@@ -24,6 +24,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,10 +33,15 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,7 +65,7 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PostMapping("")
-    public ResponseEntity<BoardCreateResponseDto> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
+    public ResponseEntity<EntityModel<BoardCreateResponseDto>> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
                                       @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam(required = true) String type, HttpServletRequest request) {
         //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
         String token = jwtTokenProvider.resolveToken(request);
@@ -89,8 +96,26 @@ public class BoardController {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(savedBoard.getId()).toUri();
+        //profile 주소를 hateoas에 추가를 위해 ip 주소를 가져온다.
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
 
-        return ResponseEntity.created(uri).body(boardCreateResponseDto);
+        //hateoas 기능 추가
+        EntityModel<BoardCreateResponseDto> model = EntityModel.of(boardCreateResponseDto);
+        WebMvcLinkBuilder self =
+                linkTo(methodOn(this.getClass()).createBoard(new BoardCreateRequestDto(), "qna", request));
+        WebMvcLinkBuilder retrieve = linkTo(methodOn(this.getClass()).retrieveBoard(savedBoard.getId()));
+
+        model.add(self.withSelfRel());
+        model.add(retrieve.withRel("게시글 조회"));
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.created(uri).body(model);
     }
 
     //단건 조회 및 자세한 조회(댓글 까지) GET
@@ -100,7 +125,7 @@ public class BoardController {
             @ApiResponse(code = 400, message = "존재하지 않는 게시글입니다."),
     })
     @GetMapping("/{boardId}")
-    public ResponseEntity<BoardRetrieveResponseDto> retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId) {
+    public ResponseEntity<EntityModel<BoardRetrieveResponseDto>> retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId) {
         
         //해당 PK 에 해당하는 게시판 엔티티 조회 및 게시글 조회 검증
         Board board = boardService.retrieveOne(boardId);
@@ -128,7 +153,25 @@ public class BoardController {
         //응답 시 필드 명이 author 이므로 따로 세팅한다.
         boardRetrieveResponseDto.setAuthor(board.getMember().getName());
         boardRetrieveResponseDto.setComments(commentResponseDtoList);
-        return ResponseEntity.ok().body(boardRetrieveResponseDto);
+
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<BoardRetrieveResponseDto> model = EntityModel.of(boardRetrieveResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveBoard(boardId));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+
+        return ResponseEntity.ok().body(model);
     }
 
     //전체 조회 GET
@@ -137,14 +180,17 @@ public class BoardController {
             @ApiResponse(code = 200, message = "게시글 전체 조회 성공"),
     })
     @GetMapping("")
-    public ResponseEntity<BoardRetrieveAllPagingResponseDto> retrieveAllBoard(
+    public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoard(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
             @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
-
+        //몇 번 페이지를 찾을지 쿼리를 날리기 위한 변수
         int num = 0;
 
         if (page != null) {
             num = page - 1;
+        } else {
+            //쿼리스트링이 없을 경우 1로 초기화
+            page = 1;
         }
         
         //페이징 기준
@@ -169,7 +215,33 @@ public class BoardController {
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
                 new BoardRetrieveAllPagingResponseDto(num+1, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
 
-        return ResponseEntity.ok().body(boardRetrieveAllPagingResponseDto);
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoard(page, type));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        //페이징 hateoas 를 위한 로직이다.
+        if (page > 1) {
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoard(page - 1, type));
+            model.add(prev.withRel("이전"));
+        }
+        if (page < totalPages) {
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoard(page + 1, type));
+            model.add(next.withRel("다음"));
+        }
+
+        return ResponseEntity.ok().body(model);
     }
     
     //수정 PUT
@@ -180,7 +252,7 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
     })
     @PutMapping("/{boardId}")
-    public ResponseEntity<BoardEditResponseDto> editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid
+    public ResponseEntity<EntityModel<BoardEditResponseDto>> editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid
                                                 BoardEditRequestDto boardEditRequestDto,
                                     @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
 
@@ -193,7 +265,24 @@ public class BoardController {
                 .path("/{id}")
                 .buildAndExpand(board.getId()).toUri();
 
-        return ResponseEntity.created(uri).body(boardEditResponseDto);
+
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<BoardEditResponseDto> model = EntityModel.of(boardEditResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editBoard(boardEditRequestDto, boardId));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.created(uri).body(model);
     }
 
 
@@ -208,7 +297,7 @@ public class BoardController {
     public ResponseEntity deleteBoard(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
         boardService.deleteBoard(boardId);
 
-        return new ResponseEntity("게시글 삭제 완료", HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -223,7 +312,7 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PostMapping("/{boardId}/comments")
-    public ResponseEntity<CommentCreateResponseDto> createComment(@RequestBody @Valid @ApiParam(value = "댓글 DTO", required = true) CommentCreateRequestDto commentCreateRequestDto,
+    public ResponseEntity<EntityModel<CommentCreateResponseDto>> createComment(@RequestBody @Valid @ApiParam(value = "댓글 DTO", required = true) CommentCreateRequestDto commentCreateRequestDto,
                                         @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
         //글쓴이의 정보(토큰의 정보)
@@ -250,8 +339,27 @@ public class BoardController {
                 .path("/{id}")
                 .buildAndExpand(saveComment.getId())
                 .toUri();
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
 
-        return ResponseEntity.created(uri).body(commentResponseDto);
+        //hateoas 기능 추가
+        EntityModel<CommentCreateResponseDto> model = EntityModel.of(commentResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).createComment(commentCreateRequestDto, boardId, request));
+        WebMvcLinkBuilder boardLink = linkTo(methodOn(this.getClass()).retrieveBoard(boardId));
+
+        //self
+        model.add(self.withSelfRel());
+        //profile
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+        //게시글
+        model.add(boardLink.withRel("게시글"));
+        return ResponseEntity.created(uri).body(model);
     }
 
     //댓글 수정
@@ -262,7 +370,7 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PutMapping("/{boardId}/comments/{commentId}")
-    public ResponseEntity<CommentEditResponseDto> editComment(@ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
+    public ResponseEntity<EntityModel<CommentEditResponseDto>> editComment(@ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
                                       @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
                                       @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
         //게시글이 존재하는지 검사
@@ -279,7 +387,24 @@ public class BoardController {
                 .build()
                 .toUri();
 
-        return ResponseEntity.created(uri).body(commentEditResponseDto);
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<CommentEditResponseDto> model = EntityModel.of(commentEditResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editComment(commentEditRequestDto, boardId, commentId));
+
+        //self
+        model.add(self.withSelfRel());
+        //profile
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.created(uri).body(model);
     }
 
     //댓글 삭제
@@ -297,6 +422,6 @@ public class BoardController {
         //삭제
         commentService.deleteComment(commentId);
 
-        return new ResponseEntity("댓글 삭제 완료입니다.", HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 }
