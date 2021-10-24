@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.example.boardapi.BoardApiApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2021-10-22T13:00:28" hostname="DESKTOP-F55RK1N" time="0.146">
+<testsuite name="com.example.boardapi.BoardApiApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2021-10-24T08:44:43" hostname="DESKTOP-F55RK1N" time="0.176">
   <properties/>
-  <testcase name="contextLoads()" classname="com.example.boardapi.BoardApiApplicationTests" time="0.146"/>
-  <system-out><![CDATA[22:00:16.875 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating CacheAwareContextLoaderDelegate from class [org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate]
-22:00:16.893 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating BootstrapContext using constructor [public org.springframework.test.context.support.DefaultBootstrapContext(java.lang.Class,org.springframework.test.context.CacheAwareContextLoaderDelegate)]
-22:00:16.932 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating TestContextBootstrapper for test class [com.example.boardapi.BoardApiApplicationTests] from class [org.springframework.boot.test.context.SpringBootTestContextBootstrapper]
-22:00:16.946 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.example.boardapi.BoardApiApplicationTests], using SpringBootContextLoader
-22:00:16.951 [Test worker] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [com.example.boardapi.BoardApiApplicationTests]: class path resource [com/example/boardapi/BoardApiApplicationTests-context.xml] does not exist
-22:00:16.952 [Test worker] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [com.example.boardapi.BoardApiApplicationTests]: class path resource [com/example/boardapi/BoardApiApplicationTestsContext.groovy] does not exist
-22:00:16.952 [Test worker] INFO org.springframework.test.context.support.AbstractContextLoader - Could not detect default resource locations for test class [com.example.boardapi.BoardApiApplicationTests]: no resource found for suffixes {-context.xml, Context.groovy}.
-22:00:16.953 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.example.boardapi.BoardApiApplicationTests]: BoardApiApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-22:00:17.018 [Test worker] DEBUG org.springframework.test.context.support.ActiveProfilesUtils - Could not find an 'annotation declaring class' for annotation type [org.springframework.test.context.ActiveProfiles] and class [com.example.boardapi.BoardApiApplicationTests]
-22:00:17.124 [Test worker] DEBUG org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider - Identified candidate component class: file [D:\springStudy\board-api\board-api\build\classes\java\main\com\example\boardapi\BoardApiApplication.class]
-22:00:17.127 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.example.boardapi.BoardApiApplication for test class com.example.boardapi.BoardApiApplicationTests
-22:00:17.258 [Test worker] DEBUG org.springframework.boot.test.context.SpringBootTestContextBootstrapper - @TestExecutionListeners is not present for class [com.example.boardapi.BoardApiApplicationTests]: using defaults.
-22:00:17.259 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
-22:00:17.293 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@1e255668, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@224721dc, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@51ba4fb6, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@7741f2ad, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@43636c3b, org.springframework.test.context.support.DirtiesContextTestExecutionListener@58b1ec4a, org.springframework.test.context.transaction.TransactionalTestExecutionListener@5bf5cf15, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@23d98a5c, org.springframework.test.context.event.EventPublishingTestExecutionListener@7b8328a8, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@2c07582e, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@597fa7dc, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@369b4dc5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@54bfe5d6, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@42ef1147, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@660a1f81]
-22:00:17.297 [Test worker] DEBUG org.springframework.test.context.support.AbstractDirtiesContextTestExecutionListener - Before test class: context [DefaultTestContext@2b184f72 testClass = BoardApiApplicationTests, testInstance = [null], testMethod = [null], testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@16c4a4b2 testClass = BoardApiApplicationTests, locations = '{}', classes = '{class com.example.boardapi.BoardApiApplication}', contextInitializerClasses = '[]', activeProfiles = '{}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[org.springframework.boot.test.autoconfigure.actuate.metrics.MetricsExportContextCustomizerFactory$DisableMetricExportContextCustomizer@71b8db9e, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@753ca35e, org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@37096d43, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@71f0b6ef, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@6d48a6c6, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@4d5af34e], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true]], class annotated with @DirtiesContext [false] with mode [null].
-22:00:17.331 [Test worker] DEBUG org.springframework.test.context.support.TestPropertySourceUtils - Adding inlined properties to environment: {spring.jmx.enabled=false, org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}
+  <testcase name="contextLoads()" classname="com.example.boardapi.BoardApiApplicationTests" time="0.176"/>
+  <system-out><![CDATA[17:44:31.824 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating CacheAwareContextLoaderDelegate from class [org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate]
+17:44:31.840 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating BootstrapContext using constructor [public org.springframework.test.context.support.DefaultBootstrapContext(java.lang.Class,org.springframework.test.context.CacheAwareContextLoaderDelegate)]
+17:44:31.887 [Test worker] DEBUG org.springframework.test.context.BootstrapUtils - Instantiating TestContextBootstrapper for test class [com.example.boardapi.BoardApiApplicationTests] from class [org.springframework.boot.test.context.SpringBootTestContextBootstrapper]
+17:44:31.905 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.example.boardapi.BoardApiApplicationTests], using SpringBootContextLoader
+17:44:31.914 [Test worker] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [com.example.boardapi.BoardApiApplicationTests]: class path resource [com/example/boardapi/BoardApiApplicationTests-context.xml] does not exist
+17:44:31.915 [Test worker] DEBUG org.springframework.test.context.support.AbstractContextLoader - Did not detect default resource location for test class [com.example.boardapi.BoardApiApplicationTests]: class path resource [com/example/boardapi/BoardApiApplicationTestsContext.groovy] does not exist
+17:44:31.915 [Test worker] INFO org.springframework.test.context.support.AbstractContextLoader - Could not detect default resource locations for test class [com.example.boardapi.BoardApiApplicationTests]: no resource found for suffixes {-context.xml, Context.groovy}.
+17:44:31.916 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.example.boardapi.BoardApiApplicationTests]: BoardApiApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+17:44:31.985 [Test worker] DEBUG org.springframework.test.context.support.ActiveProfilesUtils - Could not find an 'annotation declaring class' for annotation type [org.springframework.test.context.ActiveProfiles] and class [com.example.boardapi.BoardApiApplicationTests]
+17:44:32.079 [Test worker] DEBUG org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider - Identified candidate component class: file [D:\springStudy\dev-community-master\dev-community-master\back-end\board-api\build\classes\java\main\com\example\boardapi\BoardApiApplication.class]
+17:44:32.081 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.example.boardapi.BoardApiApplication for test class com.example.boardapi.BoardApiApplicationTests
+17:44:32.232 [Test worker] DEBUG org.springframework.boot.test.context.SpringBootTestContextBootstrapper - @TestExecutionListeners is not present for class [com.example.boardapi.BoardApiApplicationTests]: using defaults.
+17:44:32.233 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+17:44:32.266 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@31b2668, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@29286d9a, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@2fde0970, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@2237758e, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@78c52fc6, org.springframework.test.context.support.DirtiesContextTestExecutionListener@12ebd9f9, org.springframework.test.context.transaction.TransactionalTestExecutionListener@4d21c75d, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@54a35072, org.springframework.test.context.event.EventPublishingTestExecutionListener@549fe3f, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@4921cb7e, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@a79f628, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@441717d5, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@ee5a16e, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@49d8e1f7, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@cd59652]
+17:44:32.271 [Test worker] DEBUG org.springframework.test.context.support.AbstractDirtiesContextTestExecutionListener - Before test class: context [DefaultTestContext@1cd59dc5 testClass = BoardApiApplicationTests, testInstance = [null], testMethod = [null], testException = [null], mergedContextConfiguration = [WebMergedContextConfiguration@3c22f5ae testClass = BoardApiApplicationTests, locations = '{}', classes = '{class com.example.boardapi.BoardApiApplication}', contextInitializerClasses = '[]', activeProfiles = '{}', propertySourceLocations = '{}', propertySourceProperties = '{org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}', contextCustomizers = set[org.springframework.boot.test.autoconfigure.actuate.metrics.MetricsExportContextCustomizerFactory$DisableMetricExportContextCustomizer@3605bb66, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizerFactory$Customizer@22e1d9ba, org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@1c812a41, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@5e505784, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@17e29707, org.springframework.boot.test.context.SpringBootTestArgs@1, org.springframework.boot.test.context.SpringBootTestWebEnvironment@1768ccb], resourceBasePath = 'src/main/webapp', contextLoader = 'org.springframework.boot.test.context.SpringBootContextLoader', parent = [null]], attributes = map['org.springframework.test.context.web.ServletTestExecutionListener.activateListener' -> true]], class annotated with @DirtiesContext [false] with mode [null].
+17:44:32.313 [Test worker] DEBUG org.springframework.test.context.support.TestPropertySourceUtils - Adding inlined properties to environment: {spring.jmx.enabled=false, org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true}
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -27,22 +27,22 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v2.5.5)
 
-2021-10-22 22:00:17.773  INFO 18088 --- [    Test worker] c.e.boardapi.BoardApiApplicationTests    : Starting BoardApiApplicationTests using Java 11.0.9 on DESKTOP-F55RK1N with PID 18088 (started by ksw in D:\springStudy\board-api\board-api)
-2021-10-22 22:00:17.777  INFO 18088 --- [    Test worker] c.e.boardapi.BoardApiApplicationTests    : No active profile set, falling back to default profiles: default
-2021-10-22 22:00:19.330  INFO 18088 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2021-10-22 22:00:19.456  INFO 18088 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 113 ms. Found 3 JPA repository interfaces.
-2021-10-22 22:00:20.702  INFO 18088 --- [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2021-10-22 22:00:20.807  INFO 18088 --- [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.4.32.Final
-2021-10-22 22:00:21.101  INFO 18088 --- [    Test worker] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-2021-10-22 22:00:21.332  INFO 18088 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2021-10-22 22:00:21.763  INFO 18088 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2021-10-22 22:00:21.827  INFO 18088 --- [    Test worker] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
-2021-10-22 22:00:22.822 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:32.835  INFO 19540 --- [    Test worker] c.e.boardapi.BoardApiApplicationTests    : Starting BoardApiApplicationTests using Java 11.0.9 on DESKTOP-F55RK1N with PID 19540 (started by ksw in D:\springStudy\dev-community-master\dev-community-master\back-end\board-api)
+2021-10-24 17:44:32.839  INFO 19540 --- [    Test worker] c.e.boardapi.BoardApiApplicationTests    : No active profile set, falling back to default profiles: default
+2021-10-24 17:44:34.561  INFO 19540 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2021-10-24 17:44:34.684  INFO 19540 --- [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 112 ms. Found 3 JPA repository interfaces.
+2021-10-24 17:44:35.770  INFO 19540 --- [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2021-10-24 17:44:35.850  INFO 19540 --- [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.4.32.Final
+2021-10-24 17:44:36.098  INFO 19540 --- [    Test worker] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
+2021-10-24 17:44:36.306  INFO 19540 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2021-10-24 17:44:37.030  INFO 19540 --- [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2021-10-24 17:44:37.186  INFO 19540 --- [    Test worker] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.MySQL8Dialect
+2021-10-24 17:44:39.123 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table board 
        drop 
        foreign key FKsds8ox89wwf6aihinar49rmfy
-2021-10-22 22:00:22.865  INFO 18088 --- [    Test worker] p6spy                                    : #1634907622865 | took 38ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.185  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079185 | took 58ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table board 
        drop 
@@ -51,12 +51,12 @@
     alter table board 
        drop 
        foreign key FKsds8ox89wwf6aihinar49rmfy;
-2021-10-22 22:00:22.866 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.186 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table comment 
        drop 
        foreign key FKlij9oor1nav89jeat35s6kbp1
-2021-10-22 22:00:22.906  INFO 18088 --- [    Test worker] p6spy                                    : #1634907622906 | took 40ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.208  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079208 | took 20ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table comment 
        drop 
@@ -65,12 +65,12 @@
     alter table comment 
        drop 
        foreign key FKlij9oor1nav89jeat35s6kbp1;
-2021-10-22 22:00:22.907 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.209 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table comment 
        drop 
        foreign key FKmrrrpi513ssu63i2783jyiv9m
-2021-10-22 22:00:22.923  INFO 18088 --- [    Test worker] p6spy                                    : #1634907622923 | took 15ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.233  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079233 | took 22ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table comment 
        drop 
@@ -79,12 +79,12 @@
     alter table comment 
        drop 
        foreign key FKmrrrpi513ssu63i2783jyiv9m;
-2021-10-22 22:00:22.924 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.234 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table member_roles 
        drop 
        foreign key FKruptm2dtwl95mfks4bnhv828k
-2021-10-22 22:00:22.943  INFO 18088 --- [    Test worker] p6spy                                    : #1634907622943 | took 18ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.247  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079247 | took 12ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table member_roles 
        drop 
@@ -93,52 +93,52 @@
     alter table member_roles 
        drop 
        foreign key FKruptm2dtwl95mfks4bnhv828k;
-2021-10-22 22:00:22.944 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.248 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     drop table if exists board
-2021-10-22 22:00:22.988  INFO 18088 --- [    Test worker] p6spy                                    : #1634907622988 | took 43ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.273  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079273 | took 24ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     drop table if exists board
 
     drop table if exists board;
-2021-10-22 22:00:22.990 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.274 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     drop table if exists comment
-2021-10-22 22:00:23.012  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623012 | took 21ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.313  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079313 | took 39ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     drop table if exists comment
 
     drop table if exists comment;
-2021-10-22 22:00:23.012 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.314 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     drop table if exists hibernate_sequence
-2021-10-22 22:00:23.050  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623050 | took 37ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.332  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079332 | took 17ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     drop table if exists hibernate_sequence
 
     drop table if exists hibernate_sequence;
-2021-10-22 22:00:23.050 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.333 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     drop table if exists member
-2021-10-22 22:00:23.078  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623078 | took 27ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.350  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079350 | took 16ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     drop table if exists member
 
     drop table if exists member;
-2021-10-22 22:00:23.079 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.351 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     drop table if exists member_roles
-2021-10-22 22:00:23.111  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623111 | took 31ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.380  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079380 | took 28ms | statement | connection 1| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     drop table if exists member_roles
 
     drop table if exists member_roles;
-2021-10-22 22:00:23.115 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.385 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     create table board (
        board_id bigint not null,
         board_type varchar(255),
-        content varchar(255),
+        content TEXT,
         created_by varchar(255),
         created_date datetime(6),
         last_modified_by varchar(255),
@@ -147,12 +147,12 @@
         member_id bigint,
         primary key (board_id)
     ) engine=InnoDB
-2021-10-22 22:00:23.163  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623163 | took 48ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.426  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079426 | took 40ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     create table board (
        board_id bigint not null,
         board_type varchar(255),
-        content varchar(255),
+        content TEXT,
         created_by varchar(255),
         created_date datetime(6),
         last_modified_by varchar(255),
@@ -165,7 +165,7 @@
     create table board (
        board_id bigint not null,
         board_type varchar(255),
-        content varchar(255),
+        content TEXT,
         created_by varchar(255),
         created_date datetime(6),
         last_modified_by varchar(255),
@@ -174,7 +174,7 @@
         member_id bigint,
         primary key (board_id)
     ) engine=InnoDB;
-2021-10-22 22:00:23.165 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.428 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     create table comment (
        comment_id bigint not null,
@@ -187,7 +187,7 @@
         member_id bigint,
         primary key (comment_id)
     ) engine=InnoDB
-2021-10-22 22:00:23.205  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623205 | took 39ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.464  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079464 | took 35ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     create table comment (
        comment_id bigint not null,
@@ -212,12 +212,12 @@
         member_id bigint,
         primary key (comment_id)
     ) engine=InnoDB;
-2021-10-22 22:00:23.206 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.465 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     create table hibernate_sequence (
        next_val bigint
     ) engine=InnoDB
-2021-10-22 22:00:23.258  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623258 | took 51ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.495  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079495 | took 30ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     create table hibernate_sequence (
        next_val bigint
@@ -226,15 +226,15 @@
     create table hibernate_sequence (
        next_val bigint
     ) engine=InnoDB;
-2021-10-22 22:00:23.259 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.496 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     insert into hibernate_sequence values ( 1 )
-2021-10-22 22:00:23.264  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623264 | took 4ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.501  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079501 | took 4ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     insert into hibernate_sequence values ( 1 )
 
     insert into hibernate_sequence values ( 1 );
-2021-10-22 22:00:23.265 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.502 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     create table member (
        member_id bigint not null,
@@ -249,7 +249,7 @@
         zipcode varchar(255),
         primary key (member_id)
     ) engine=InnoDB
-2021-10-22 22:00:23.312  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623312 | took 47ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.534  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079534 | took 31ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     create table member (
        member_id bigint not null,
@@ -278,13 +278,13 @@
         zipcode varchar(255),
         primary key (member_id)
     ) engine=InnoDB;
-2021-10-22 22:00:23.314 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.536 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     create table member_roles (
        member_member_id bigint not null,
         roles varchar(255)
     ) engine=InnoDB
-2021-10-22 22:00:23.354  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623354 | took 39ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.565  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079565 | took 29ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     create table member_roles (
        member_member_id bigint not null,
@@ -295,13 +295,13 @@
        member_member_id bigint not null,
         roles varchar(255)
     ) engine=InnoDB;
-2021-10-22 22:00:23.355 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.567 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table board 
        add constraint FKsds8ox89wwf6aihinar49rmfy 
        foreign key (member_id) 
        references member (member_id)
-2021-10-22 22:00:23.501  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623501 | took 145ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.654  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079654 | took 86ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table board 
        add constraint FKsds8ox89wwf6aihinar49rmfy 
@@ -312,13 +312,13 @@
        add constraint FKsds8ox89wwf6aihinar49rmfy 
        foreign key (member_id) 
        references member (member_id);
-2021-10-22 22:00:23.502 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.655 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table comment 
        add constraint FKlij9oor1nav89jeat35s6kbp1 
        foreign key (board_id) 
        references board (board_id)
-2021-10-22 22:00:23.616  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623616 | took 112ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.727  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079727 | took 71ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table comment 
        add constraint FKlij9oor1nav89jeat35s6kbp1 
@@ -329,13 +329,13 @@
        add constraint FKlij9oor1nav89jeat35s6kbp1 
        foreign key (board_id) 
        references board (board_id);
-2021-10-22 22:00:23.617 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.728 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table comment 
        add constraint FKmrrrpi513ssu63i2783jyiv9m 
        foreign key (member_id) 
        references member (member_id)
-2021-10-22 22:00:23.762  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623762 | took 145ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.827  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079827 | took 98ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table comment 
        add constraint FKmrrrpi513ssu63i2783jyiv9m 
@@ -346,13 +346,13 @@
        add constraint FKmrrrpi513ssu63i2783jyiv9m 
        foreign key (member_id) 
        references member (member_id);
-2021-10-22 22:00:23.763 DEBUG 18088 --- [    Test worker] org.hibernate.SQL                        : 
+2021-10-24 17:44:39.828 DEBUG 19540 --- [    Test worker] org.hibernate.SQL                        : 
     
     alter table member_roles 
        add constraint FKruptm2dtwl95mfks4bnhv828k 
        foreign key (member_member_id) 
        references member (member_id)
-2021-10-22 22:00:23.870  INFO 18088 --- [    Test worker] p6spy                                    : #1634907623870 | took 106ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
+2021-10-24 17:44:39.975  INFO 19540 --- [    Test worker] p6spy                                    : #1635065079975 | took 146ms | statement | connection 2| url jdbc:mysql://localhost:3306/board?serverTimezone=UTC&characterEncoding=UTF-8
 
     alter table member_roles 
        add constraint FKruptm2dtwl95mfks4bnhv828k 
@@ -363,11 +363,11 @@
        add constraint FKruptm2dtwl95mfks4bnhv828k 
        foreign key (member_member_id) 
        references member (member_id);
-2021-10-22 22:00:23.873  INFO 18088 --- [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
-2021-10-22 22:00:23.884  INFO 18088 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2021-10-22 22:00:24.827  WARN 18088 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2021-10-22 22:00:26.103  INFO 18088 --- [    Test worker] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@f40c913, org.springframework.security.web.context.SecurityContextPersistenceFilter@5c5d9ea2, org.springframework.security.web.header.HeaderWriterFilter@647383d5, org.springframework.security.web.authentication.logout.LogoutFilter@5ee91e0e, com.example.boardapi.security.JWT.JwtAuthenticationFilter@2a421d84, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@63d85718, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@13adcf1c, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@552027a2, org.springframework.security.web.session.SessionManagementFilter@1a81483f, org.springframework.security.web.access.ExceptionTranslationFilter@5b89887b, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@105948f6]
-2021-10-22 22:00:28.099  INFO 18088 --- [    Test worker] c.e.boardapi.BoardApiApplicationTests    : Started BoardApiApplicationTests in 10.761 seconds (JVM running for 13.267)
+2021-10-24 17:44:39.979  INFO 19540 --- [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2021-10-24 17:44:39.996  INFO 19540 --- [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2021-10-24 17:44:40.932  WARN 19540 --- [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2021-10-24 17:44:42.133  INFO 19540 --- [    Test worker] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@618e301b, org.springframework.security.web.context.SecurityContextPersistenceFilter@7b4a1b2d, org.springframework.security.web.header.HeaderWriterFilter@4980bacd, org.springframework.security.web.authentication.logout.LogoutFilter@29cd062e, com.example.boardapi.security.JWT.JwtAuthenticationFilter@4a32cf87, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@38b55a89, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@4d188aa4, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@43038212, org.springframework.security.web.session.SessionManagementFilter@783f34ff, org.springframework.security.web.access.ExceptionTranslationFilter@34cc1ff9, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@5a385994]
+2021-10-24 17:44:43.923  INFO 19540 --- [    Test worker] c.e.boardapi.BoardApiApplicationTests    : Started BoardApiApplicationTests in 11.601 seconds (JVM running for 14.157)
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
