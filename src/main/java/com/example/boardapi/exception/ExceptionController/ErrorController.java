@@ -84,6 +84,6 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), "Validation Failed", ex.getBindingResult().toString());
 
-        return new ResponseEntity<>(errorResult, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
 }

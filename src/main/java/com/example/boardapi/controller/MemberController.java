@@ -23,6 +23,7 @@ import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -53,12 +54,11 @@ public class MemberController {
     @ApiOperation(value = "회원가입", notes = "MemberJoinRequestDto DTO 를 통해 회원가입을 진행합니다.")
     @ApiResponses({
             @ApiResponse(code = 201, message = "회원 가입 성공"),
-            @ApiResponse(code = 400, message = "중복된 아이디 입니다."),
-            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+            @ApiResponse(code = 400, message = "중복된 아이디 or 잘못된 요청 or 검증 실패")
     })
     @PostMapping("/members")
     public ResponseEntity<MemberJoinResponseDto> createMember(@ApiParam(value = "회원 객체 DTO", required = true) @RequestBody @Valid
-                                               MemberJoinRequestDto memberJoinRequestDto) {
+                                                                      MemberJoinRequestDto memberJoinRequestDto) {
 
         Member member = Member.builder()
                 .loginId(memberJoinRequestDto.getLoginId())
@@ -70,7 +70,7 @@ public class MemberController {
                 .zipcode(memberJoinRequestDto.getZipcode())
                 .password(passwordEncoder.encode(memberJoinRequestDto.getPassword()))
                 .roles(Collections.singletonList("ROLE_USER"))// 최초 가입시 USER 로 설정,
-                                                            // 단 한개의 객체만 저장 가능한 컬렉션을 만들고 싶을 때 사용한다.
+                // 단 한개의 객체만 저장 가능한 컬렉션을 만들고 싶을 때 사용한다.
                 .build();
 
         //회원 가입 저장
@@ -90,8 +90,7 @@ public class MemberController {
     @ApiOperation(value = "로그인", notes = "로그인에 성공 시 JWT 토큰이 발급됩니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "로그인 성공"),
-            @ApiResponse(code = 400, message = "로그인 실패"),
-            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+            @ApiResponse(code = 400, message = "로그인 실패 or 잘못된 요청 or 검증 실패")
     })
     @PostMapping("/members/login")
     public ResponseEntity<MemberLoginResponseDto> login(@ApiParam(value = "회원 가입 DTO", required = true) @RequestBody @Valid
@@ -115,7 +114,6 @@ public class MemberController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "회원 단건 조회 성공"),
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
-            @ApiResponse(code = 401, message = "토큰 검증 실패")
     })
     @GetMapping("/members/{memberId}")
     public ResponseEntity<MemberRetrieveResponseDto> retrieveMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
@@ -130,7 +128,6 @@ public class MemberController {
     @ApiOperation(value = "회원 전체 조회", notes = "회원의 전체를 조회합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "회원 전체 조회 성공"),
-            @ApiResponse(code = 401, message = "토큰 검증 실패")
     })
     @GetMapping("/members")
     public ResponseEntity<List<MemberRetrieveResponseDto>> retrieveAllMember() {
@@ -148,9 +145,8 @@ public class MemberController {
     @ApiOperation(value = "회원 정보 수정", notes = "회원의 정보를 수정합니다. 이름, 도시, 거리, 번지, 비밀번호를 꼭 널어주세요")
     @ApiResponses({
             @ApiResponse(code = 201, message = "회원 정보가 수정되었습니다."),
-            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
-            @ApiResponse(code = 401, message = "토큰 검증 실패"),
-            @ApiResponse(code = 403, message = "검증이 실패하였습니다.")
+            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다. or 검증 실패 or 잘못된 요청"),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PutMapping("/members/{memberId}")
     public ResponseEntity<MemberEditResponseDto> editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid
@@ -172,23 +168,21 @@ public class MemberController {
     //회원 탈퇴 api
     @ApiOperation(value = "회원 탈퇴", notes = "회원 탈퇴를 위해 회원의 PK를 경로 변수에 넣어주세요")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "성공적으로 회원 탈퇴가 되었습니다."),
+            @ApiResponse(code = 204, message = "성공적으로 회원 탈퇴가 되었습니다."),
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
-            @ApiResponse(code = 401, message = "토큰 검증 실패"),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
     })
     @DeleteMapping("/members/{memberId}")
     public ResponseEntity deleteMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
         memberService.deleteMember(memberId);
-        return ResponseEntity.ok("성공적으로 회원 탈퇴가 되었습니다.");
+        return new ResponseEntity("성공적으로 회원 탈퇴가 되었습니다.", HttpStatus.NO_CONTENT);
     }
 
     //특정 사용자가 작성한 게시글 조회
     @ApiOperation(value = "사용자가 작성한 모든 게시글 조회", notes = "회원의 모든 게시글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
     @ApiResponses({
             @ApiResponse(code = 200, message = "성공적으로 회원 사용자의 게시글을 조회하였습니다.."),
-            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
-            @ApiResponse(code = 401, message = "토큰 검증 실패"),
-            @ApiResponse(code = 403, message = "검증 실패"),
+            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다. or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/boards")
     public ResponseEntity<List<BoardRetrieveOneResponseDto>> retrieveAllOwnBoard(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
@@ -209,9 +203,7 @@ public class MemberController {
     @ApiOperation(value = "사용자가 작성한 모든 댓글 조회", notes = "회원의 모든 댓글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
     @ApiResponses({
             @ApiResponse(code = 200, message = "성공적으로 회원 사용자의 댓글 조회하였습니다.."),
-            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
-            @ApiResponse(code = 401, message = "토큰 검증 실패"),
-            @ApiResponse(code = 403, message = "검증 실패"),
+            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다 or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/comments")
     public ResponseEntity<List<CommentRetrieveResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
