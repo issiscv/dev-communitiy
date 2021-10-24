@@ -4,6 +4,7 @@ import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveOneResponseDto;
+import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
@@ -23,19 +24,29 @@ import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @Slf4j
@@ -57,7 +68,7 @@ public class MemberController {
             @ApiResponse(code = 400, message = "중복된 아이디 or 잘못된 요청 or 검증 실패")
     })
     @PostMapping("/members")
-    public ResponseEntity<MemberJoinResponseDto> createMember(@ApiParam(value = "회원 객체 DTO", required = true) @RequestBody @Valid
+    public ResponseEntity<EntityModel<MemberJoinResponseDto>> createMember(@ApiParam(value = "회원 객체 DTO", required = true) @RequestBody @Valid
                                                                       MemberJoinRequestDto memberJoinRequestDto) {
 
         Member member = Member.builder()
@@ -83,7 +94,25 @@ public class MemberController {
 
         MemberJoinResponseDto mappedResponseDto = modelMapper.map(joinMember, MemberJoinResponseDto.class);
 
-        return ResponseEntity.created(uri).body(mappedResponseDto);
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<MemberJoinResponseDto> model = EntityModel.of(mappedResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).createMember(memberJoinRequestDto));
+        WebMvcLinkBuilder login = linkTo(methodOn(this.getClass()).login(new MemberLoginRequestDto()));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+        model.add(login.withRel("로그인"));
+
+        return ResponseEntity.created(uri).body(model);
     }
 
     //로그인
@@ -93,7 +122,7 @@ public class MemberController {
             @ApiResponse(code = 400, message = "로그인 실패 or 잘못된 요청 or 검증 실패")
     })
     @PostMapping("/members/login")
-    public ResponseEntity<MemberLoginResponseDto> login(@ApiParam(value = "회원 가입 DTO", required = true) @RequestBody @Valid
+    public ResponseEntity<EntityModel<MemberLoginResponseDto>> login(@ApiParam(value = "회원 가입 DTO", required = true) @RequestBody @Valid
                                 MemberLoginRequestDto memberLoginRequestDto) {
         //아이디가 있는지 검증을 한다.
         Member member = memberRepository.findByLoginId(memberLoginRequestDto.getLoginId()).orElseThrow(
@@ -106,7 +135,24 @@ public class MemberController {
 
         String token = jwtTokenProvider.createToken(member.getLoginId(), member.getRoles());
         MemberLoginResponseDto memberLoginResponseDto = new MemberLoginResponseDto(token, member.getId());
-        return ResponseEntity.ok().body(memberLoginResponseDto);
+
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<MemberLoginResponseDto> model = EntityModel.of(memberLoginResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).login(memberLoginRequestDto));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.ok().body(model);
     }
 
     //단건 조회 api
@@ -116,12 +162,28 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다."),
     })
     @GetMapping("/members/{memberId}")
-    public ResponseEntity<MemberRetrieveResponseDto> retrieveMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity<EntityModel<MemberRetrieveResponseDto>> retrieveMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
         Member member = memberService.retrieveOne(memberId);
 
         MemberRetrieveResponseDto memberRetrieveResponseDto = modelMapper.map(member, MemberRetrieveResponseDto.class);
 
-        return ResponseEntity.ok(memberRetrieveResponseDto);
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<MemberRetrieveResponseDto> model = EntityModel.of(memberRetrieveResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveMember(memberId));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.ok(model);
     }
 
     //전체 조회 api
@@ -149,7 +211,7 @@ public class MemberController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PutMapping("/members/{memberId}")
-    public ResponseEntity<MemberEditResponseDto> editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid
+    public ResponseEntity<EntityModel<MemberEditResponseDto>> editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid
                                              MemberEditRequestDto memberEditRequestDto, @ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
 
         Member findMember = memberService.retrieveOne(memberId);
@@ -162,7 +224,23 @@ public class MemberController {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .build().toUri();
 
-        return ResponseEntity.created(uri).body(mappedResponseDto);
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        EntityModel<MemberEditResponseDto> model = EntityModel.of(mappedResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editMember(memberEditRequestDto, memberId));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.created(uri).body(model);
     }
 
     //회원 탈퇴 api
@@ -185,18 +263,41 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다. or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/boards")
-    public ResponseEntity<List<BoardRetrieveOneResponseDto>> retrieveAllOwnBoard(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity<CollectionModel<EntityModel<BoardRetrieveOneResponseDto>>> retrieveAllOwnBoard(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
 
         List<Board> boards = boardService.retrieveAllOwnBoard(memberId);
 
-        List<BoardRetrieveOneResponseDto> boardRetrieveOneResponseDtoList = boards.stream().map(board -> {
+        List<EntityModel<BoardRetrieveOneResponseDto>> list = new ArrayList<>();
+
+        for (Board board : boards) {
             BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
             boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    return boardRetrieveOneResponseDto;
-                }
-        ).collect(Collectors.toList());
 
-        return ResponseEntity.ok().body(boardRetrieveOneResponseDtoList);
+            EntityModel<BoardRetrieveOneResponseDto> model = EntityModel.of(boardRetrieveOneResponseDto);
+            WebMvcLinkBuilder boardLink = linkTo(methodOn(BoardController.class).retrieveBoard(board.getId()));
+
+            model.add(boardLink.withRel("게시글"));
+
+            list.add(model);
+        }
+
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        CollectionModel<EntityModel<BoardRetrieveOneResponseDto>> model = CollectionModel.of(list);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.ok().body(model);
     }
     
     //특정 사용자가 작성한 모든 댓글
@@ -206,7 +307,7 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다 or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/comments")
-    public ResponseEntity<List<CommentRetrieveResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity<CollectionModel<EntityModel<CommentRetrieveResponseDto>>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
         
         //해당 유저가 존재하는지 검증을 위해 조회를 해본다.
         memberService.retrieveOne(memberId);
@@ -214,7 +315,7 @@ public class MemberController {
         //회원의 댓글
         List<Comment> comments = commentService.retrieveAllOwnComment(memberId);
 
-        List<CommentRetrieveResponseDto> commentRetrieveResponseDtoList = new ArrayList<>();
+        List<EntityModel<CommentRetrieveResponseDto>> list = new ArrayList<>();
 
         for (Comment comment : comments) {
             CommentRetrieveResponseDto commentRetrieveResponseDto =
@@ -223,9 +324,29 @@ public class MemberController {
             commentRetrieveResponseDto.setAuthor(comment.getMember().getName());
             commentRetrieveResponseDto.setBoardId(comment.getBoard().getId());
 
-            commentRetrieveResponseDtoList.add(commentRetrieveResponseDto);
+            EntityModel<CommentRetrieveResponseDto> model = EntityModel.of(commentRetrieveResponseDto);
+            WebMvcLinkBuilder boardLink = linkTo(methodOn(BoardController.class).retrieveBoard(comment.getBoard().getId()));
+            model.add(boardLink.withRel("게시글"));
+
+            list.add(model);
         }
 
-        return ResponseEntity.ok().body(commentRetrieveResponseDtoList);
+        //ip
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        //hateoas 기능 추가
+        CollectionModel<EntityModel<CommentRetrieveResponseDto>> model = CollectionModel.of(list);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.ok().body(model);
     }
 }
