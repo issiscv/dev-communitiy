@@ -13,6 +13,7 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter @Setter
+@ApiModel(description = "회원 조회 응답 DTO")
 public class MemberRetrieveResponseDto {
 
     @ApiModelProperty(required = true, value = "회원 아이디", example = "jisoo")
@@ -35,7 +36,7 @@ public class MemberRetrieveResponseDto {
     @NotBlank
     private String street;
 
-    @ApiModelProperty(required = true, value = "회원의 번지", example = "태헤란로")
+    @ApiModelProperty(required = true, value = "회원의 번지", example = "태헤란로7가길 2")
     @NotBlank
     private String zipcode;
 }
