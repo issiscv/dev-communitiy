@@ -17,26 +17,14 @@ import javax.validation.constraints.NotNull;
 public class MemberRetrieveResponseDto {
 
     @ApiModelProperty(required = true, value = "회원 아이디", example = "jisoo")
-    @NotBlank
     private String loginId;
 
     @ApiModelProperty(required = true, value = "회원 이름", example = "홍길동")
-    @NotBlank
     private String name;
 
     @ApiModelProperty(required = true, value = "회원 나이", example = "24")
-    @NotNull
     private int age;
 
-    @ApiModelProperty(required = true, value = "회원의 도시", example = "서울")
-    @NotBlank
-    private String city;
-
-    @ApiModelProperty(required = true, value = "회원의 거리", example = "강남구")
-    @NotBlank
-    private String street;
-
-    @ApiModelProperty(required = true, value = "회원의 번지", example = "태헤란로7가길 2")
-    @NotBlank
-    private String zipcode;
+    @ApiModelProperty(required = true, value = "회원의 주소", example = "서울 강남구 테헤란로")
+    private String address;
 }

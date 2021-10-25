@@ -35,11 +35,7 @@ public class Member implements UserDetails {
 
     private int age;
 
-    private String city;
-
-    private String street;
-
-    private String zipcode;
+    private String address;
 
     @CreatedDate
     private LocalDateTime createdDate;
@@ -66,9 +62,7 @@ public class Member implements UserDetails {
         this.password = editMemberDto.getPassword();
         this.name = editMemberDto.getName();
         this.age = editMemberDto.getAge();
-        this.city = editMemberDto.getCity();
-        this.street = editMemberDto.getStreet();
-        this.zipcode = editMemberDto.getZipcode();
+        this.address = editMemberDto.getAddress();
     }
 
     @Override

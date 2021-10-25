@@ -26,15 +26,7 @@ public class MemberEditRequestDto {
     @NotNull
     private int age;
 
-    @ApiModelProperty(required = true, value = "회원의 변경할 도시", example = "서울")
+    @ApiModelProperty(required = true, value = "회원의 변경할 주소", example = "서울 강남구 테헤란로")
     @NotBlank
-    private String city;
-
-    @ApiModelProperty(required = true, value = "회원의 변경할 거리", example = "강남구")
-    @NotBlank
-    private String street;
-
-    @ApiModelProperty(required = true, value = "회원의 변경할 번지", example = "태헤란로")
-    @NotBlank
-    private String zipcode;
+    private String address;
 }

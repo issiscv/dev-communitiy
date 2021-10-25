@@ -76,9 +76,7 @@ public class MemberController {
                 .password(memberJoinRequestDto.getPassword())
                 .name(memberJoinRequestDto.getName())
                 .age(memberJoinRequestDto.getAge())
-                .city(memberJoinRequestDto.getCity())
-                .street(memberJoinRequestDto.getStreet())
-                .zipcode(memberJoinRequestDto.getZipcode())
+                .address(memberJoinRequestDto.getAddress())
                 .password(passwordEncoder.encode(memberJoinRequestDto.getPassword()))
                 .roles(Collections.singletonList("ROLE_USER"))// 최초 가입시 USER 로 설정,
                 // 단 한개의 객체만 저장 가능한 컬렉션을 만들고 싶을 때 사용한다.
@@ -211,8 +209,8 @@ public class MemberController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PutMapping("/members/{memberId}")
-    public ResponseEntity<EntityModel<MemberEditResponseDto>> editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid
-                                             MemberEditRequestDto memberEditRequestDto, @ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity<EntityModel<MemberEditResponseDto>> editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid MemberEditRequestDto memberEditRequestDto,
+                                                                         @ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
 
         Member findMember = memberService.retrieveOne(memberId);
 

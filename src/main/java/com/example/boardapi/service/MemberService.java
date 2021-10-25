@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ import java.util.List;
 public class MemberService implements UserDetailsService{
 
     private final MemberRepository memberRepository;
-
+    private final PasswordEncoder passwordEncoder;
     /**
      * 회원 가입
      */
@@ -59,6 +60,13 @@ public class MemberService implements UserDetailsService{
     @Transactional
     public void editMember(Long id, MemberEditRequestDto editMemberDto) {
         Member findMember = retrieveOne(id);
+
+        //수정한 비밀번호를 인코딩
+        String password = editMemberDto.getPassword();
+        String encode = passwordEncoder.encode(password);
+        //인코딩 후 다시 설정
+        editMemberDto.setPassword(encode);
+
         findMember.changeMemberInfo(editMemberDto);
     }
 
