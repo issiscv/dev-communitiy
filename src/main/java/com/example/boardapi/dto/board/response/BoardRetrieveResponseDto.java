@@ -36,4 +36,7 @@ public class BoardRetrieveResponseDto {
 
     @ApiModelProperty(required = true, value = "게시글의 댓글 들")
     private List<CommentRetrieveResponseDto> comments;
+
+    @ApiModelProperty(required = true, value = "좋아요")
+    private int likes;
 }

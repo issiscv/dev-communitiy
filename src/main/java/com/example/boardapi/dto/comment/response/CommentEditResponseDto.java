@@ -30,4 +30,7 @@ public class CommentEditResponseDto {
 
     @ApiModelProperty(required = true, value = "댓글 수정 시간")
     private LocalDateTime lastModifiedDate;
+
+    @ApiModelProperty(required = true, value = "좋아요")
+    private int likes;
 }

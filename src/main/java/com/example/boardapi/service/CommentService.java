@@ -1,5 +1,6 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
@@ -78,5 +79,12 @@ public class CommentService {
 
     public List<Comment> retrieveAllOwnComment(Long id) {
         return commentRepository.findAllByMemberId(id);
+    }
+
+    @Transactional
+    public void updateCommentLike(Long commentId) {
+        Comment comment = retrieveOne(commentId);
+        int like = comment.getLikes();
+        comment.setLikes(++like);
     }
 }

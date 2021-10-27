@@ -22,12 +22,13 @@ public class BoardRetrieveOneResponseDto {
     @ApiModelProperty(required = true, value = "게시글 제목", example = "안녕하세요!")
     private String title;
 
-    @ApiModelProperty(required = true, value = "게시글 내용", example = "처음으로 작성합니다.")
-    private String content;
-
     @ApiModelProperty(required = true, value = "게시글 작성 시간")
     private LocalDateTime createdDate;
 
     @ApiModelProperty(required = true, value = "게시글 수정 시간")
     private LocalDateTime lastModifiedDate;
+
+    @ApiModelProperty(required = true, value = "좋아요")
+    private int likes;
+
 }

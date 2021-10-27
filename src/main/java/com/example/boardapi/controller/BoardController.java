@@ -26,7 +26,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -143,6 +142,7 @@ public class BoardController {
                     .content(comment.getContent())
                     .createdDate(comment.getCreatedDate())
                     .lastModifiedDate(comment.getLastModifiedDate())
+                    .likes(comment.getLikes())
                     .build();
 
             commentResponseDtoList.add(commentRetrieveResponseDto);
@@ -300,6 +300,13 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{boardId}/likes")
+    public ResponseEntity updateLike(@PathVariable Long boardId) {
+        boardService.updateBoardLike(boardId);
+
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * 이 밑으로는 댓글 API
      */
@@ -421,6 +428,16 @@ public class BoardController {
         boardService.retrieveOne(boardId);
         //삭제
         commentService.deleteComment(commentId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{boardId}/comments/{commentId}/likes")
+    public ResponseEntity updateCommentLike(@PathVariable Long boardId, @PathVariable Long commentId) {
+        //게시글이 존재하는지 검사
+        boardService.retrieveOne(boardId);
+
+        commentService.updateCommentLike(commentId);
 
         return ResponseEntity.noContent().build();
     }

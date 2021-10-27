@@ -47,6 +47,12 @@ public class Board {
     @LastModifiedBy
     private String lastModifiedBy;
 
+    private int likes;
+
+    public void setLikes(int like) {
+        this.likes = like;
+    }
+
     public void setMember(Member member) {
         this.member = member;
     }

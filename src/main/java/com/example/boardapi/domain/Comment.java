@@ -47,6 +47,12 @@ public class Comment {
     @LastModifiedBy
     private String lastModifiedBy;
 
+    private int likes;
+
+    public void setLikes(int like) {
+        this.likes = like;
+    }
+
     public void setContent(String content) {
         this.content = content;
     }

@@ -96,4 +96,11 @@ public class BoardService {
     public List<Board> retrieveAllOwnBoard(Long memberId) {
         return boardRepository.findBoardByMember(memberId);
     }
+
+    @Transactional
+    public void updateBoardLike(Long boardId) {
+        Board board = retrieveOne(boardId);
+        int like = board.getLikes();
+        board.setLikes(++like);
+    }
 }
