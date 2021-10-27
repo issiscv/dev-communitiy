@@ -93,13 +93,7 @@ public class MemberController {
         MemberJoinResponseDto mappedResponseDto = modelMapper.map(joinMember, MemberJoinResponseDto.class);
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<MemberJoinResponseDto> model = EntityModel.of(mappedResponseDto);
@@ -111,6 +105,17 @@ public class MemberController {
         model.add(login.withRel("로그인"));
 
         return ResponseEntity.created(uri).body(model);
+    }
+
+    private String getIp() {
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return ip;
     }
 
     //로그인
@@ -135,13 +140,7 @@ public class MemberController {
         MemberLoginResponseDto memberLoginResponseDto = new MemberLoginResponseDto(token, member.getId());
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<MemberLoginResponseDto> model = EntityModel.of(memberLoginResponseDto);
@@ -166,13 +165,7 @@ public class MemberController {
         MemberRetrieveResponseDto memberRetrieveResponseDto = modelMapper.map(member, MemberRetrieveResponseDto.class);
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<MemberRetrieveResponseDto> model = EntityModel.of(memberRetrieveResponseDto);
@@ -223,13 +216,7 @@ public class MemberController {
                 .build().toUri();
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<MemberEditResponseDto> model = EntityModel.of(mappedResponseDto);
@@ -280,13 +267,7 @@ public class MemberController {
         }
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         CollectionModel<EntityModel<BoardRetrieveOneResponseDto>> model = CollectionModel.of(list);
@@ -330,13 +311,7 @@ public class MemberController {
         }
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         CollectionModel<EntityModel<CommentRetrieveResponseDto>> model = CollectionModel.of(list);

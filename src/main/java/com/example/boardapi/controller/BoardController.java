@@ -96,13 +96,7 @@ public class BoardController {
                 .path("/{id}")
                 .buildAndExpand(savedBoard.getId()).toUri();
         //profile 주소를 hateoas에 추가를 위해 ip 주소를 가져온다.
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<BoardCreateResponseDto> model = EntityModel.of(boardCreateResponseDto);
@@ -155,13 +149,7 @@ public class BoardController {
         boardRetrieveResponseDto.setComments(commentResponseDtoList);
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<BoardRetrieveResponseDto> model = EntityModel.of(boardRetrieveResponseDto);
@@ -173,6 +161,8 @@ public class BoardController {
 
         return ResponseEntity.ok().body(model);
     }
+
+
 
     //전체 조회 GET
     @ApiOperation(value = "게시글 전체 조회", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 조회합니다.")
@@ -216,13 +206,7 @@ public class BoardController {
                 new BoardRetrieveAllPagingResponseDto(num+1, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
@@ -267,13 +251,7 @@ public class BoardController {
 
 
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<BoardEditResponseDto> model = EntityModel.of(boardEditResponseDto);
@@ -353,13 +331,7 @@ public class BoardController {
                 .buildAndExpand(saveComment.getId())
                 .toUri();
         //ip
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<CommentCreateResponseDto> model = EntityModel.of(commentResponseDto);
@@ -400,13 +372,7 @@ public class BoardController {
                 .build()
                 .toUri();
 
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<CommentEditResponseDto> model = EntityModel.of(commentEditResponseDto);
@@ -453,5 +419,16 @@ public class BoardController {
         commentService.updateCommentLike(commentId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private String getIp() {
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return ip;
     }
 }
