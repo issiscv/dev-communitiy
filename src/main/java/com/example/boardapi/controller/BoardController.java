@@ -300,8 +300,14 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
+    @ApiOperation(value = "게시글의  좋아요", notes = "게시글을 좋아합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "게시글 좋아요를 정상적으로 수행했습니다."),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
+    })
     @PutMapping("/{boardId}/likes")
-    public ResponseEntity updateLike(@PathVariable Long boardId) {
+    public ResponseEntity updateLike(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
         boardService.updateBoardLike(boardId);
 
         return ResponseEntity.noContent().build();
@@ -432,8 +438,15 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
+    @ApiOperation(value = "게시글의 댓글 좋아요", notes = "게시글의 댓글을 좋아합니다..")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "댓글 좋아요를 정상적으로 수행했습니다."),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
+    })
     @PutMapping("/{boardId}/comments/{commentId}/likes")
-    public ResponseEntity updateCommentLike(@PathVariable Long boardId, @PathVariable Long commentId) {
+    public ResponseEntity updateCommentLike(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
+                                            @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
         //게시글이 존재하는지 검사
         boardService.retrieveOne(boardId);
 
