@@ -16,6 +16,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     List<Board> findBoardByMember(@Param("memberId") Long memberId);
 
     @Query(value = "select b from Board b where b.boardType = :boardType",
-    countQuery = "select count(b) from Board b")
+    countQuery = "select count(b) from Board b where b.boardType = :boardType")
     Page<Board> findAllWithPaging(Pageable pageable, @Param("boardType") BoardType boardType);
 }
