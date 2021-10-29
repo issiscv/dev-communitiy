@@ -132,7 +132,7 @@ public class BoardController {
 
             CommentRetrieveResponseDto commentRetrieveResponseDto = CommentRetrieveResponseDto.builder()
                     .id(comment.getId())
-                    .memberId(comment.getBoard().getMember().getId())
+                    .memberId(comment.getMember().getId())
                     .boardId(board.getId())
                     .author(comment.getMember().getName())
                     .content(comment.getContent())

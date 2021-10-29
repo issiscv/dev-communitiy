@@ -320,6 +320,7 @@ public class MemberController {
             CommentRetrieveResponseDto commentRetrieveResponseDto =
                     modelMapper.map(comment, CommentRetrieveResponseDto.class);
 
+            commentRetrieveResponseDto.setMemberId(comment.getMember().getId());
             commentRetrieveResponseDto.setAuthor(comment.getMember().getName());
             commentRetrieveResponseDto.setBoardId(comment.getBoard().getId());
 
