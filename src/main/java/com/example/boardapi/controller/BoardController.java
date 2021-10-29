@@ -131,6 +131,7 @@ public class BoardController {
 
             CommentRetrieveResponseDto commentRetrieveResponseDto = CommentRetrieveResponseDto.builder()
                     .id(comment.getId())
+                    .memberId(comment.getBoard().getMember().getId())
                     .boardId(board.getId())
                     .author(comment.getMember().getName())
                     .content(comment.getContent())
@@ -145,6 +146,7 @@ public class BoardController {
         //게시판 조회 시 해당 DTO 로 변환
         BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
         //응답 시 필드 명이 author 이므로 따로 세팅한다.
+        boardRetrieveResponseDto.setMemberId(board.getMember().getId());
         boardRetrieveResponseDto.setAuthor(board.getMember().getName());
         boardRetrieveResponseDto.setComments(commentResponseDtoList);
 

@@ -16,6 +16,9 @@ public class CommentRetrieveResponseDto {
     @ApiModelProperty(required = true, value = "댓글 PK", example = "23")
     private Long id;//댓글 기본키
 
+    @ApiModelProperty(required = true, value = "회원 PK", example = "1")
+    private Long memberId;
+
     @ApiModelProperty(required = true, value = "해당 게시글의 PK", example = "12")
     private Long boardId;//게시글 기본키
 

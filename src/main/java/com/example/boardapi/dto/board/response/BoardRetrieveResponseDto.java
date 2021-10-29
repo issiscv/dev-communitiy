@@ -19,6 +19,9 @@ public class BoardRetrieveResponseDto {
     @ApiModelProperty(required = true, value = "게시글 PK", example = "2")
     private Long id;
 
+    @ApiModelProperty(required = true, value = "회원 PK", example = "1")
+    private Long memberId;
+
     @ApiModelProperty(required = true, value = "게시글 작성자", example = "김상운")
     private String author;
 
