@@ -32,6 +32,7 @@ public class CommentController {
 
         CommentRetrieveResponseDto commentRetrieveResponseDto = CommentRetrieveResponseDto.builder()
                 .id(comment.getId())
+                .memberId(comment.getBoard().getMember().getId())
                 .boardId(comment.getBoard().getId())
                 .author(comment.getMember().getName())
                 .content(comment.getContent())

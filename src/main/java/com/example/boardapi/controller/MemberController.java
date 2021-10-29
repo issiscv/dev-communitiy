@@ -13,6 +13,7 @@ import com.example.boardapi.dto.member.response.MemberEditResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
+import com.example.boardapi.exception.exception.NotOwnBoardException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.exception.exception.UserNotFoundException;
@@ -36,6 +37,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.InetAddress;
 import java.net.URI;
@@ -203,9 +205,17 @@ public class MemberController {
     })
     @PutMapping("/members/{memberId}")
     public ResponseEntity<EntityModel<MemberEditResponseDto>> editMember(@ApiParam(value = "회원 수정 DTO", required = true) @RequestBody @Valid MemberEditRequestDto memberEditRequestDto,
-                                                                         @ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+                                                                         @ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId,
+                                                                         HttpServletRequest request) {
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
 
         Member findMember = memberService.retrieveOne(memberId);
+
+        if (findMember.getId() != member.getId()) {
+            throw new NotOwnBoardException("권한이 없습니다.");
+        }
 
         //수정
         memberService.editMember(memberId, memberEditRequestDto);
@@ -220,7 +230,7 @@ public class MemberController {
 
         //hateoas 기능 추가
         EntityModel<MemberEditResponseDto> model = EntityModel.of(mappedResponseDto);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editMember(memberEditRequestDto, memberId));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editMember(memberEditRequestDto, memberId, request));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
@@ -236,7 +246,17 @@ public class MemberController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
     })
     @DeleteMapping("/members/{memberId}")
-    public ResponseEntity deleteMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity deleteMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId, HttpServletRequest request) {
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        Member findMember = memberService.retrieveOne(memberId);
+
+        if (findMember.getId() != member.getId()) {
+            throw new NotOwnBoardException("권한이 없습니다.");
+        }
+
         memberService.deleteMember(memberId);
         return new ResponseEntity("성공적으로 회원 탈퇴가 되었습니다.", HttpStatus.NO_CONTENT);
     }

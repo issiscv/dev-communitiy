@@ -12,6 +12,7 @@ import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
+import com.example.boardapi.exception.exception.NotOwnBoardException;
 import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
@@ -240,16 +241,27 @@ public class BoardController {
     @PutMapping("/{boardId}")
     public ResponseEntity<EntityModel<BoardEditResponseDto>> editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid
                                                 BoardEditRequestDto boardEditRequestDto,
-                                    @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
+                                    @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
-        Board board = boardService.editBoard(boardId, boardEditRequestDto);
+        Board board = boardService.retrieveOne(boardId);
 
-        BoardEditResponseDto boardEditResponseDto = modelMapper.map(board, BoardEditResponseDto.class);
-        boardEditResponseDto.setAuthor(board.getMember().getName());
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
+
+        Board editBoard = boardService.editBoard(boardId, boardEditRequestDto);
+
+
+
+        BoardEditResponseDto boardEditResponseDto = modelMapper.map(editBoard, BoardEditResponseDto.class);
+        boardEditResponseDto.setAuthor(editBoard.getMember().getName());
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(board.getId()).toUri();
+                .buildAndExpand(editBoard.getId()).toUri();
 
 
         //ip
@@ -257,7 +269,7 @@ public class BoardController {
 
         //hateoas 기능 추가
         EntityModel<BoardEditResponseDto> model = EntityModel.of(boardEditResponseDto);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editBoard(boardEditRequestDto, boardId));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editBoard(boardEditRequestDto, boardId, request));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
@@ -274,7 +286,17 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @DeleteMapping("/{boardId}")
-    public ResponseEntity deleteBoard(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
+    public ResponseEntity deleteBoard(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
+
+        Board board = boardService.retrieveOne(boardId);
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
+
         boardService.deleteBoard(boardId);
 
         return ResponseEntity.noContent().build();
@@ -359,9 +381,17 @@ public class BoardController {
     @PutMapping("/{boardId}/comments/{commentId}")
     public ResponseEntity<EntityModel<CommentEditResponseDto>> editComment(@ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
                                       @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
-                                      @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
+                                      @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId,
+                                                                           HttpServletRequest request) {
         //게시글이 존재하는지 검사
-        boardService.retrieveOne(boardId);
+        Board board = boardService.retrieveOne(boardId);
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
 
         //댓글 수정
         Comment comment = commentService.editComment(commentId, commentEditRequestDto);
@@ -378,7 +408,7 @@ public class BoardController {
 
         //hateoas 기능 추가
         EntityModel<CommentEditResponseDto> model = EntityModel.of(commentEditResponseDto);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editComment(commentEditRequestDto, boardId, commentId));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editComment(commentEditRequestDto, boardId, commentId, request));
 
         //self
         model.add(self.withSelfRel());
@@ -397,9 +427,18 @@ public class BoardController {
     })
     @DeleteMapping("/{boardId}/comments/{commentId}")
     public ResponseEntity deleteComment(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
-                                        @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
+                                        @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId,
+                                        HttpServletRequest request) {
         //게시글이 존재하는지 검사
-        boardService.retrieveOne(boardId);
+        Board board = boardService.retrieveOne(boardId);
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
+
         //삭제
         commentService.deleteComment(commentId);
 

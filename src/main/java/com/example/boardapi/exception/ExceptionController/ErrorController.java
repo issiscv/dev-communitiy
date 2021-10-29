@@ -74,6 +74,15 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
+
+    //수정, 삭제 하고자 하는 글이 나의 게시글이 아닐 때
+    @ExceptionHandler
+    public ResponseEntity notOwnBoardExceptionHandler(NotOwnBoardException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.UNAUTHORIZED);
+    }
     
     //검증 오류
     @Override
