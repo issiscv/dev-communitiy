@@ -49,7 +49,7 @@ public class CommentService {
     /**
      * 특정 게시글의 댓글
      */
-    public List<Comment> retrieveOneByBoardId(Long boardId) {
+    public List<Comment> retrieveAllByBoardId(Long boardId) {
         List<Comment> allByBoardId;
 
         try {

@@ -124,7 +124,7 @@ public class BoardController {
         //해당 PK 에 해당하는 게시판 엔티티 조회 및 게시글 조회 검증
         Board board = boardService.retrieveOne(boardId);
         //게시글에 해당하는 댓글 리스트
-        List<Comment> comments = commentService.retrieveOneByBoardId(boardId);
+        List<Comment> comments = commentService.retrieveAllByBoardId(boardId);
         List<CommentRetrieveResponseDto> commentResponseDtoList = new ArrayList<>();
         
         //조회한 댓글 엔티티를 DTO 로 변환
@@ -201,6 +201,11 @@ public class BoardController {
         List<BoardRetrieveOneResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
                     BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getCreatedBy());
+                    List<Comment> comments = commentService.retrieveAllByBoardId(board.getId());
+                    int commentsSize = comments.size();
+
+                    boardRetrieveOneResponseDto.setComments(commentsSize);
+
                     return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());

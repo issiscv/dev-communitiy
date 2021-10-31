@@ -31,4 +31,6 @@ public class BoardRetrieveOneResponseDto {
     @ApiModelProperty(required = true, value = "좋아요")
     private int likes;
 
+    @ApiModelProperty(required = true, value = "좋아요")
+    private int comments;
 }
