@@ -353,6 +353,7 @@ public class BoardController {
         commentResponseDto.setAuthor(member.getName());//작성자
         commentResponseDto.setId(saveComment.getId());//댓글 기본키
         commentResponseDto.setBoardId(board.getId());//게시글 기본키
+        commentResponseDto.setMemberId(member.getId());
 
         //URI
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()

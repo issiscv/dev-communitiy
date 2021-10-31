@@ -25,6 +25,9 @@ public class CommentCreateResponseDto {
     @ApiModelProperty(required = true, value = "해당 게시글의 PK", example = "12")
     private Long boardId;//게시글 기본키
 
+    @ApiModelProperty(required = true, value = "댓글 작성자 PK", example = "2")
+    private Long memberId;//게시글 기본키
+
     @ApiModelProperty(required = true, value = "댓글 작성자", example = "김상운")
     private String author;//댓글 작성
 
