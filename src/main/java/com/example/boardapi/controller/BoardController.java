@@ -391,16 +391,16 @@ public class BoardController {
                                                                            HttpServletRequest request) {
         //게시글이 존재하는지 검사
         Board board = boardService.retrieveOne(boardId);
+        //댓글 수정
+        Comment comment = commentService.editComment(commentId, commentEditRequestDto);
+
 
         String token = jwtTokenProvider.resolveToken(request);
         Member member = jwtTokenProvider.getMember(token);
 
-        if (board.getMember().getId() != member.getId()) {
+        if (comment.getMember().getId() != member.getId()) {
             throw new NotOwnBoardException("게시글의 권한이 없습니다.");
         }
-
-        //댓글 수정
-        Comment comment = commentService.editComment(commentId, commentEditRequestDto);
 
         CommentEditResponseDto commentEditResponseDto = modelMapper.map(comment, CommentEditResponseDto.class);
         commentEditResponseDto.setAuthor(comment.getMember().getName());
@@ -437,11 +437,14 @@ public class BoardController {
                                         HttpServletRequest request) {
         //게시글이 존재하는지 검사
         Board board = boardService.retrieveOne(boardId);
+        
+        //댓글이 존재하는 확인
+        Comment comment = commentService.retrieveOne(commentId);
 
         String token = jwtTokenProvider.resolveToken(request);
         Member member = jwtTokenProvider.getMember(token);
 
-        if (board.getMember().getId() != member.getId()) {
+        if (comment.getMember().getId() != member.getId()) {
             throw new NotOwnBoardException("게시글의 권한이 없습니다.");
         }
 
