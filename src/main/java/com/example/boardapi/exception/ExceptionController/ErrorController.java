@@ -83,7 +83,16 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity(errorResult, HttpStatus.UNAUTHORIZED);
     }
-    
+
+    //댓글, 게시글에 중복으로 좋아요 누를때
+    @ExceptionHandler
+    public ResponseEntity DuplicatedLikeExceptionHandler(DuplicatedLikeException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
     //검증 오류
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +47,9 @@ public class Member implements UserDetails {
     //값을 즉시 채워넣어야 하기 때문에
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles;
+
+    @ElementCollection
+    private List<Long> likeId = new ArrayList<>();
 
     //권한을 가져오는 이 메서드는, 인증 객체를 만들어줄 때 필요하다.
     @Override

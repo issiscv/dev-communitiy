@@ -12,6 +12,7 @@ import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
+import com.example.boardapi.exception.exception.DuplicatedLikeException;
 import com.example.boardapi.exception.exception.NotOwnBoardException;
 import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
@@ -314,7 +315,17 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
     })
     @PutMapping("/{boardId}/likes")
-    public ResponseEntity updateLike(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId) {
+    public ResponseEntity updateLike(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
+                                     HttpServletRequest request) {
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (member.getLikeId().contains(boardId)) {
+            throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
+        }
+
+        member.getLikeId().add(boardId);
         boardService.updateBoardLike(boardId);
 
         return ResponseEntity.noContent().build();
@@ -462,10 +473,21 @@ public class BoardController {
     })
     @PutMapping("/{boardId}/comments/{commentId}/likes")
     public ResponseEntity updateCommentLike(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
-                                            @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId) {
+                                            @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId
+    ,HttpServletRequest request) {
         //게시글이 존재하는지 검사
-        boardService.retrieveOne(boardId);
+        Board board = boardService.retrieveOne(boardId);
 
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (member.getLikeId().contains(commentId)) {
+            throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
+        }
+
+        member.getLikeId().add(commentId);
+
+        //댓글이 존재하는지 같이 검사한다.
         commentService.updateCommentLike(commentId);
 
         return ResponseEntity.noContent().build();
