@@ -9,12 +9,21 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import javax.annotation.PostConstruct;
+import java.util.TimeZone;
+
 @SpringBootApplication
 @EnableJpaAuditing
 public class BoardApiApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BoardApiApplication.class, args);
+	}
+
+	@PostConstruct
+	public void started() {
+		// timezone UTC 셋팅
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
 	}
 
 	@Bean
