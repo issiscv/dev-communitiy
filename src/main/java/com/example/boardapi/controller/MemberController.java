@@ -2,8 +2,6 @@ package com.example.boardapi.controller;
 
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
-import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveOneResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
@@ -33,7 +31,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -268,17 +265,65 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다. or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/boards")
-    public ResponseEntity<CollectionModel<EntityModel<BoardRetrieveOneResponseDto>>> retrieveAllOwnBoard(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity<CollectionModel<EntityModel<BoardRetrieveResponseDto>>> retrieveAllOwnBoard(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
 
         List<Board> boards = boardService.retrieveAllOwnBoard(memberId);
 
-        List<EntityModel<BoardRetrieveOneResponseDto>> list = new ArrayList<>();
+        List<EntityModel<BoardRetrieveResponseDto>> list = new ArrayList<>();
 
         for (Board board : boards) {
-            BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
+            BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
             boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+            boardRetrieveOneResponseDto.setBoardType(board.getBoardType());
 
-            EntityModel<BoardRetrieveOneResponseDto> model = EntityModel.of(boardRetrieveOneResponseDto);
+            EntityModel<BoardRetrieveResponseDto> model = EntityModel.of(boardRetrieveOneResponseDto);
+            WebMvcLinkBuilder boardLink = linkTo(methodOn(BoardController.class).retrieveBoard(board.getId()));
+
+            model.add(boardLink.withRel("게시글"));
+            
+            list.add(model);
+        }
+
+        //ip
+        String ip = getIp();
+
+        //hateoas 기능 추가
+        CollectionModel<EntityModel<BoardRetrieveResponseDto>> model = CollectionModel.of(list);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.ok().body(model);
+    }
+    
+    //특정 사용자가 작성한 모든 댓글
+    @ApiOperation(value = "사용자가 작성한 댓글의 게시글", notes = "회원의 모든 댓글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "성공적으로 회원 사용자의 댓글 조회하였습니다.."),
+            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다 or 잘못된 요청 or 검증 실패"),
+    })
+    @GetMapping("/members/{memberId}/comments")
+    public ResponseEntity<CollectionModel<EntityModel<BoardRetrieveResponseDto>>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
+        
+        //해당 유저가 존재하는지 검증을 위해 조회를 해본다.
+        memberService.retrieveOne(memberId);
+
+        //회원의 댓글
+        List<Comment> comments = commentService.retrieveAllOwnComment(memberId);
+
+        List<EntityModel<BoardRetrieveResponseDto>> list = new ArrayList<>();
+
+        for (Comment comment : comments) {
+
+            Board board = boardService.retrieveOne(comment.getBoard().getId());
+
+            BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+
+            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+            boardRetrieveOneResponseDto.setBoardType(board.getBoardType());
+
+            EntityModel<BoardRetrieveResponseDto> model = EntityModel.of(boardRetrieveOneResponseDto);
             WebMvcLinkBuilder boardLink = linkTo(methodOn(BoardController.class).retrieveBoard(board.getId()));
 
             model.add(boardLink.withRel("게시글"));
@@ -290,52 +335,7 @@ public class MemberController {
         String ip = getIp();
 
         //hateoas 기능 추가
-        CollectionModel<EntityModel<BoardRetrieveOneResponseDto>> model = CollectionModel.of(list);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId));
-        //self
-        model.add(self.withSelfRel());
-        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
-
-        return ResponseEntity.ok().body(model);
-    }
-    
-    //특정 사용자가 작성한 모든 댓글
-    @ApiOperation(value = "사용자가 작성한 모든 댓글 조회", notes = "회원의 모든 댓글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "성공적으로 회원 사용자의 댓글 조회하였습니다.."),
-            @ApiResponse(code = 400, message = "존재하지 않는 회원입니다 or 잘못된 요청 or 검증 실패"),
-    })
-    @GetMapping("/members/{memberId}/comments")
-    public ResponseEntity<CollectionModel<EntityModel<CommentRetrieveResponseDto>>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
-        
-        //해당 유저가 존재하는지 검증을 위해 조회를 해본다.
-        memberService.retrieveOne(memberId);
-
-        //회원의 댓글
-        List<Comment> comments = commentService.retrieveAllOwnComment(memberId);
-
-        List<EntityModel<CommentRetrieveResponseDto>> list = new ArrayList<>();
-
-        for (Comment comment : comments) {
-            CommentRetrieveResponseDto commentRetrieveResponseDto =
-                    modelMapper.map(comment, CommentRetrieveResponseDto.class);
-
-            commentRetrieveResponseDto.setMemberId(comment.getMember().getId());
-            commentRetrieveResponseDto.setAuthor(comment.getMember().getName());
-            commentRetrieveResponseDto.setBoardId(comment.getBoard().getId());
-
-            EntityModel<CommentRetrieveResponseDto> model = EntityModel.of(commentRetrieveResponseDto);
-            WebMvcLinkBuilder boardLink = linkTo(methodOn(BoardController.class).retrieveBoard(comment.getBoard().getId()));
-            model.add(boardLink.withRel("게시글"));
-
-            list.add(model);
-        }
-
-        //ip
-        String ip = getIp();
-
-        //hateoas 기능 추가
-        CollectionModel<EntityModel<CommentRetrieveResponseDto>> model = CollectionModel.of(list);
+        CollectionModel<EntityModel<BoardRetrieveResponseDto>> model = CollectionModel.of(list);
         WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId));
         //self
         model.add(self.withSelfRel());

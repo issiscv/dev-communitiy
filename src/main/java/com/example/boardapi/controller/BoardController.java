@@ -120,7 +120,7 @@ public class BoardController {
             @ApiResponse(code = 400, message = "존재하지 않는 게시글입니다."),
     })
     @GetMapping("/{boardId}")
-    public ResponseEntity<EntityModel<BoardRetrieveResponseDto>> retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId) {
+    public ResponseEntity<EntityModel<BoardRetrieveDetailResponseDto>> retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId) {
         
         //해당 PK 에 해당하는 게시판 엔티티 조회 및 게시글 조회 검증
         Board board = boardService.retrieveOne(boardId);
@@ -146,7 +146,7 @@ public class BoardController {
         }
 
         //게시판 조회 시 해당 DTO 로 변환
-        BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+        BoardRetrieveDetailResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveDetailResponseDto.class);
         //응답 시 필드 명이 author 이므로 따로 세팅한다.
         boardRetrieveResponseDto.setMemberId(board.getMember().getId());
         boardRetrieveResponseDto.setAuthor(board.getMember().getName());
@@ -156,7 +156,7 @@ public class BoardController {
         String ip = getIp();
 
         //hateoas 기능 추가
-        EntityModel<BoardRetrieveResponseDto> model = EntityModel.of(boardRetrieveResponseDto);
+        EntityModel<BoardRetrieveDetailResponseDto> model = EntityModel.of(boardRetrieveResponseDto);
         WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveBoard(boardId));
         //self
         model.add(self.withSelfRel());
@@ -199,8 +199,8 @@ public class BoardController {
         //해당 페이지의 컨텐트들
         List<Board> content = boardPage.getContent();
 
-        List<BoardRetrieveOneResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
-                    BoardRetrieveOneResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveOneResponseDto.class);
+        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
+                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getCreatedBy());
                     List<Comment> comments = commentService.retrieveAllByBoardId(board.getId());
                     int commentsSize = comments.size();

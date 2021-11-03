@@ -23,5 +23,5 @@ public class BoardRetrieveAllPagingResponseDto {
     private int totalElements;
 
     @ApiModelProperty(required = true, value = "해당 페이지의 게시글 들")
-    List<BoardRetrieveOneResponseDto> contents;
+    List<BoardRetrieveResponseDto> contents;
 }
