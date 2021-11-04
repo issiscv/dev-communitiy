@@ -64,6 +64,10 @@ public class BoardService {
         return allWithPaging;
     }
 
+    public Page<Board> retrieveAllOwnBoardWithPaging(Pageable page, Long memberId) {
+        return boardRepository.findBoardByMemberWithPaging(page, memberId);
+    }
+
     /**
      * 게시글 수정
      */

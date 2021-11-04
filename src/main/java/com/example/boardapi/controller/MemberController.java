@@ -2,8 +2,8 @@ package com.example.boardapi.controller;
 
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
+import com.example.boardapi.dto.board.response.BoardRetrieveAllPagingResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
-import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
 import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
@@ -23,6 +23,9 @@ import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -265,31 +268,49 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다. or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/boards")
-    public ResponseEntity<CollectionModel<EntityModel<BoardRetrieveResponseDto>>> retrieveAllOwnBoard(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllOwnBoard (
+            @ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
+             @RequestParam(required = false) Integer page) {
+        //해당 사용자가 존재하는지 검사
+        memberService.retrieveOne(memberId);
 
-        List<Board> boards = boardService.retrieveAllOwnBoard(memberId);
+        int num = 0;
 
-        List<EntityModel<BoardRetrieveResponseDto>> list = new ArrayList<>();
+        if (page == null) {
+            num = 0;
+        } else {
+            num = page - 1;
+        }
+
+
+        //페이지 요청 객체
+        PageRequest pageRequest = PageRequest.of(num, 15, Sort.by(Sort.Direction.DESC, "createdDate"));
+        //해당 페이지의 요청 결과
+        Page<Board> boardPage = boardService.retrieveAllOwnBoardWithPaging(pageRequest, memberId);
+        List<Board> boards = boardPage.getContent();
+        int totalPages = boardPage.getTotalPages();
+        long totalElements = boardPage.getTotalElements();
+
+        List<BoardRetrieveResponseDto> list = new ArrayList<>();
 
         for (Board board : boards) {
             BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
             boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
             boardRetrieveOneResponseDto.setBoardType(board.getBoardType());
 
-            EntityModel<BoardRetrieveResponseDto> model = EntityModel.of(boardRetrieveOneResponseDto);
-            WebMvcLinkBuilder boardLink = linkTo(methodOn(BoardController.class).retrieveBoard(board.getId()));
-
-            model.add(boardLink.withRel("게시글"));
-            
-            list.add(model);
+            list.add(boardRetrieveOneResponseDto);
         }
+
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
+                new BoardRetrieveAllPagingResponseDto(num+1, totalPages, (int)totalElements, list);
 
         //ip
         String ip = getIp();
 
+        EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
+
         //hateoas 기능 추가
-        CollectionModel<EntityModel<BoardRetrieveResponseDto>> model = CollectionModel.of(list);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId, num+1));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
