@@ -84,6 +84,15 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.UNAUTHORIZED);
     }
 
+    //수정, 삭제, 조회 하고자 하는 글이 나의 회원 정보가 아닐 때
+    @ExceptionHandler
+    public ResponseEntity notOwnMemberExceptionHandler(NotOwnMemberException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.UNAUTHORIZED);
+    }
+
     //댓글, 게시글에 중복으로 좋아요 누를때
     @ExceptionHandler
     public ResponseEntity DuplicatedLikeExceptionHandler(DuplicatedLikeException ex, WebRequest request) {

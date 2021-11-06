@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter @Setter
 @Builder
+@EqualsAndHashCode(of = "id")
 public class BoardRetrieveResponseDto {
 
     @ApiModelProperty(required = true, value = "게시글 PK", example = "2")

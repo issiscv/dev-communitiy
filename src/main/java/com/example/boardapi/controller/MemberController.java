@@ -2,6 +2,7 @@ package com.example.boardapi.controller;
 
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
+import com.example.boardapi.dto.board.response.BoardPageResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveAllPagingResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
@@ -12,6 +13,7 @@ import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.exception.exception.NotOwnBoardException;
+import com.example.boardapi.exception.exception.NotOwnMemberException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.exception.exception.UserNotFoundException;
@@ -42,9 +44,7 @@ import javax.validation.Valid;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -214,7 +214,7 @@ public class MemberController {
         Member findMember = memberService.retrieveOne(memberId);
 
         if (findMember.getId() != member.getId()) {
-            throw new NotOwnBoardException("권한이 없습니다.");
+            throw new NotOwnMemberException("권한이 없습니다.");
         }
 
         //수정
@@ -254,7 +254,7 @@ public class MemberController {
         Member findMember = memberService.retrieveOne(memberId);
 
         if (findMember.getId() != member.getId()) {
-            throw new NotOwnBoardException("권한이 없습니다.");
+            throw new NotOwnMemberException("권한이 없습니다.");
         }
 
         memberService.deleteMember(memberId);
@@ -270,9 +270,18 @@ public class MemberController {
     @GetMapping("/members/{memberId}/boards")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllOwnBoard (
             @ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
-             @RequestParam(required = false) Integer page) {
+             @RequestParam(required = false) Integer page,
+            HttpServletRequest request) {
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
         //해당 사용자가 존재하는지 검사
-        memberService.retrieveOne(memberId);
+        Member findMember = memberService.retrieveOne(memberId);
+
+        if (member.getId() != findMember.getId()) {
+            throw new NotOwnMemberException("권한이 없습니다.");
+        }
 
         int num = 0;
 
@@ -310,14 +319,19 @@ public class MemberController {
         EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
 
         //hateoas 기능 추가
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId, num+1));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId, num+1, request));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
 
         return ResponseEntity.ok().body(model);
     }
-    
+
+
+    /**
+     * 시작페이지
+     * 개수
+     */
     //특정 사용자가 작성한 모든 댓글
     @ApiOperation(value = "사용자가 작성한 댓글의 게시글", notes = "회원의 모든 댓글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
     @ApiResponses({
@@ -325,15 +339,26 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다 or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/comments")
-    public ResponseEntity<CollectionModel<EntityModel<BoardRetrieveResponseDto>>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId) {
-        
-        //해당 유저가 존재하는지 검증을 위해 조회를 해본다.
-        memberService.retrieveOne(memberId);
+    public ResponseEntity<EntityModel<BoardPageResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
+                                                                                             @RequestParam(defaultValue = "1") String page,
+                                                                                   HttpServletRequest request) {
+
+        int num = Integer.parseInt(page);
+        int size = 15;
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        //해당 사용자가 존재하는지 검사
+        Member findMember = memberService.retrieveOne(memberId);
+
+        if (member.getId() != findMember.getId()) {
+            throw new NotOwnMemberException("권한이 없습니다.");
+        }
 
         //회원의 댓글
         List<Comment> comments = commentService.retrieveAllOwnComment(memberId);
 
-        List<EntityModel<BoardRetrieveResponseDto>> list = new ArrayList<>();
+        List<BoardRetrieveResponseDto> list = new ArrayList<>();
 
         for (Comment comment : comments) {
 
@@ -344,20 +369,36 @@ public class MemberController {
             boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
             boardRetrieveOneResponseDto.setBoardType(board.getBoardType());
 
-            EntityModel<BoardRetrieveResponseDto> model = EntityModel.of(boardRetrieveOneResponseDto);
-            WebMvcLinkBuilder boardLink = linkTo(methodOn(BoardController.class).retrieveBoard(board.getId()));
+            if (list.contains(boardRetrieveOneResponseDto)) {
+                continue;
+            }
 
-            model.add(boardLink.withRel("게시글"));
+            list.add(boardRetrieveOneResponseDto);
+        }
 
-            list.add(model);
+        BoardPageResponseDto boardPageResponseDto = BoardPageResponseDto.builder()
+                .currentPage(Integer.parseInt(page))
+                .totalPage(((list.size()-1) / size) + 1)
+                .totalElements(list.size())
+                .contents(new ArrayList<>())
+                .build();
+
+        Collections.reverse(list);
+
+        for (int i = (num -1) * size; i < num * size; i++) {
+            try {
+            boardPageResponseDto.getContents().add(list.get(i));
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
         }
 
         //ip
         String ip = getIp();
 
         //hateoas 기능 추가
-        CollectionModel<EntityModel<BoardRetrieveResponseDto>> model = CollectionModel.of(list);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId));
+        EntityModel<BoardPageResponseDto> model = EntityModel.of(boardPageResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page, request));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
