@@ -273,15 +273,8 @@ public class MemberController {
              @RequestParam(required = false) Integer page,
             HttpServletRequest request) {
 
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
-
         //해당 사용자가 존재하는지 검사
         Member findMember = memberService.retrieveOne(memberId);
-
-        if (member.getId() != findMember.getId()) {
-            throw new NotOwnMemberException("권한이 없습니다.");
-        }
 
         int num = 0;
 
@@ -328,10 +321,6 @@ public class MemberController {
     }
 
 
-    /**
-     * 시작페이지
-     * 개수
-     */
     //특정 사용자가 작성한 모든 댓글
     @ApiOperation(value = "사용자가 작성한 댓글의 게시글", notes = "회원의 모든 댓글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
     @ApiResponses({
@@ -345,15 +334,9 @@ public class MemberController {
 
         int num = Integer.parseInt(page);
         int size = 15;
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
 
         //해당 사용자가 존재하는지 검사
         Member findMember = memberService.retrieveOne(memberId);
-
-        if (member.getId() != findMember.getId()) {
-            throw new NotOwnMemberException("권한이 없습니다.");
-        }
 
         //회원의 댓글
         List<Comment> comments = commentService.retrieveAllOwnComment(memberId);
