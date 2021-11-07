@@ -21,4 +21,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("select c from Comment c join fetch c.board b join fetch c.member m where c.member.id = :memberId")
     List<Comment> findAllByMemberId(@Param("memberId") Long memberId);
 
+    @Modifying(clearAutomatically = true)
+    @Query("delete from Comment c where c.member.id = :memberId")
+    void deleteAllByMemberId(@Param("memberId") Long memberId);
 }

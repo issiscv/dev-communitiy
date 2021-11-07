@@ -107,4 +107,8 @@ public class BoardService {
         int like = board.getLikes();
         board.setLikes(++like);
     }
+
+    public void deleteAllOwnBoard(Long memberId) {
+        boardRepository.deleteAllByMemberId(memberId);
+    }
 }

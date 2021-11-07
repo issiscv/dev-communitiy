@@ -1,5 +1,6 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.exception.exception.DuplicateLoginIdException;
@@ -24,6 +25,9 @@ public class MemberService implements UserDetailsService{
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BoardService boardService;
+    private final CommentService commentService;
+
     /**
      * 회원 가입
      */
@@ -76,9 +80,12 @@ public class MemberService implements UserDetailsService{
     @Transactional
     public void deleteMember(Long id) {
         try {
+            commentService.deleteAllOwnComment(id);
+            boardService.deleteAllOwnBoard(id);
             memberRepository.deleteById(id);
+
         } catch (Exception e) {
-            throw new UserNotFoundException("해당 유저는 존재하지 않습니다.");
+            e.printStackTrace();
         }
     }
 

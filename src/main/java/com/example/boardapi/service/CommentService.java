@@ -1,11 +1,9 @@
 package com.example.boardapi.service;
 
-import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.CommentNotFoundException;
-import com.example.boardapi.exception.exception.UserNotFoundException;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -86,5 +84,9 @@ public class CommentService {
         Comment comment = retrieveOne(commentId);
         int like = comment.getLikes();
         comment.setLikes(++like);
+    }
+
+    public void deleteAllOwnComment(Long memberId) {
+        commentRepository.deleteAllByMemberId(memberId);
     }
 }

@@ -68,4 +68,8 @@ public class Board {
     public void setBoardType(BoardType boardType) {
         this.boardType = boardType;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
