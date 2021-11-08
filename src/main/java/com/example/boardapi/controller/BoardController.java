@@ -201,7 +201,7 @@ public class BoardController {
 
         List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
                     BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
-                    boardRetrieveOneResponseDto.setAuthor(board.getCreatedBy());
+                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
                     List<Comment> comments = commentService.retrieveAllByBoardId(board.getId());
                     int commentsSize = comments.size();
 
