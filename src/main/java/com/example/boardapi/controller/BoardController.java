@@ -121,9 +121,10 @@ public class BoardController {
     })
     @GetMapping("/{boardId}")
     public ResponseEntity<EntityModel<BoardRetrieveDetailResponseDto>> retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId) {
-        
         //해당 PK 에 해당하는 게시판 엔티티 조회 및 게시글 조회 검증
-        Board board = boardService.retrieveOne(boardId);
+        Board board = boardService.retrieveOneAndIncreaseViews(boardId);
+
+
         //게시글에 해당하는 댓글 리스트
         List<Comment> comments = commentService.retrieveAllByBoardId(boardId);
         List<CommentRetrieveResponseDto> commentResponseDtoList = new ArrayList<>();
@@ -151,6 +152,7 @@ public class BoardController {
         boardRetrieveResponseDto.setMemberId(board.getMember().getId());
         boardRetrieveResponseDto.setAuthor(board.getMember().getName());
         boardRetrieveResponseDto.setComments(commentResponseDtoList);
+
 
         //ip
         String ip = getIp();

@@ -44,6 +44,21 @@ public class BoardService {
     }
 
     /**
+     * 단건 조회 시 조회 수도 증가
+     */
+    @Transactional
+    public Board retrieveOneAndIncreaseViews(Long boardId) {
+        Board findBoard = boardRepository
+                .findById(boardId)
+                .orElseThrow(() -> {throw new BoardNotFoundException("해당 게시글이 존재 하지 않습니다.");
+                });
+
+        findBoard.increaseViews();
+
+        return findBoard;
+    }
+
+    /**
      * 전체 조회
      */
     public List<Board> retrieveAll() {

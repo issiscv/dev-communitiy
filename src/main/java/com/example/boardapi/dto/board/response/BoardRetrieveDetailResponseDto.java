@@ -42,4 +42,7 @@ public class BoardRetrieveDetailResponseDto {
 
     @ApiModelProperty(required = true, value = "좋아요")
     private int likes;
+
+    @ApiModelProperty(required = true, value = "조회 수")
+    private int views;
 }

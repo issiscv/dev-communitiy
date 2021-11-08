@@ -35,6 +35,8 @@ public class Board {
     @Enumerated(EnumType.STRING)
     private BoardType boardType;
 
+    private int views;
+
     @CreatedDate
     private LocalDateTime createdDate;
 
@@ -71,5 +73,9 @@ public class Board {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void increaseViews() {
+        ++this.views;
     }
 }
