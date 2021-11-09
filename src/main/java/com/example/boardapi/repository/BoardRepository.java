@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
@@ -19,6 +20,11 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query(value = "select b from Board b where b.boardType = :boardType",
     countQuery = "select count(b) from Board b where b.boardType = :boardType")
     Page<Board> findAllWithPaging(Pageable pageable, @Param("boardType") BoardType boardType);
+
+    @Query(value = "select b from Board b where b.boardType = :boardType and b.createdDate >= :beforeSevenDay",
+    countQuery = "select count(b) from Board b where b.boardType = :boardType and b.createdDate >= :beforeSevenDay")
+    Page<Board> findByBoardTypeInDateBestBoardsWithPaging(Pageable pageable, @Param("boardType") BoardType boardType,
+                                                          @Param("beforeSevenDay")LocalDateTime beforeSevenDay);
 
     @Query(value = "select b from Board b where b.member.id = :memberId",
             countQuery = "select count(b) from Board b where b.member.id = :memberId")

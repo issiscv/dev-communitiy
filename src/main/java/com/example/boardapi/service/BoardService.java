@@ -13,6 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -73,6 +76,26 @@ public class BoardService {
             allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.QNA);
         } else if (type.equals("tech")) {
             allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.TECH);
+        } else {
+            throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
+        }
+        return allWithPaging;
+    }
+
+    //일, 주, 월 이내의 best 게시글 5개 조회
+    public Page<Board> retrieveByTypeAndWeeklyBestBoardsWithPaging(Pageable pageable, String type) {
+        Page<Board> allWithPaging = null;
+        LocalDateTime beforeDate = LocalDateTime.of(LocalDate.now().minusDays(7), LocalTime.of(0,0,0));
+
+
+        //어제 날짜의 0시 0분 0초로 초기화 -> 즉, 날짜가 변경될때만 반영
+
+        if (type.equals("free")) {
+            allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, BoardType.FREE, beforeDate);
+        } else if (type.equals("qna")) {
+            allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, BoardType.QNA, beforeDate);
+        } else if (type.equals("tech")) {
+            allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, BoardType.TECH, beforeDate);
         } else {
             throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
         }

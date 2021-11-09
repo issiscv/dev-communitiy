@@ -171,14 +171,17 @@ public class BoardController {
 
 
     //전체 조회 GET
-    @ApiOperation(value = "게시글 전체 조회", notes = "게시글 엔티티의 PK를 경로 변수에 넣어 조회합니다.")
+    @ApiOperation(value = "게시글 전체 조회", notes = "쿼리스트링을 사용하여 게시글 종류를 구분하여 조회합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "게시글 전체 조회 성공"),
+            @ApiResponse(code = 400, message = "쿼리스트링을 잘못 입력하셨습니다.")
     })
     @GetMapping("")
-    public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoard(
+    public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByType(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
-            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
+            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type,
+            @RequestParam(defaultValue = "date") String sort) {
+
         //몇 번 페이지를 찾을지 쿼리를 날리기 위한 변수
         int num = 0;
 
@@ -221,24 +224,71 @@ public class BoardController {
 
         //hateoas 기능 추가
         EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoard(page, type));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page, type, sort));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
 
         //페이징 hateoas 를 위한 로직이다.
         if (page > 1) {
-            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoard(page - 1, type));
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page - 1, type, sort));
             model.add(prev.withRel("이전"));
         }
         if (page < totalPages) {
-            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoard(page + 1, type));
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page + 1, type, sort));
             model.add(next.withRel("다음"));
         }
 
         return ResponseEntity.ok().body(model);
     }
-    
+
+    //주간 best 게시글 조회 GET
+    @ApiOperation(value = "게시글 1주 내 best 게시글", notes = "쿼리스트링을 활용하여 1 주 내의 best 게시글을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "게시글 전체 조회 성공"),
+            @ApiResponse(code = 400, message = "쿼리스트링을 잘못 입력하셨습니다.")
+    })
+    @GetMapping("/best-likes")
+    public ResponseEntity<EntityModel<BoardRetrieveAllByDateResponseDto>> retrieveAllBoardWeeklyBestByType(
+            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
+
+        PageRequest pageRequest = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "likes"));
+
+        Page<Board> page = boardService.retrieveByTypeAndWeeklyBestBoardsWithPaging(pageRequest, type);
+
+        List<Board> content = page.getContent();
+
+        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
+                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+                    List<Comment> comments = commentService.retrieveAllByBoardId(board.getId());
+                    int commentsSize = comments.size();
+
+                    boardRetrieveOneResponseDto.setComments(commentsSize);
+
+                    return boardRetrieveOneResponseDto;
+                }
+        ).collect(Collectors.toList());
+
+        BoardRetrieveAllByDateResponseDto boardRetrieveAllByDateResponseDto = new BoardRetrieveAllByDateResponseDto(boardRetrieveOneResponseDtoList);
+
+        //ip
+        String ip = getIp();
+
+        //hateoas 기능 추가
+        EntityModel<BoardRetrieveAllByDateResponseDto> model = EntityModel.of(boardRetrieveAllByDateResponseDto);
+
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardWeeklyBestByType(type));
+
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        //페이징 hateoas 를 위한 로직이다.
+
+        return ResponseEntity.ok().body(model);
+    }
+
     //수정 PUT
     @ApiOperation(value = "게시글 수정", notes = "게시글을 수정합니다. BoardEditRequestDto DTO 를 사용합니다.")
     @ApiResponses({
@@ -359,7 +409,7 @@ public class BoardController {
         Comment comment = modelMapper.map(commentCreateRequestDto, Comment.class);
         comment.setBoard(board);
         comment.setMember(member);
-        Comment saveComment = commentService.save(comment);
+        Comment saveComment = commentService.save(boardId, comment);
 
         //엔티티를 DTO로 변환
         CommentCreateResponseDto commentResponseDto = modelMapper.map(saveComment, CommentCreateResponseDto.class);

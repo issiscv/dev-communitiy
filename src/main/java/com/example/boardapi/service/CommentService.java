@@ -1,5 +1,6 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
@@ -17,13 +18,17 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-
+    private final BoardService boardService;
     /**
      * 댓글 저장
      */
     @Transactional
-    public Comment save(Comment comment) {
+    public Comment save(Long boardId, Comment comment) {
         Comment saveComment = commentRepository.save(comment);
+
+        Board board = boardService.retrieveOne(boardId);
+        board.increaseComments();
+
         return saveComment;
     }
 
