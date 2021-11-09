@@ -83,22 +83,13 @@ public class BoardService {
     }
 
     //일, 주, 월 이내의 best 게시글 5개 조회
-    public Page<Board> retrieveByTypeAndWeeklyBestBoardsWithPaging(Pageable pageable, String type) {
-        Page<Board> allWithPaging = null;
+    public Page<Board> retrieveByTypeAndWeeklyBestBoardsWithPaging(Pageable pageable) {
         LocalDateTime beforeDate = LocalDateTime.of(LocalDate.now().minusDays(7), LocalTime.of(0,0,0));
-
 
         //어제 날짜의 0시 0분 0초로 초기화 -> 즉, 날짜가 변경될때만 반영
 
-        if (type.equals("free")) {
-            allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, BoardType.FREE, beforeDate);
-        } else if (type.equals("qna")) {
-            allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, BoardType.QNA, beforeDate);
-        } else if (type.equals("tech")) {
-            allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, BoardType.TECH, beforeDate);
-        } else {
-            throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
-        }
+        Page<Board> allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, beforeDate);
+
         return allWithPaging;
     }
 

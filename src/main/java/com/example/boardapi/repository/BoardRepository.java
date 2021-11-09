@@ -21,10 +21,9 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     countQuery = "select count(b) from Board b where b.boardType = :boardType")
     Page<Board> findAllWithPaging(Pageable pageable, @Param("boardType") BoardType boardType);
 
-    @Query(value = "select b from Board b where b.boardType = :boardType and b.createdDate >= :beforeSevenDay",
-    countQuery = "select count(b) from Board b where b.boardType = :boardType and b.createdDate >= :beforeSevenDay")
-    Page<Board> findByBoardTypeInDateBestBoardsWithPaging(Pageable pageable, @Param("boardType") BoardType boardType,
-                                                          @Param("beforeSevenDay")LocalDateTime beforeSevenDay);
+    @Query(value = "select b from Board b where b.createdDate >= :beforeSevenDay",
+    countQuery = "select count(b) from Board b where b.createdDate >= :beforeSevenDay")
+    Page<Board> findByBoardTypeInDateBestBoardsWithPaging(Pageable pageable, @Param("beforeSevenDay")LocalDateTime beforeSevenDay);
 
     @Query(value = "select b from Board b where b.member.id = :memberId",
             countQuery = "select count(b) from Board b where b.member.id = :memberId")

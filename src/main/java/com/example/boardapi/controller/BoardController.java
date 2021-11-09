@@ -245,20 +245,17 @@ public class BoardController {
             @ApiResponse(code = 400, message = "쿼리스트링을 잘못 입력하셨습니다.")
     })
     @GetMapping("/best-likes")
-    public ResponseEntity<EntityModel<BoardRetrieveAllByDateResponseDto>> retrieveAllBoardWeeklyBestByType(
-            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
+    public ResponseEntity<EntityModel<BoardRetrieveAllByDateResponseDto>> retrieveAllBoardWeeklyBestByType() {
 
         PageRequest pageRequest = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "likes"));
 
-        Page<Board> page = boardService.retrieveByTypeAndWeeklyBestBoardsWithPaging(pageRequest, type);
+        Page<Board> page = boardService.retrieveByTypeAndWeeklyBestBoardsWithPaging(pageRequest);
 
         List<Board> content = page.getContent();
 
         List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
                     BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    List<Comment> comments = commentService.retrieveAllByBoardId(board.getId());
-
                     return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());
@@ -271,7 +268,7 @@ public class BoardController {
         //hateoas 기능 추가
         EntityModel<BoardRetrieveAllByDateResponseDto> model = EntityModel.of(boardRetrieveAllByDateResponseDto);
 
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardWeeklyBestByType(type));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardWeeklyBestByType());
 
         //self
         model.add(self.withSelfRel());
