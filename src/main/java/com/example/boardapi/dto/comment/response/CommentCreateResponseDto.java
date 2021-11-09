@@ -39,4 +39,7 @@ public class CommentCreateResponseDto {
     
     @ApiModelProperty(required = true, value = "댓글 수정 시간")
     private LocalDateTime lastModifiedDate;
+
+    @ApiModelProperty(required = true, value = "댓글 좋아요 수")
+    private int likes;
 }

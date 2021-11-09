@@ -51,7 +51,7 @@ public class Board {
 
     private int likes;
 
-    private int comments;
+    private int commentSize;
 
     public void setLikes(int like) {
         this.likes = like;
@@ -82,6 +82,6 @@ public class Board {
     }
 
     public void increaseComments() {
-        ++this.comments;
+        ++this.commentSize;
     }
 }

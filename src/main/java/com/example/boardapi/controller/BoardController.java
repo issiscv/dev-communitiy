@@ -152,6 +152,7 @@ public class BoardController {
         boardRetrieveResponseDto.setMemberId(board.getMember().getId());
         boardRetrieveResponseDto.setAuthor(board.getMember().getName());
         boardRetrieveResponseDto.setComments(commentResponseDtoList);
+        boardRetrieveResponseDto.setCommentSize(board.getCommentSize());
 
 
         //ip
@@ -207,11 +208,6 @@ public class BoardController {
         List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
                     BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    List<Comment> comments = commentService.retrieveAllByBoardId(board.getId());
-                    int commentsSize = comments.size();
-
-                    boardRetrieveOneResponseDto.setComments(commentsSize);
-
                     return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());
@@ -262,9 +258,6 @@ public class BoardController {
                     BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
                     List<Comment> comments = commentService.retrieveAllByBoardId(board.getId());
-                    int commentsSize = comments.size();
-
-                    boardRetrieveOneResponseDto.setComments(commentsSize);
 
                     return boardRetrieveOneResponseDto;
                 }
@@ -360,7 +353,7 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
-    @ApiOperation(value = "게시글의  좋아요", notes = "게시글을 좋아합니다.")
+    @ApiOperation(value = "게시글의 좋아요", notes = "게시글을 좋아합니다.")
     @ApiResponses({
             @ApiResponse(code = 204, message = "게시글 좋아요를 정상적으로 수행했습니다."),
             @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),

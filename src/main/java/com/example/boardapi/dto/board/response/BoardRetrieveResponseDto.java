@@ -33,9 +33,12 @@ public class BoardRetrieveResponseDto {
     @ApiModelProperty(required = true, value = "좋아요")
     private int likes;
 
-    @ApiModelProperty(required = true, value = "좋아요")
-    private int comments;
+    @ApiModelProperty(required = true, value = "댓글 수")
+    private int commentSize;
 
     @ApiModelProperty(required = true, value = "게시글 유형")
     private BoardType boardType;
+
+    @ApiModelProperty(required = true, value = "조회 수")
+    private int views;
 }

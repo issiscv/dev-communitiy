@@ -45,4 +45,8 @@ public class BoardRetrieveDetailResponseDto {
 
     @ApiModelProperty(required = true, value = "조회 수")
     private int views;
+
+    @ApiModelProperty(required = true, value = "댓글 수")
+    private int commentSize;
+
 }
