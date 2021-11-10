@@ -84,4 +84,8 @@ public class Board {
     public void increaseComments() {
         ++this.commentSize;
     }
+
+    public void decreaseComments() {
+        --this.commentSize;
+    }
 }

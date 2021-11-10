@@ -181,7 +181,7 @@ public class BoardController {
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByType(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
             @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type,
-            @RequestParam(defaultValue = "date") String sort) {
+            @ApiParam(value = "게시글 정렬 유형 쿼리스트링", required = true, example = "createdDate, likes, commentSize, views") @RequestParam(defaultValue = "createdDate") String sort) {
 
         //몇 번 페이지를 찾을지 쿼리를 날리기 위한 변수
         int num = 0;
@@ -192,9 +192,13 @@ public class BoardController {
             //쿼리스트링이 없을 경우 1로 초기화
             page = 1;
         }
-        
+
+        if (!(sort.equals("createdDate") || sort.equals("likes") || sort.equals("commentSize") || sort.equals("views"))) {
+            throw new NotValidQueryStringException("sort의 value로 createdDate, likes, commentSize, views의 퀄리 스트링만 입력해주세요.");
+        }
+
         //페이징 기준
-        PageRequest pageRequest = PageRequest.of(num, 15, Sort.by(Sort.Direction.DESC, "createdDate"));
+        PageRequest pageRequest = PageRequest.of(num, 15, Sort.by(Sort.Direction.DESC, sort));
         //페이징 방식 대로 조회
         Page<Board> boardPage = boardService.retrieveAllWithPagingByType(pageRequest, type);
 
@@ -247,7 +251,7 @@ public class BoardController {
     @GetMapping("/best-likes")
     public ResponseEntity<EntityModel<BoardRetrieveAllByDateResponseDto>> retrieveAllBoardWeeklyBestByType() {
 
-        PageRequest pageRequest = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "likes"));
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "likes"));
 
         Page<Board> page = boardService.retrieveByTypeAndWeeklyBestBoardsWithPaging(pageRequest);
 
@@ -490,7 +494,7 @@ public class BoardController {
                                         HttpServletRequest request) {
         //게시글이 존재하는지 검사
         Board board = boardService.retrieveOne(boardId);
-        
+
         //댓글이 존재하는 확인
         Comment comment = commentService.retrieveOne(commentId);
 
@@ -502,7 +506,7 @@ public class BoardController {
         }
 
         //삭제
-        commentService.deleteComment(commentId);
+        commentService.deleteComment(boardId, commentId);
 
         return ResponseEntity.noContent().build();
     }

@@ -72,8 +72,11 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(Long id) {
+    public void deleteComment(Long boardId, Long id) {
         try {
+            Board board = boardService.retrieveOne(boardId);
+            board.decreaseComments();
+
             commentRepository.deleteById(id);
         } catch (Exception e) {
             throw new CommentNotFoundException("해당 댓글을 찾을 수 없습니다.");

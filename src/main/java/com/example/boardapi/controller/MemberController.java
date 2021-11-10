@@ -321,7 +321,7 @@ public class MemberController {
     }
 
 
-    //특정 사용자가 작성한 모든 댓글
+    //특정 사용자가 작성한 댓글의 게시글
     @ApiOperation(value = "사용자가 작성한 댓글의 게시글", notes = "회원의 모든 댓글 조회를 위해 회원의 PK를 경로 변수에 넣어주세요")
     @ApiResponses({
             @ApiResponse(code = 200, message = "성공적으로 회원 사용자의 댓글 조회하였습니다.."),
