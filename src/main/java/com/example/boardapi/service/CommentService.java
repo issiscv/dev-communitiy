@@ -2,6 +2,7 @@ package com.example.boardapi.service;
 
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
+import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.CommentNotFoundException;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 
 @Service
@@ -18,15 +20,15 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final BoardService boardService;
+    private final EntityManager em;
     /**
      * 댓글 저장
      */
     @Transactional
-    public Comment save(Long boardId, Comment comment) {
+    public Comment save(Member member, Board board, Comment comment) {
         Comment saveComment = commentRepository.save(comment);
 
-        Board board = boardService.retrieveOne(boardId);
+        member.increaseActiveScore(2);
         board.increaseComments();
 
         return saveComment;
@@ -64,6 +66,9 @@ public class CommentService {
         return allByBoardId;
     }
 
+    /**
+     * 댓글 수정
+     */
     @Transactional
     public Comment editComment(Long id, CommentEditRequestDto commentEditRequestDto) {
         Comment comment = retrieveOne(id);
@@ -71,13 +76,20 @@ public class CommentService {
         return comment;
     }
 
+    /**
+     * 댓글 삭제
+     */
     @Transactional
-    public void deleteComment(Long boardId, Long id) {
+    public void deleteComment(Board board, Member member,Long id) {
         try {
-            Board board = boardService.retrieveOne(boardId);
             board.decreaseComments();
+            member.decreaseActiveScore(2);
+
+            em.flush();
+            em.clear();
 
             commentRepository.deleteById(id);
+
         } catch (Exception e) {
             throw new CommentNotFoundException("해당 댓글을 찾을 수 없습니다.");
         }

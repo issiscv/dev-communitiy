@@ -76,18 +76,7 @@ public class BoardController {
         Board mappedBoard = modelMapper.map(boardCreateRequestDto, Board.class);
         mappedBoard.setMember(member);
 
-        //쿼리스트링에 맞게 엔티티에 매핑
-        if (type.equals("free")) {
-            mappedBoard.setBoardType(BoardType.FREE);
-        } else if (type.equals("qna")) {
-            mappedBoard.setBoardType(BoardType.QNA);
-        } else if (type.equals("tech")) {
-            mappedBoard.setBoardType(BoardType.TECH);
-        } else {
-            throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
-        }
-
-        Board savedBoard = boardService.save(mappedBoard);
+        Board savedBoard = boardService.save(mappedBoard, member, type);
 
         //응답 DTO
         BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(savedBoard, BoardCreateResponseDto.class);
@@ -349,7 +338,7 @@ public class BoardController {
             throw new NotOwnBoardException("게시글의 권한이 없습니다.");
         }
 
-        boardService.deleteBoard(boardId);
+        boardService.deleteBoard(member, boardId);
 
         return ResponseEntity.noContent().build();
     }
@@ -403,7 +392,7 @@ public class BoardController {
         Comment comment = modelMapper.map(commentCreateRequestDto, Comment.class);
         comment.setBoard(board);
         comment.setMember(member);
-        Comment saveComment = commentService.save(boardId, comment);
+        Comment saveComment = commentService.save(member, board, comment);
 
         //엔티티를 DTO로 변환
         CommentCreateResponseDto commentResponseDto = modelMapper.map(saveComment, CommentCreateResponseDto.class);
@@ -506,7 +495,7 @@ public class BoardController {
         }
 
         //삭제
-        commentService.deleteComment(boardId, commentId);
+        commentService.deleteComment(board, member, commentId);
 
         return ResponseEntity.noContent().build();
     }

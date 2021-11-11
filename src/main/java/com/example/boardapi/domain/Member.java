@@ -2,6 +2,7 @@ package com.example.boardapi.domain;
 
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,6 +39,8 @@ public class Member implements UserDetails {
     private int age;
 
     private String address;
+
+    private int activeScore;
 
     @CreatedDate
     private LocalDateTime createdDate;
@@ -67,6 +71,15 @@ public class Member implements UserDetails {
         this.name = editMemberDto.getName();
         this.age = editMemberDto.getAge();
         this.address = editMemberDto.getAddress();
+    }
+
+    public void increaseActiveScore(int score) {
+        this.activeScore += score;
+    }
+
+    public void decreaseActiveScore(int score) {
+        this.activeScore -= score;
+        log.info("member = {}", this.activeScore);
     }
 
     @Override

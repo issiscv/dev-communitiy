@@ -27,4 +27,7 @@ public class MemberRetrieveResponseDto {
 
     @ApiModelProperty(required = true, value = "회원의 주소", example = "서울 강남구 테헤란로")
     private String address;
+
+    @ApiModelProperty(required = true, value = "회원의 활동 점수", example = "8002")
+    private String activeScore;
 }
