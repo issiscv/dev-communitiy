@@ -1,6 +1,6 @@
 package com.example.boardapi.dto.board.response;
 
-import com.example.boardapi.domain.enumtype.BoardType;
+import com.example.boardapi.entity.enumtype.BoardType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;

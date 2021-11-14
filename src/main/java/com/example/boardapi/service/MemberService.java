@@ -1,7 +1,6 @@
 package com.example.boardapi.service;
 
-import com.example.boardapi.domain.Board;
-import com.example.boardapi.domain.Member;
+import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.exception.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.exception.UserNotFoundException;

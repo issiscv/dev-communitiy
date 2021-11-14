@@ -1,6 +1,6 @@
 package com.example.boardapi.security.JWT;
 
-import com.example.boardapi.domain.Member;
+import com.example.boardapi.entity.Member;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

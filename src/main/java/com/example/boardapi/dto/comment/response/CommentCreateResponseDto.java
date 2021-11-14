@@ -1,14 +1,8 @@
 package com.example.boardapi.dto.comment.response;
 
-import com.example.boardapi.domain.Board;
-import com.example.boardapi.domain.Member;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 

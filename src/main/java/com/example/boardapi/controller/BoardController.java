@@ -1,8 +1,8 @@
 package com.example.boardapi.controller;
 
-import com.example.boardapi.domain.Board;
-import com.example.boardapi.domain.Comment;
-import com.example.boardapi.domain.Member;
+import com.example.boardapi.entity.Board;
+import com.example.boardapi.entity.Comment;
+import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.*;
@@ -240,7 +240,7 @@ public class BoardController {
     @GetMapping("/best-likes")
     public ResponseEntity<EntityModel<BoardRetrieveAllByWeekResponseDto>> retrieveAllBoardWeeklyBestByType() {
 
-        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "likes"));
+        PageRequest pageRequest = PageRequest.of(0, 10);
 
         Page<Board> page = boardService.retrieveByTypeAndWeeklyBestBoardsWithPaging(pageRequest);
 

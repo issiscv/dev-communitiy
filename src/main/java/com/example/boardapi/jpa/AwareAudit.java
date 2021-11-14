@@ -1,18 +1,13 @@
 package com.example.boardapi.jpa;
 
-import com.example.boardapi.domain.Member;
+import com.example.boardapi.entity.Member;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 

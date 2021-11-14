@@ -1,8 +1,8 @@
 package com.example.boardapi.service;
 
-import com.example.boardapi.domain.Board;
-import com.example.boardapi.domain.Comment;
-import com.example.boardapi.domain.Member;
+import com.example.boardapi.entity.Board;
+import com.example.boardapi.entity.Comment;
+import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.CommentNotFoundException;

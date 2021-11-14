@@ -1,6 +1,6 @@
-package com.example.boardapi.domain;
+package com.example.boardapi.entity;
 
-import com.example.boardapi.domain.enumtype.BoardType;
+import com.example.boardapi.entity.enumtype.BoardType;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;

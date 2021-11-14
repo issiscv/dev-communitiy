@@ -1,6 +1,6 @@
 package com.example.boardapi.controller;
 
-import com.example.boardapi.domain.Comment;
+import com.example.boardapi.entity.Comment;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.service.CommentService;
 import lombok.*;

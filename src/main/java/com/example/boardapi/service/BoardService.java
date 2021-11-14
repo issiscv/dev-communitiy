@@ -1,16 +1,14 @@
 package com.example.boardapi.service;
 
-import com.example.boardapi.domain.Board;
-import com.example.boardapi.domain.Member;
-import com.example.boardapi.domain.enumtype.BoardType;
+import com.example.boardapi.entity.Board;
+import com.example.boardapi.entity.Member;
+import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.repository.CommentRepository;
-import com.example.boardapi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -100,7 +98,7 @@ public class BoardService {
         return allWithPaging;
     }
 
-    //일, 주, 월 이내의 best 게시글 5개 조회
+    //일, 주, 월 이내의 best 게시글 10개 조회
     public Page<Board> retrieveByTypeAndWeeklyBestBoardsWithPaging(Pageable pageable) {
         LocalDateTime beforeDate = LocalDateTime.of(LocalDate.now().minusDays(7), LocalTime.of(0,0,0));
 
