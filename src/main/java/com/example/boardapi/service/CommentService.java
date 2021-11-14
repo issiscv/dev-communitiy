@@ -6,6 +6,7 @@ import com.example.boardapi.domain.Member;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.CommentNotFoundException;
+import com.example.boardapi.exception.exception.SelectedCommentExistException;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -100,7 +101,8 @@ public class CommentService {
     }
 
     @Transactional
-    public void updateCommentLike(Long commentId) {
+    public void updateCommentLike(Member member, Long commentId) {
+        member.getLikeId().add(commentId);
         Comment comment = retrieveOne(commentId);
         int like = comment.getLikes();
         comment.setLikes(++like);
@@ -108,5 +110,21 @@ public class CommentService {
 
     public void deleteAllOwnComment(Long memberId) {
         commentRepository.deleteAllByMemberId(memberId);
+    }
+
+    @Transactional
+    public void selectComment(Board board, Long commentId) {
+        
+        //이미 채택하였으면 에러 던짐
+        if (board.isSelected()) {
+            throw new SelectedCommentExistException("이미 댓글을 채택하셧습니다.");
+        }
+
+        //댓글 채택
+        Comment comment = retrieveOne(commentId);
+        comment.setSelected(true);
+
+        //게시글도 체크
+        board.setSelected(true);
     }
 }

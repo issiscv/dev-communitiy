@@ -49,6 +49,8 @@ public class Comment {
 
     private int likes;
 
+    private boolean isSelected;
+
     public void setLikes(int like) {
         this.likes = like;
     }
@@ -63,5 +65,9 @@ public class Comment {
 
     public void setBoard(Board board) {
         this.board = board;
+    }
+
+    public void setSelected(boolean selected) {
+        this.isSelected = selected;
     }
 }

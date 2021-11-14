@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BoardRetrieveAllByDateResponseDto {
+public class BoardRetrieveAllByWeekResponseDto {
 
     @ApiModelProperty(required = true, value = "해당 페이지의 게시글 들")
     List<BoardRetrieveResponseDto> contents;

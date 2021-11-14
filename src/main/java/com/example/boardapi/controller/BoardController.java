@@ -3,7 +3,6 @@ package com.example.boardapi.controller;
 import com.example.boardapi.domain.Board;
 import com.example.boardapi.domain.Comment;
 import com.example.boardapi.domain.Member;
-import com.example.boardapi.domain.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.*;
@@ -130,6 +129,7 @@ public class BoardController {
                     .createdDate(comment.getCreatedDate())
                     .lastModifiedDate(comment.getLastModifiedDate())
                     .likes(comment.getLikes())
+                    .isSelected(comment.isSelected())
                     .build();
 
             commentResponseDtoList.add(commentRetrieveResponseDto);
@@ -238,7 +238,7 @@ public class BoardController {
             @ApiResponse(code = 400, message = "쿼리스트링을 잘못 입력하셨습니다.")
     })
     @GetMapping("/best-likes")
-    public ResponseEntity<EntityModel<BoardRetrieveAllByDateResponseDto>> retrieveAllBoardWeeklyBestByType() {
+    public ResponseEntity<EntityModel<BoardRetrieveAllByWeekResponseDto>> retrieveAllBoardWeeklyBestByType() {
 
         PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "likes"));
 
@@ -253,13 +253,13 @@ public class BoardController {
                 }
         ).collect(Collectors.toList());
 
-        BoardRetrieveAllByDateResponseDto boardRetrieveAllByDateResponseDto = new BoardRetrieveAllByDateResponseDto(boardRetrieveOneResponseDtoList);
+        BoardRetrieveAllByWeekResponseDto boardRetrieveAllByDateResponseDto = new BoardRetrieveAllByWeekResponseDto(boardRetrieveOneResponseDtoList);
 
         //ip
         String ip = getIp();
 
         //hateoas 기능 추가
-        EntityModel<BoardRetrieveAllByDateResponseDto> model = EntityModel.of(boardRetrieveAllByDateResponseDto);
+        EntityModel<BoardRetrieveAllByWeekResponseDto> model = EntityModel.of(boardRetrieveAllByDateResponseDto);
 
         WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardWeeklyBestByType());
 
@@ -400,6 +400,7 @@ public class BoardController {
         commentResponseDto.setId(saveComment.getId());//댓글 기본키
         commentResponseDto.setBoardId(board.getId());//게시글 기본키
         commentResponseDto.setMemberId(member.getId());
+        commentResponseDto.setSelected(commentResponseDto.isSelected());
 
         //URI
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -451,6 +452,8 @@ public class BoardController {
         CommentEditResponseDto commentEditResponseDto = modelMapper.map(comment, CommentEditResponseDto.class);
         commentEditResponseDto.setAuthor(comment.getMember().getName());
         commentEditResponseDto.setBoardId(boardId);
+        commentEditResponseDto.setMemberId(member.getId());
+        commentEditResponseDto.setSelected(comment.isSelected());
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .build()
@@ -520,10 +523,9 @@ public class BoardController {
             throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
         }
 
-        member.getLikeId().add(commentId);
 
         //댓글이 존재하는지 같이 검사한다.
-        commentService.updateCommentLike(commentId);
+        commentService.updateCommentLike(member, commentId);
 
         return ResponseEntity.noContent().build();
     }
@@ -537,5 +539,21 @@ public class BoardController {
             e.printStackTrace();
         }
         return ip;
+    }
+    
+    //댓글 채택: 채택 수정, 채택 취소 안됨
+    @PutMapping("/{boardId}/comments/{commentId}/selections")
+    public ResponseEntity selectComment(@PathVariable Long boardId, @PathVariable Long commentId, HttpServletRequest request) {
+
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        //해당 게시글에도 채택 됨을 알기 위해 조회
+        Board board = boardService.retrieveOne(boardId);
+
+        //채택 표시
+        commentService.selectComment(board, commentId);
+
+        return ResponseEntity.noContent().build();
     }
 }

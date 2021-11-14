@@ -53,6 +53,8 @@ public class Board {
 
     private int commentSize;
 
+    private boolean isSelected;
+
     public void setLikes(int like) {
         this.likes = like;
     }
@@ -87,5 +89,9 @@ public class Board {
 
     public void decreaseComments() {
         --this.commentSize;
+    }
+
+    public void setSelected(boolean selected) {
+        this.isSelected = selected;
     }
 }

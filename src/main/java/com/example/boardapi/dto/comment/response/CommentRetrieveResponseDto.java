@@ -37,4 +37,7 @@ public class CommentRetrieveResponseDto {
     @ApiModelProperty(required = true, value = "좋아요")
     private int likes;
 
+    @ApiModelProperty(required = true, value = "채택된 댓글인지")
+    private boolean isSelected;
+
 }

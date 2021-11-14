@@ -41,4 +41,7 @@ public class BoardRetrieveResponseDto {
 
     @ApiModelProperty(required = true, value = "조회 수")
     private int views;
+
+    @ApiModelProperty(required = true, value = "채택 됬는지")
+    private boolean isSelected;
 }

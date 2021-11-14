@@ -39,4 +39,7 @@ public class BoardEditResponseDto {
 
     @ApiModelProperty(required = true, value = "댓글 수")
     private int commentSize;
+
+    @ApiModelProperty(required = true, value = "채택 됬는지")
+    private boolean isSelected;
 }

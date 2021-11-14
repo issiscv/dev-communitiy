@@ -46,6 +46,9 @@ public class BoardRetrieveDetailResponseDto {
     @ApiModelProperty(required = true, value = "댓글 수")
     private int commentSize;
 
+    @ApiModelProperty(required = true, value = "채택 됬는지")
+    private boolean isSelected;
+
     @ApiModelProperty(required = true, value = "게시글의 댓글 들")
     private List<CommentRetrieveResponseDto> comments;
 }

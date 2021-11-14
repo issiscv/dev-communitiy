@@ -6,7 +6,6 @@ import com.example.boardapi.domain.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.NotValidQueryStringException;
-import com.example.boardapi.exception.exception.UserNotFoundException;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.repository.CommentRepository;
 import com.example.boardapi.repository.MemberRepository;
@@ -23,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -31,7 +29,6 @@ public class BoardService {
 
     private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
-    private final MemberRepository memberRepository;
     private final EntityManager em;
 
     /**

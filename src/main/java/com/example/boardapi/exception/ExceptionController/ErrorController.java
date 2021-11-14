@@ -102,6 +102,16 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //채택을 중복으로 할 때
+    @ExceptionHandler
+    public ResponseEntity selectedCommentExistExceptionHandler(DuplicatedLikeException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+
     //검증 오류
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

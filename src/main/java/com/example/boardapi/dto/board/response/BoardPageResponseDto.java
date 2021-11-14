@@ -9,6 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+//회원의 게시글 조회시 사용
 public class BoardPageResponseDto {
 
     int currentPage;

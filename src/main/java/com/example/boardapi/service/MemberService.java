@@ -110,7 +110,6 @@ public class MemberService implements UserDetailsService{
                 .orElseThrow(
                         () -> {throw new UserNotFoundException("해당 유저가 없습니다.");}
                 );
-        log.info("memberService is implemented");
         return member;
     }
 }
