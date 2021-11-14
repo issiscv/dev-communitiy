@@ -115,13 +115,16 @@ public class CommentService {
     @Transactional
     public void selectComment(Board board, Long commentId) {
         
-        //이미 채택하였으면 에러 던짐
-        if (board.isSelected()) {
-            throw new SelectedCommentExistException("이미 댓글을 채택하셧습니다.");
+        List<Comment> comments = retrieveAllByBoardId(board.getId());
+        Comment comment = retrieveOne(commentId);
+
+        for (Comment c : comments) {
+            //이미 채택하였으면 에러 던짐
+            if (c.isSelected()) {
+                throw new SelectedCommentExistException("이미 댓글을 채택하셧습니다.");
+            }
         }
 
-        //댓글 채택
-        Comment comment = retrieveOne(commentId);
         comment.setSelected(true);
 
         //게시글도 체크

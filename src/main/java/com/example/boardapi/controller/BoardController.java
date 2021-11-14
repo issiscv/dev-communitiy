@@ -551,6 +551,10 @@ public class BoardController {
         //해당 게시글에도 채택 됨을 알기 위해 조회
         Board board = boardService.retrieveOne(boardId);
 
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("자신의 게시글만 채택할 수 있습니다.");
+        }
+
         //채택 표시
         commentService.selectComment(board, commentId);
 

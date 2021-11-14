@@ -104,7 +104,7 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
     //채택을 중복으로 할 때
     @ExceptionHandler
-    public ResponseEntity selectedCommentExistExceptionHandler(DuplicatedLikeException ex, WebRequest request) {
+    public ResponseEntity selectedCommentExistExceptionHandler(SelectedCommentExistException ex, WebRequest request) {
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
 
