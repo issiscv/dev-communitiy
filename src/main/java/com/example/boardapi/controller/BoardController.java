@@ -542,8 +542,16 @@ public class BoardController {
     }
     
     //댓글 채택: 채택 수정, 채택 취소 안됨
+    @ApiOperation(value = "게시글의 댓글 채택", notes = "게시글의 댓글을 채택합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "댓글 채택 정상적으로 수행했습니다."),
+            @ApiResponse(code = 400, message = "존재하지 않는 댓글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
+    })
     @PutMapping("/{boardId}/comments/{commentId}/selections")
-    public ResponseEntity selectComment(@PathVariable Long boardId, @PathVariable Long commentId, HttpServletRequest request) {
+    public ResponseEntity selectComment(
+            @ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
+            @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId, HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
         Member member = jwtTokenProvider.getMember(token);
