@@ -9,6 +9,7 @@ import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class BoardService {
 
     private final CommentRepository commentRepository;
@@ -136,10 +138,6 @@ public class BoardService {
      */
     @Transactional
     public void deleteBoard(Long id) {
-        em.flush();
-        em.clear();
-        //벌크 연산 시 영속성 컨텍스트를 무시하고 데이터베이스에 직접 쿼리를 날린다.
-        //벌크 연산을 수행 후 영속성 컨텍스트를 비워서, 변경이 일어나지 않는다.
         commentRepository.deleteAllByBoardId(id);
         boardRepository.deleteById(id);
     }

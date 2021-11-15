@@ -94,7 +94,8 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
     public void deleteAllByMemberId(Long memberId) {
         queryFactory
                 .delete(board)
-                .where(board.member.id.eq(memberId));
+                .where(board.member.id.eq(memberId))
+                .execute();
 
         em.flush();
         em.clear();

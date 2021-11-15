@@ -9,6 +9,7 @@ import com.example.boardapi.exception.exception.CommentNotFoundException;
 import com.example.boardapi.exception.exception.SelectedCommentExistException;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -36,12 +38,22 @@ public class CommentService {
     }
 
     /**
-     * 단건 조회 댓글까지
+     * 단건 조회
      */
     public Comment retrieveOne(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(() -> {
             throw new CommentNotFoundException("해당 댓글이 없습니다.");
         }
+        );
+    }
+
+    /**
+     * 단건 조회, 회원 페치 조인
+     */
+    public Comment retrieveByCommentIdFetchJoinWithMember(Long commentId) {
+        return commentRepository.findByIdFetchJoinWithMember(commentId).orElseThrow(() -> {
+                    throw new CommentNotFoundException("해당 댓글이 없습니다.");
+                }
         );
     }
 
@@ -115,7 +127,7 @@ public class CommentService {
     public void selectComment(Board board, Long commentId) {
         
         List<Comment> comments = retrieveAllByBoardId(board.getId());
-        Comment comment = retrieveOne(commentId);
+        Comment comment = retrieveByCommentIdFetchJoinWithMember(commentId);
 
         for (Comment c : comments) {
             //이미 채택하였으면 에러 던짐
