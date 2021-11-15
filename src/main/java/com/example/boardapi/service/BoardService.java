@@ -84,8 +84,13 @@ public class BoardService {
         return boardRepository.findAll();
     }
 
-    public Page<Board> retrieveAllWithPagingByType(Pageable pageable, String type) {
+    public Page<Board> retrieveAllWithPagingByType(Pageable pageable, String type, String sort) {
         Page<Board> allWithPaging = null;
+
+        if (!(sort.equals("createdDate") || sort.equals("likes") || sort.equals("commentSize") || sort.equals("views"))) {
+            throw new NotValidQueryStringException("sort의 value로 createdDate, likes, commentSize, views의 퀄리 스트링만 입력해주세요.");
+        }
+
         if (type.equals("free")) {
             allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.FREE);
         } else if (type.equals("qna")) {

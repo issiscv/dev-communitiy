@@ -17,9 +17,9 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardCustom
 //    @Query("select b from Board b where b.member.id = :memberId")
 //    List<Board> findBoardByMember(@Param("memberId") Long memberId);
 //
-//    @Query(value = "select b from Board b where b.boardType = :boardType",
-//    countQuery = "select count(b) from Board b where b.boardType = :boardType")
-//    Page<Board> findAllWithPaging(Pageable pageable, @Param("boardType") BoardType boardType);
+    @Query(value = "select b from Board b where b.boardType = :boardType",
+    countQuery = "select count(b) from Board b where b.boardType = :boardType")
+    Page<Board> findAllWithPaging(Pageable pageable, @Param("boardType") BoardType boardType);
 //
 //    @Query(value = "select b from Board b where b.createdDate >= :beforeSevenDay",
 //    countQuery = "select count(b) from Board b where b.createdDate >= :beforeSevenDay")

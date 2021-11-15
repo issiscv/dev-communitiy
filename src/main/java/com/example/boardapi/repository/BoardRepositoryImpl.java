@@ -2,7 +2,6 @@ package com.example.boardapi.repository;
 
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.enumtype.BoardType;
-import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.example.boardapi.entity.QBoard.*;
-import static com.example.boardapi.entity.QMember.*;
 
 @RequiredArgsConstructor
 public class BoardRepositoryImpl implements BoardCustomRepository{
@@ -29,26 +27,26 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
                 .where(board.member.id.eq(memberId))
                 .fetch();
     }
-
-    //전체 조회, 날짜 내림차순 정렬
-    @Override
-    public Page<Board> findAllWithPaging(Pageable pageable, BoardType boardType) {
-        List<Board> content = queryFactory
-                .selectFrom(board)
-                .where(board.boardType.eq(boardType))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(board.createdDate.desc())
-                .fetch();
-
-        long total = queryFactory
-                .selectFrom(board)
-                .where(board.boardType.eq(boardType))
-                .fetchCount();
-
-
-        return new PageImpl<>(content, pageable, total);
-    }
+//
+//    //전체 조회, 날짜 내림차순 정렬
+//    @Override
+//    public Page<Board> findAllWithPaging(Pageable pageable, BoardType boardType) {
+//        List<Board> content = queryFactory
+//                .selectFrom(board)
+//                .where(board.boardType.eq(boardType))
+//                .offset(pageable.getOffset())
+//                .limit(pageable.getPageSize())
+//                .orderBy(board.createdDate.desc())
+//                .fetch();
+//
+//        long total = queryFactory
+//                .selectFrom(board)
+//                .where(board.boardType.eq(boardType))
+//                .fetchCount();
+//
+//
+//        return new PageImpl<>(content, pageable, total);
+//    }
     
     //주간 베스트, 좋아요 순으로 정렬
     @Override

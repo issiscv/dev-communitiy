@@ -182,14 +182,10 @@ public class BoardController {
             page = 1;
         }
 
-        if (!(sort.equals("createdDate") || sort.equals("likes") || sort.equals("commentSize") || sort.equals("views"))) {
-            throw new NotValidQueryStringException("sort의 value로 createdDate, likes, commentSize, views의 퀄리 스트링만 입력해주세요.");
-        }
-
         //페이징 기준
-        PageRequest pageRequest = PageRequest.of(num, 15, Sort.by(Sort.Direction.DESC, sort));
+        PageRequest pageRequest = PageRequest.of(num, 15, Sort.by(Sort.Direction.DESC, sort, "createdDate"));
         //페이징 방식 대로 조회
-        Page<Board> boardPage = boardService.retrieveAllWithPagingByType(pageRequest, type);
+        Page<Board> boardPage = boardService.retrieveAllWithPagingByType(pageRequest, type, sort);
 
         long totalElements = boardPage.getTotalElements();
 
