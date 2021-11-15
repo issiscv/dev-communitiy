@@ -135,9 +135,7 @@ public class BoardService {
      * 게시글 삭제
      */
     @Transactional
-    public void deleteBoard(Member member, Long id) {
-        member.decreaseActiveScore(3);
-
+    public void deleteBoard(Long id) {
         em.flush();
         em.clear();
         //벌크 연산 시 영속성 컨텍스트를 무시하고 데이터베이스에 직접 쿼리를 날린다.

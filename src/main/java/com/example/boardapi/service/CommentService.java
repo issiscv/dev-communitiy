@@ -81,10 +81,9 @@ public class CommentService {
      * 댓글 삭제
      */
     @Transactional
-    public void deleteComment(Board board, Member member,Long id) {
+    public void deleteComment(Board board, Long id) {
         try {
             board.decreaseComments();
-            member.decreaseActiveScore(2);
 
             em.flush();
             em.clear();
@@ -126,6 +125,13 @@ public class CommentService {
         }
 
         comment.setSelected(true);
+
+        Member boardMember = board.getMember();
+        boardMember.increaseActiveScore(10);
+
+        //채택당한 사람의 활동 점수 증가
+        Member member = comment.getMember();
+        member.increaseActiveScore(20);
 
         //게시글도 체크
         board.setSelected(true);

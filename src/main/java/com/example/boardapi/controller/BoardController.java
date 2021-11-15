@@ -334,7 +334,7 @@ public class BoardController {
             throw new NotOwnBoardException("게시글의 권한이 없습니다.");
         }
 
-        boardService.deleteBoard(member, boardId);
+        boardService.deleteBoard(boardId);
 
         return ResponseEntity.noContent().build();
     }
@@ -494,7 +494,7 @@ public class BoardController {
         }
 
         //삭제
-        commentService.deleteComment(board, member, commentId);
+        commentService.deleteComment(board, commentId);
 
         return ResponseEntity.noContent().build();
     }

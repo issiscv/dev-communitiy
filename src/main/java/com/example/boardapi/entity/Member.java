@@ -77,11 +77,6 @@ public class Member implements UserDetails {
         this.activeScore += score;
     }
 
-    public void decreaseActiveScore(int score) {
-        this.activeScore -= score;
-        log.info("member = {}", this.activeScore);
-    }
-
     @Override
     public String getUsername() {
         return null;
