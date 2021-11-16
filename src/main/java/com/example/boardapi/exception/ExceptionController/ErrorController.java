@@ -111,6 +111,15 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //채택된 댓글 수정, 삭제할 때
+    @ExceptionHandler
+    public ResponseEntity notValidEditExceptionHandler(NotValidUpdateException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
 
     //검증 오류
     @Override

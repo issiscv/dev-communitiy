@@ -94,4 +94,10 @@ public class Board {
     public void setSelected(boolean selected) {
         this.isSelected = selected;
     }
+
+    public Board(Member member, String title, String content) {
+        this.member = member;
+        this.title = title;
+        this.content = content;
+    }
 }

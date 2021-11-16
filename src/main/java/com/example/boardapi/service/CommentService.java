@@ -6,6 +6,7 @@ import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.CommentNotFoundException;
+import com.example.boardapi.exception.exception.NotValidUpdateException;
 import com.example.boardapi.exception.exception.SelectedCommentExistException;
 import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -48,16 +49,6 @@ public class CommentService {
     }
 
     /**
-     * 단건 조회, 회원 페치 조인
-     */
-    public Comment retrieveByCommentIdFetchJoinWithMember(Long commentId) {
-        return commentRepository.findByIdFetchJoinWithMember(commentId).orElseThrow(() -> {
-                    throw new CommentNotFoundException("해당 댓글이 없습니다.");
-                }
-        );
-    }
-
-    /**
      * 전체 조회
      */
     public List<Comment> retrieveAll() {
@@ -85,6 +76,9 @@ public class CommentService {
     @Transactional
     public Comment editComment(Long id, CommentEditRequestDto commentEditRequestDto) {
         Comment comment = retrieveOne(id);
+        if (comment.isSelected()) {
+            throw new NotValidUpdateException("채택된 댓글은 수정할 수 없습니다.");
+        }
         comment.setContent(commentEditRequestDto.getContent());
         return comment;
     }
@@ -99,6 +93,11 @@ public class CommentService {
 
             em.flush();
             em.clear();
+            Comment comment = retrieveOne(id);
+
+            if (comment.isSelected()) {
+                throw new NotValidUpdateException("채택된 댓글은 삭제할 수 없습니다.");
+            }
 
             commentRepository.deleteById(id);
 
@@ -127,7 +126,7 @@ public class CommentService {
     public void selectComment(Board board, Long commentId) {
         
         List<Comment> comments = retrieveAllByBoardId(board.getId());
-        Comment comment = retrieveByCommentIdFetchJoinWithMember(commentId);
+        Comment comment = retrieveOne(commentId);
 
         for (Comment c : comments) {
             //이미 채택하였으면 에러 던짐
@@ -137,7 +136,8 @@ public class CommentService {
         }
 
         comment.setSelected(true);
-
+        
+        //채택한 사람도 증가
         Member boardMember = board.getMember();
         boardMember.increaseActiveScore(10);
 

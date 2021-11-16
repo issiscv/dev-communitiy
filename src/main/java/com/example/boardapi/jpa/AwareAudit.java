@@ -30,20 +30,5 @@ public class AwareAudit implements AuditorAware<String> {
         } else {
             return null;
         }
-
-
-//        Optional<String> user = Optional.ofNullable(SecurityContextHolder.getContext())
-//                .map(SecurityContext::getAuthentication)
-//                .map(authentication -> {
-//                    List<GrantedAuthority> auth = (List<GrantedAuthority>) authentication.getAuthorities();
-//                    boolean isUser = auth.contains(new SimpleGrantedAuthority("ROLE_USER"));
-//
-//                    if (isUser)  {
-//                        Member principal = (Member)authentication.getPrincipal();
-//                        return principal.getName();
-//                    }
-//                    return null;
-//                });
-
     }
 }

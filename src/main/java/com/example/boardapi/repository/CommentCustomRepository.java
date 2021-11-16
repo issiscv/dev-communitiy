@@ -11,8 +11,6 @@ import java.util.Optional;
 
 public interface CommentCustomRepository {
 
-    Optional<Comment> findByIdFetchJoinWithMember(Long commentId);
-
     List<Comment> findAllByBoardId(Long boardId);
 
     void deleteAllByBoardId(Long boardId);
