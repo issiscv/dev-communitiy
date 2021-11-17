@@ -55,28 +55,30 @@ public class Board {
 
     private boolean isSelected;
 
-    public void setLikes(int like) {
-        this.likes = like;
-    }
-
-    public void setMember(Member member) {
+    public Board(Member member, String content, String title) {
         this.member = member;
-    }
-
-    public void setTitle(String title) {
+        this.content = content;
         this.title = title;
     }
 
-    public void setContent(String content) {
+    public void changeLike(int like) {
+        this.likes = like;
+    }
+
+    public void changeMember(Member member) {
+        this.member = member;
+    }
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeContent(String content) {
         this.content = content;
     }
 
-    public void setBoardType(BoardType boardType) {
+    public void changeBoardType(BoardType boardType) {
         this.boardType = boardType;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public void increaseViews() {
@@ -91,13 +93,7 @@ public class Board {
         --this.commentSize;
     }
 
-    public void setSelected(boolean selected) {
+    public void chooseSelection(boolean selected) {
         this.isSelected = selected;
-    }
-
-    public Board(Member member, String title, String content) {
-        this.member = member;
-        this.title = title;
-        this.content = content;
     }
 }

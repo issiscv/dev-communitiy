@@ -40,20 +40,30 @@ public class BoardRepositoryTest {
         SecurityContextHolder.getContext()
                 .setAuthentication(new UsernamePasswordAuthenticationToken(
                         "김상운", "1234", new ArrayList<SimpleGrantedAuthority>()));
-        memberRepository.save(member);
+
+        em.persist(member);
+
 
         Board board = new Board(member, "제목", "본문");
+        Board board1 = new Board(member, "제목", "본문");
+        Board board2 = new Board(member, "제목", "본문");
+        Board board3 = new Board(member, "제목", "본문");
+        Board board4 = new Board(member, "제목", "본문");
+        Board board5 = new Board(member, "제목", "본문");
 
-        boardRepository.save(board);
+        em.persist(board);
+        em.persist(board1);
+        em.persist(board2);
+        em.persist(board3);
+        em.persist(board4);
+        em.persist(board5);
 
         em.flush();
         em.clear();
 
-        Board boardTest = boardRepository.findById(board.getId()).orElse(null);
+        Member member1 = memberRepository.findById(member.getId()).orElse(null);
 
-        System.out.println("//1//");
-        System.out.println("boardTest.getMember().getName() = " + boardTest.getMember());
-        System.out.println("//1//");
-
+        int size = member1.getScrapList().size();
+        System.out.println("size = " + size);
     }
 }

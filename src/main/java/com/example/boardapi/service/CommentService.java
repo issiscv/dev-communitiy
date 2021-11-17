@@ -79,7 +79,7 @@ public class CommentService {
         if (comment.isSelected()) {
             throw new NotValidUpdateException("채택된 댓글은 수정할 수 없습니다.");
         }
-        comment.setContent(commentEditRequestDto.getContent());
+        comment.changeContent(commentEditRequestDto.getContent());
         return comment;
     }
 
@@ -134,7 +134,7 @@ public class CommentService {
             }
         }
 
-        comment.setSelected(true);
+        comment.chooseSelection(true);
 
         //채택한 사람도 증가
         Member boardMember = board.getMember();
@@ -145,6 +145,6 @@ public class CommentService {
         member.increaseActiveScore(20);
 
         //게시글도 체크
-        board.setSelected(true);
+        board.chooseSelection(true);
     }
 }

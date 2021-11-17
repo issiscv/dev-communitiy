@@ -72,7 +72,7 @@ public class BoardController {
 
         //DTO 를 Board 엔티티로 매핑 하고 저장
         Board mappedBoard = modelMapper.map(boardCreateRequestDto, Board.class);
-        mappedBoard.setMember(member);
+        mappedBoard.changeMember(member);
 
         Board savedBoard = boardService.save(mappedBoard, member, type);
 
@@ -278,7 +278,6 @@ public class BoardController {
         List<Board> scrapList = member.getScrapList();
 
         if (scrapList.contains(board)) {
-            log.info("무야~");
             boardService.deScrapBoard(member, board);
             return ResponseEntity.noContent().build();
         }
@@ -406,8 +405,8 @@ public class BoardController {
 
         //DTO 를 변환 엔티티로 변환
         Comment comment = modelMapper.map(commentCreateRequestDto, Comment.class);
-        comment.setBoard(board);
-        comment.setMember(member);
+        comment.changeBoard(board);
+        comment.changeMember(member);
         Comment saveComment = commentService.save(member, board, comment);
 
         //엔티티를 DTO로 변환

@@ -39,11 +39,11 @@ public class BoardService {
 
         //쿼리스트링에 맞게 엔티티에 매핑
         if (type.equals("free")) {
-            board.setBoardType(BoardType.FREE);
+            board.changeBoardType(BoardType.FREE);
         } else if (type.equals("qna")) {
-            board.setBoardType(BoardType.QNA);
+            board.changeBoardType(BoardType.QNA);
         } else if (type.equals("tech")) {
-            board.setBoardType(BoardType.TECH);
+            board.changeBoardType(BoardType.TECH);
         } else {
             throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
         }
@@ -128,8 +128,8 @@ public class BoardService {
         //retrieveOne 메서드에서 예외 처리 해줌
         Board board = retrieveOne(id);
         
-        board.setTitle(boardEditRequestDto.getTitle());
-        board.setContent(boardEditRequestDto.getContent());
+        board.changeTitle(boardEditRequestDto.getTitle());
+        board.changeContent(boardEditRequestDto.getContent());
         return board;
     }
 
@@ -153,7 +153,7 @@ public class BoardService {
     public void updateBoardLike(Long boardId) {
         Board board = retrieveOne(boardId);
         int like = board.getLikes();
-        board.setLikes(++like);
+        board.changeLike(++like);
     }
 
     public void deleteAllOwnBoard(Long memberId) {

@@ -56,7 +56,15 @@ public class Member implements UserDetails {
     private List<Long> likeId = new ArrayList<>();
 
     @OneToMany
+    @JoinTable(name = "scrap",
+    joinColumns = @JoinColumn(name = "member_id"),
+    inverseJoinColumns = @JoinColumn(name = "board_id"))
     private List<Board> scrapList = new ArrayList<>();
+
+    public Member(String name, int age, String role) {
+        this.name = name;
+        this.age = age;
+    }
 
     //권한을 가져오는 이 메서드는, 인증 객체를 만들어줄 때 필요하다.
     @Override
@@ -103,12 +111,5 @@ public class Member implements UserDetails {
     @Override
     public boolean isEnabled() {
         return false;
-    }
-
-    public Member(String name, int age, String role) {
-        this.name = name;
-        this.age = age;
-        this.roles = new ArrayList();
-        roles.add(role);
     }
 }

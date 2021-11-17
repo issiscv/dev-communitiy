@@ -55,19 +55,19 @@ public class Comment {
         this.likes = like;
     }
 
-    public void setContent(String content) {
+    public void changeContent(String content) {
         this.content = content;
     }
 
-    public void setMember(Member member) {
+    public void changeMember(Member member) {
         this.member = member;
     }
 
-    public void setBoard(Board board) {
+    public void changeBoard(Board board) {
         this.board = board;
     }
 
-    public void setSelected(boolean selected) {
+    public void chooseSelection(boolean selected) {
         this.isSelected = selected;
     }
 }
