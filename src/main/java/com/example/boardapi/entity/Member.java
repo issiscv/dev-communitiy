@@ -55,6 +55,9 @@ public class Member implements UserDetails {
     @ElementCollection
     private List<Long> likeId = new ArrayList<>();
 
+    @OneToMany
+    private List<Board> scrapList = new ArrayList<>();
+
     //권한을 가져오는 이 메서드는, 인증 객체를 만들어줄 때 필요하다.
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

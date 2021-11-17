@@ -40,7 +40,6 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
                 authentication = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (UserNotFoundException e) {
-                log.info("token`s user does not exist");
                 request.setAttribute("exception", TokenErrorCode.NOT_EXIST_USER_TOKEN);
             }
             //securityContext 에 인증 객체를 넣어줘야 하는 이유 : securityContext 에 인증 객체가 저장 되어야 인증이 성공했다고 판단해서.

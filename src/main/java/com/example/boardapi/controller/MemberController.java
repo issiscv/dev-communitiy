@@ -2,7 +2,6 @@ package com.example.boardapi.controller;
 
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Comment;
-import com.example.boardapi.dto.board.response.BoardPageResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveAllPagingResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
@@ -37,6 +36,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.InetAddress;
@@ -60,6 +60,7 @@ public class MemberController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final CommentService commentService;
+    private final EntityManager em;
 
     //회원 가입 api
     @ApiOperation(value = "회원가입", notes = "MemberJoinRequestDto DTO 를 통해 회원가입을 진행합니다.")
@@ -326,7 +327,7 @@ public class MemberController {
             @ApiResponse(code = 400, message = "존재하지 않는 회원입니다 or 잘못된 요청 or 검증 실패"),
     })
     @GetMapping("/members/{memberId}/comments")
-    public ResponseEntity<EntityModel<BoardPageResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
+    public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
                                                                                              @RequestParam(defaultValue = "1") String page,
                                                                                    HttpServletRequest request) {
 
@@ -357,7 +358,7 @@ public class MemberController {
             list.add(boardRetrieveOneResponseDto);
         }
 
-        BoardPageResponseDto boardPageResponseDto = BoardPageResponseDto.builder()
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
                 .currentPage(Integer.parseInt(page))
                 .totalPage(((list.size()-1) / size) + 1)
                 .totalElements(list.size())
@@ -368,7 +369,7 @@ public class MemberController {
 
         for (int i = (num -1) * size; i < num * size; i++) {
             try {
-            boardPageResponseDto.getContents().add(list.get(i));
+                boardRetrieveAllPagingResponseDto.getContents().add(list.get(i));
             } catch (IndexOutOfBoundsException e) {
                 break;
             }
@@ -378,12 +379,51 @@ public class MemberController {
         String ip = getIp();
 
         //hateoas 기능 추가
-        EntityModel<BoardPageResponseDto> model = EntityModel.of(boardPageResponseDto);
+        EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
         WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page, request));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
 
         return ResponseEntity.ok().body(model);
+    }
+
+    /**
+     * 사용자의 스크랩 목록
+     */
+    @GetMapping("/members/{memberId}/scraps")
+    public ResponseEntity retrieveAllScrapBoards(@PathVariable Long memberId, @RequestParam(defaultValue = "1") String page) {
+
+        int num = Integer.parseInt(page);
+        int size = 15;
+
+        Member member = memberService.retrieveOne(memberId);
+        List<Board> boards = member.getScrapList();
+
+        List<BoardRetrieveResponseDto> list = boards.stream().map(b -> {
+                BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(b, BoardRetrieveResponseDto.class);
+                boardRetrieveResponseDto.setAuthor(b.getMember().getName());
+                return boardRetrieveResponseDto;
+            }
+        ).collect(Collectors.toList());
+
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
+                .currentPage(Integer.parseInt(page))
+                .totalPage(((list.size()-1) / size) + 1)
+                .totalElements(list.size())
+                .contents(new ArrayList<>())
+                .build();
+
+        Collections.reverse(list);
+
+        for (int i = (num -1) * size; i < num * size; i++) {
+            try {
+                boardRetrieveAllPagingResponseDto.getContents().add(list.get(i));
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+
+        return ResponseEntity.ok(boardRetrieveAllPagingResponseDto);
     }
 }

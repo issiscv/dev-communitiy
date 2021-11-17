@@ -22,20 +22,19 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         //X-AUTH-TOKEN 헤더를 넣지 않으면 null
         if (message == null) {
-            setResponse(response, "request header must contain X-AUTH-TOKEN header", details);
+            setResponse(response, "request header must contain X-AUTH-TOKEN header");
             return;
         } else {
-            setResponse(response, message, details);
+            setResponse(response, message);
         }
     }
-    public void setResponse(HttpServletResponse response, String message, String details) throws IOException {
+    public void setResponse(HttpServletResponse response, String message) throws IOException {
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().println(
                         "{ \"timestamp\" : \"" + new Date() + "\"," +
-                        " \"message\" : \"" +  message + "\"," +
-                        " \"details\" : " + details + "\"");
+                        " \"message\" : \"" +  message + "\"");
     }
 
 

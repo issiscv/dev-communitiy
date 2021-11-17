@@ -13,7 +13,6 @@ import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.exception.exception.DuplicatedLikeException;
 import com.example.boardapi.exception.exception.NotOwnBoardException;
-import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
@@ -266,6 +265,27 @@ public class BoardController {
         //페이징 hateoas 를 위한 로직이다.
 
         return ResponseEntity.ok().body(model);
+    }
+
+    //스크랩
+    @PutMapping("/{boardId}/scraps")
+    public ResponseEntity scrapBoard(@PathVariable Long boardId, HttpServletRequest request) {
+        String token = jwtTokenProvider.resolveToken(request);
+        Member member = jwtTokenProvider.getMember(token);
+
+        Board board = boardService.retrieveOne(boardId);
+
+        List<Board> scrapList = member.getScrapList();
+
+        if (scrapList.contains(board)) {
+            log.info("무야~");
+            boardService.deScrapBoard(member, board);
+            return ResponseEntity.noContent().build();
+        }
+
+        boardService.scrapBoard(member, board);
+
+        return ResponseEntity.noContent().build();
     }
 
     //수정 PUT

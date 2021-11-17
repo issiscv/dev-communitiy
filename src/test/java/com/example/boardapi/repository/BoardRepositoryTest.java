@@ -52,7 +52,7 @@ public class BoardRepositoryTest {
         Board boardTest = boardRepository.findById(board.getId()).orElse(null);
 
         System.out.println("//1//");
-        System.out.println("boardTest.getMember().getName() = " + boardTest.getMember().getName());
+        System.out.println("boardTest.getMember().getName() = " + boardTest.getMember());
         System.out.println("//1//");
 
     }

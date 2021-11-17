@@ -88,22 +88,20 @@ public class CommentService {
      */
     @Transactional
     public void deleteComment(Board board, Long id) {
+        Comment comment = retrieveOne(id);
+
+        if (comment.isSelected()) {
+            throw new NotValidUpdateException("채택된 댓글은 삭제할 수 없습니다.");
+        }
+
         try {
-            board.decreaseComments();
-
-            em.flush();
-            em.clear();
-            Comment comment = retrieveOne(id);
-
-            if (comment.isSelected()) {
-                throw new NotValidUpdateException("채택된 댓글은 삭제할 수 없습니다.");
-            }
-
             commentRepository.deleteById(id);
 
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             throw new CommentNotFoundException("해당 댓글을 찾을 수 없습니다.");
         }
+
+        board.decreaseComments();
     }
 
     public List<Comment> retrieveAllOwnComment(Long id) {
@@ -125,6 +123,7 @@ public class CommentService {
     @Transactional
     public void selectComment(Board board, Long commentId) {
         
+        //페치조인
         List<Comment> comments = retrieveAllByBoardId(board.getId());
         Comment comment = retrieveOne(commentId);
 
@@ -136,7 +135,7 @@ public class CommentService {
         }
 
         comment.setSelected(true);
-        
+
         //채택한 사람도 증가
         Member boardMember = board.getMember();
         boardMember.increaseActiveScore(10);
