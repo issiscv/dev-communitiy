@@ -11,8 +11,10 @@ import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
+import com.example.boardapi.exception.exception.AlreadyScrapedException;
 import com.example.boardapi.exception.exception.DuplicatedLikeException;
 import com.example.boardapi.exception.exception.NotOwnBoardException;
+import com.example.boardapi.exception.exception.ShortInputException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
@@ -35,7 +37,9 @@ import javax.validation.Valid;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -226,6 +230,76 @@ public class BoardController {
         return ResponseEntity.ok().body(model);
     }
 
+    //검색 GET
+    @ApiOperation(value = "게시글 검색", notes = "keyWord 에 해당하는 title or content 를 검색합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "게시글 검색 성공"),
+            @ApiResponse(code = 400, message = "글자를 2글자 이상 입력해주세요")
+    })
+    @GetMapping("/v2")
+    public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByKeyWord(
+            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
+            @ApiParam(value = "검색을 위한 쿼리 스트링", required = true) @RequestParam String keyWord) {
+
+        if (keyWord.length() < 2) {
+            throw new ShortInputException("2글자 이상 입력해주세요.");
+        }
+
+        //몇 번 페이지를 찾을지 쿼리를 날리기 위한 변수
+        int num = 0;
+
+        if (page != null) {
+            num = page - 1;
+        } else {
+            //쿼리스트링이 없을 경우 1로 초기화
+            page = 1;
+        }
+
+        //페이징 기준
+        PageRequest pageRequest = PageRequest.of(num, 15);
+        //페이징 방식 대로 조회
+        Page<Board> boardPage = boardService.retrieveAllWithPagingByKeyWord(pageRequest, keyWord);
+
+        long totalElements = boardPage.getTotalElements();
+
+        //총 페이지 수
+        int totalPages = boardPage.getTotalPages();
+        //해당 페이지의 컨텐트들
+        List<Board> content = boardPage.getContent();
+
+        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
+                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+                    return boardRetrieveOneResponseDto;
+                }
+        ).collect(Collectors.toList());
+
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
+                new BoardRetrieveAllPagingResponseDto(num+1, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
+
+        //ip
+        String ip = getIp();
+
+        //hateoas 기능 추가
+        EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page, keyWord));
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        //페이징 hateoas 를 위한 로직이다.
+        if (page > 1) {
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page - 1, keyWord));
+            model.add(prev.withRel("이전"));
+        }
+        if (page < totalPages) {
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page + 1, keyWord));
+            model.add(next.withRel("다음"));
+        }
+
+        return ResponseEntity.ok().body(model);
+    }
+
     //주간 best 게시글 조회 GET
     @ApiOperation(value = "게시글 1주 내 best 게시글", notes = "쿼리스트링을 활용하여 1 주 내의 best 게시글을 조회합니다.")
     @ApiResponses({
@@ -284,8 +358,7 @@ public class BoardController {
         List<Board> scrapList = member.getScrapList();
 
         if (scrapList.contains(board)) {
-            boardService.deScrapBoard(member, board);
-            return ResponseEntity.noContent().build();
+            throw new AlreadyScrapedException("이미 스크랩 하셨습니다.");
         }
 
         boardService.scrapBoard(member, board);

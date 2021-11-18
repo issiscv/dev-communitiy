@@ -120,6 +120,24 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //입력 글자가 너무 짧을 때
+    @ExceptionHandler
+    public ResponseEntity shortInputExceptionHandler(ShortInputException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    //이미 스크랩한 경우
+    @ExceptionHandler
+    public ResponseEntity alreadyScrapedExceptionHandler(AlreadyScrapedException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
 
     //검증 오류
     @Override

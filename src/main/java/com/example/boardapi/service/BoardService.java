@@ -11,6 +11,7 @@ import com.example.boardapi.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -168,5 +169,9 @@ public class BoardService {
     @Transactional
     public void deScrapBoard(Member member, Board board) {
         member.getScrapList().remove(board);
+    }
+
+    public Page<Board> retrieveAllWithPagingByKeyWord(PageRequest pageRequest, String keyWord) {
+        return boardRepository.findAllByKeyWordWithPaging(pageRequest, keyWord);
     }
 }
