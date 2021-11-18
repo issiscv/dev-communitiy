@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
+@Getter @Setter
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Board {

@@ -391,22 +391,32 @@ public class MemberController {
     /**
      * 사용자의 스크랩 목록
      */
+    @ApiOperation(value = "사용자의 스크랩 목록", notes = "사용자의 스크랩을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "조회 성공"),
+            @ApiResponse(code = 400, message = "존재하지 않는 회원 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
+    })
     @GetMapping("/members/{memberId}/scraps")
-    public ResponseEntity retrieveAllScrapBoards(@PathVariable Long memberId, @RequestParam(defaultValue = "1") String page) {
+    public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllScrapBoards(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId,
+                                                                                                 @ApiParam(value = "페이지 번호", required = true) @RequestParam(defaultValue = "1") String page) {
 
         int num = Integer.parseInt(page);
         int size = 15;
 
         Member member = memberService.retrieveOne(memberId);
+        //사용자의 스크랩 조인 테이블
         List<Board> boards = member.getScrapList();
 
+        //스크랩한 게시글을 순회하여 DTO로 변환.
         List<BoardRetrieveResponseDto> list = boards.stream().map(b -> {
                 BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(b, BoardRetrieveResponseDto.class);
                 boardRetrieveResponseDto.setAuthor(b.getMember().getName());
                 return boardRetrieveResponseDto;
             }
         ).collect(Collectors.toList());
-
+        
+        //페이징 작업
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
                 .currentPage(Integer.parseInt(page))
                 .totalPage(((list.size()-1) / size) + 1)
@@ -416,6 +426,7 @@ public class MemberController {
 
         Collections.reverse(list);
 
+        //DTO 객체내부에 게시글 엔티티를 하나씩 채워 넣음
         for (int i = (num -1) * size; i < num * size; i++) {
             try {
                 boardRetrieveAllPagingResponseDto.getContents().add(list.get(i));
@@ -424,6 +435,17 @@ public class MemberController {
             }
         }
 
-        return ResponseEntity.ok(boardRetrieveAllPagingResponseDto);
+        //ip
+        String ip = getIp();
+
+        //hateoas 기능 추가
+        EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllScrapBoards(memberId, page));
+
+        //self
+        model.add(self.withSelfRel());
+        model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        return ResponseEntity.ok(model);
     }
 }

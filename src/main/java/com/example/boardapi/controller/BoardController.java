@@ -65,7 +65,7 @@ public class BoardController {
     })
     @PostMapping("")
     public ResponseEntity<EntityModel<BoardCreateResponseDto>> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
-                                      @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam(required = true) String type, HttpServletRequest request) {
+                                      @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type, HttpServletRequest request) {
         //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
         String token = jwtTokenProvider.resolveToken(request);
         Member member = jwtTokenProvider.getMember(token);
@@ -268,8 +268,14 @@ public class BoardController {
     }
 
     //스크랩
+    @ApiOperation(value = "게시글 스크랩", notes = "게시글을 스크랩하여 저장합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "스크랩 성공"),
+            @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다."),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
+    })
     @PutMapping("/{boardId}/scraps")
-    public ResponseEntity scrapBoard(@PathVariable Long boardId, HttpServletRequest request) {
+    public ResponseEntity scrapBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
         Member member = jwtTokenProvider.getMember(token);
 
@@ -292,7 +298,7 @@ public class BoardController {
     @ApiResponses({
             @ApiResponse(code = 201, message = "게시글이 수정되었습니다."),
             @ApiResponse(code = 400, message = "존재하지 않는 게시글 입니다. or 잘못된 요청 or 검증 실패"),
-            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)"),
+            @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PutMapping("/{boardId}")
     public ResponseEntity<EntityModel<BoardEditResponseDto>> editBoard(@ApiParam(value = "게시글 수정 DTO", required = true) @RequestBody @Valid
@@ -545,16 +551,7 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
-    private String getIp() {
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        return ip;
-    }
+
     
     //댓글 채택: 채택 수정, 채택 취소 안됨
     @ApiOperation(value = "게시글의 댓글 채택", notes = "게시글의 댓글을 채택합니다.")
@@ -582,5 +579,16 @@ public class BoardController {
         commentService.selectComment(board, commentId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private String getIp() {
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return ip;
     }
 }
