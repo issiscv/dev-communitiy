@@ -5,6 +5,8 @@ import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.exception.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.exception.UserNotFoundException;
 import com.example.boardapi.repository.MemberRepository;
+import com.example.boardapi.repository.ScrapRepository;
+import com.example.boardapi.repository.ScrapService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +28,7 @@ public class MemberService implements UserDetailsService{
     private final PasswordEncoder passwordEncoder;
     private final BoardService boardService;
     private final CommentService commentService;
+    private final ScrapRepository scrapRepository;
 
     /**
      * 회원 가입
@@ -80,6 +83,7 @@ public class MemberService implements UserDetailsService{
     public void deleteMember(Long id) {
         try {
             commentService.deleteAllOwnComment(id);
+            scrapRepository.deleteByMemberId(id);
             boardService.deleteAllOwnBoard(id);
             memberRepository.deleteById(id);
 

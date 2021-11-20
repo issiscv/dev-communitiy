@@ -25,45 +25,45 @@ import static org.assertj.core.api.Assertions.*;
 @Transactional
 public class BoardRepositoryTest {
 
-    @Autowired
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private EntityManager em;
-
-    @Test
-    public void noFetchJoin() {
-        Member member = new Member("김상운", 24, "ROLE_USER");
-        SecurityContextHolder.getContext()
-                .setAuthentication(new UsernamePasswordAuthenticationToken(
-                        "김상운", "1234", new ArrayList<SimpleGrantedAuthority>()));
-
-        em.persist(member);
-
-
-        Board board = new Board(member, "제목", "본문");
-        Board board1 = new Board(member, "제목", "본문");
-        Board board2 = new Board(member, "제목", "본문");
-        Board board3 = new Board(member, "제목", "본문");
-        Board board4 = new Board(member, "제목", "본문");
-        Board board5 = new Board(member, "제목", "본문");
-
-        em.persist(board);
-        em.persist(board1);
-        em.persist(board2);
-        em.persist(board3);
-        em.persist(board4);
-        em.persist(board5);
-
-        em.flush();
-        em.clear();
-
-        Member member1 = memberRepository.findById(member.getId()).orElse(null);
-
-        int size = member1.getScrapList().size();
-        System.out.println("size = " + size);
-    }
+//    @Autowired
+//    private BoardRepository boardRepository;
+//
+//    @Autowired
+//    private MemberRepository memberRepository;
+//
+//    @Autowired
+//    private EntityManager em;
+//
+//    @Test
+//    public void noFetchJoin() {
+//        Member member = new Member("김상운", 24, "ROLE_USER");
+//        SecurityContextHolder.getContext()
+//                .setAuthentication(new UsernamePasswordAuthenticationToken(
+//                        "김상운", "1234", new ArrayList<SimpleGrantedAuthority>()));
+//
+//        em.persist(member);
+//
+//
+//        Board board = new Board(member, "제목", "본문");
+//        Board board1 = new Board(member, "제목", "본문");
+//        Board board2 = new Board(member, "제목", "본문");
+//        Board board3 = new Board(member, "제목", "본문");
+//        Board board4 = new Board(member, "제목", "본문");
+//        Board board5 = new Board(member, "제목", "본문");
+//
+//        em.persist(board);
+//        em.persist(board1);
+//        em.persist(board2);
+//        em.persist(board3);
+//        em.persist(board4);
+//        em.persist(board5);
+//
+//        em.flush();
+//        em.clear();
+//
+//        Member member1 = memberRepository.findById(member.getId()).orElse(null);
+//
+//        int size = member1.getScrapList().size();
+//        System.out.println("size = " + size);
+//    }
 }

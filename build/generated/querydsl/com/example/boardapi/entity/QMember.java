@@ -42,8 +42,6 @@ public class QMember extends EntityPathBase<Member> {
 
     public final ListPath<String, StringPath> roles = this.<String, StringPath>createList("roles", String.class, StringPath.class, PathInits.DIRECT2);
 
-    public final ListPath<Board, QBoard> scrapList = this.<Board, QBoard>createList("scrapList", Board.class, QBoard.class, PathInits.DIRECT2);
-
     public QMember(String variable) {
         super(Member.class, forVariable(variable));
     }

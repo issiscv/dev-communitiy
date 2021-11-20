@@ -205,6 +205,7 @@ public class BoardController {
         List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
                     BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+                    boardRetrieveOneResponseDto.setContent(board.getContent().substring(0, 20));
                     return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());

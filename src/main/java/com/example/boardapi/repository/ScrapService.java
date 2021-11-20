@@ -24,4 +24,5 @@ public class ScrapService {
     public List<Scrap> retrieveByMemberId(Long memberId) {
         return scrapRepository.findByMemberId(memberId);
     }
+
 }

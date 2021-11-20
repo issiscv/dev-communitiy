@@ -138,6 +138,15 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //댓글이 있는 게시글 삭제 경우
+    @ExceptionHandler
+    public ResponseEntity boardNotDeletedExceptionHandler(BoardNotDeletedException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
 
     //검증 오류
     @Override

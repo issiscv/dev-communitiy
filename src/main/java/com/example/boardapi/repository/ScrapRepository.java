@@ -2,6 +2,7 @@ package com.example.boardapi.repository;
 
 import com.example.boardapi.entity.Scrap;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -12,4 +13,11 @@ public interface ScrapRepository extends JpaRepository<Scrap, Long> {
     @Query("select s from Scrap s join fetch s.board b where s.member.id = :memberId")
     List<Scrap> findByMemberId(@Param("memberId") Long memberId);
 
+    @Query("delete from Scrap s where s.board.id = :boardId")
+    @Modifying(clearAutomatically = true)
+    void deleteByBoardId(@Param("boardId") Long boardId);
+
+    @Query("delete from Scrap s where s.member.id = :memberId")
+    @Modifying(clearAutomatically = true)
+    void deleteByMemberId(@Param("memberId") Long memberId);
 }

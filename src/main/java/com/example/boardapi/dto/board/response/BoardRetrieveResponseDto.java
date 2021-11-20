@@ -24,6 +24,9 @@ public class BoardRetrieveResponseDto {
     @ApiModelProperty(required = true, value = "게시글 제목", example = "안녕하세요!")
     private String title;
 
+    @ApiModelProperty(required = true, value = "게시글 내용", example = "본문")
+    private String content;
+
     @ApiModelProperty(required = true, value = "게시글 작성 시간")
     private LocalDateTime createdDate;
 

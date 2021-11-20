@@ -4,10 +4,13 @@ import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
+import com.example.boardapi.exception.exception.BoardNotDeletedException;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
 import com.example.boardapi.exception.exception.NotValidQueryStringException;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.repository.CommentRepository;
+import com.example.boardapi.repository.ScrapRepository;
+import com.example.boardapi.repository.ScrapService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,7 +33,7 @@ public class BoardService {
 
     private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
-    private final EntityManager em;
+    private final ScrapRepository scrapRepository;
 
     /**
      *  게시글 저장
@@ -138,9 +141,15 @@ public class BoardService {
      * 게시글 삭제
      */
     @Transactional
-    public void deleteBoard(Long id) {
-        commentRepository.deleteAllByBoardId(id);
-        boardRepository.deleteById(id);
+    public void deleteBoard(Long boardId) {
+
+        Board board = retrieveOne(boardId);
+        if (board.getCommentSize() > 1) {
+            throw new BoardNotDeletedException("댓글이 있는 게시글은 삭제할 수 없습니다.");
+        }
+
+        scrapRepository.deleteByBoardId(boardId);
+        boardRepository.deleteByBoardId(boardId);
     }
 
     /**
@@ -157,6 +166,7 @@ public class BoardService {
         board.changeLike(++like);
     }
 
+    @Transactional
     public void deleteAllOwnBoard(Long memberId) {
         boardRepository.deleteAllByMemberId(memberId);
     }

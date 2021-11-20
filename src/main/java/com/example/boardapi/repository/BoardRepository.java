@@ -20,6 +20,11 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardCustom
     @Query(value = "select b from Board b where b.boardType = :boardType",
     countQuery = "select count(b) from Board b where b.boardType = :boardType")
     Page<Board> findAllWithPaging(Pageable pageable, @Param("boardType") BoardType boardType);
+
+    @Query("delete from Board b where b.id = :boardId")
+    @Modifying(clearAutomatically = true)
+    void deleteByBoardId(@Param("boardId") Long boardId);
+
 //
 //    @Query(value = "select b from Board b where b.createdDate >= :beforeSevenDay",
 //    countQuery = "select count(b) from Board b where b.createdDate >= :beforeSevenDay")

@@ -116,6 +116,7 @@ public class CommentService {
         comment.setLikes(++like);
     }
 
+    @Transactional
     public void deleteAllOwnComment(Long memberId) {
         commentRepository.deleteAllByMemberId(memberId);
     }
