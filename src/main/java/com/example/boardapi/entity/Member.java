@@ -55,12 +55,6 @@ public class Member implements UserDetails {
     @ElementCollection
     private List<Long> likeId = new ArrayList<>();
 
-    @OneToMany
-    @JoinTable(name = "scrap",
-    joinColumns = @JoinColumn(name = "member_id"),
-    inverseJoinColumns = @JoinColumn(name = "board_id"))
-    private List<Board> scrapList = new ArrayList<>();
-
     public Member(String name, int age, String role) {
         this.name = name;
         this.age = age;

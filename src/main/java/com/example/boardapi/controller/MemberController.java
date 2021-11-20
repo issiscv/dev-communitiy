@@ -11,7 +11,10 @@ import com.example.boardapi.dto.member.response.MemberEditResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
+import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.exception.exception.NotOwnMemberException;
+import com.example.boardapi.repository.ScrapRepository;
+import com.example.boardapi.repository.ScrapService;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.exception.exception.UserNotFoundException;
@@ -36,7 +39,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.net.InetAddress;
@@ -60,7 +62,7 @@ public class MemberController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final CommentService commentService;
-    private final EntityManager em;
+    private final ScrapService scrapService;
 
     //회원 가입 api
     @ApiOperation(value = "회원가입", notes = "MemberJoinRequestDto DTO 를 통해 회원가입을 진행합니다.")
@@ -405,16 +407,18 @@ public class MemberController {
         int size = 15;
 
         Member member = memberService.retrieveOne(memberId);
-        //사용자의 스크랩 조인 테이블
-        List<Board> boards = member.getScrapList();
 
-        //스크랩한 게시글을 순회하여 DTO로 변환.
-        List<BoardRetrieveResponseDto> list = boards.stream().map(b -> {
-                BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(b, BoardRetrieveResponseDto.class);
-                boardRetrieveResponseDto.setAuthor(b.getMember().getName());
-                return boardRetrieveResponseDto;
-            }
-        ).collect(Collectors.toList());
+        List<Scrap> scraps = scrapService.retrieveByMemberId(memberId);
+
+        List<BoardRetrieveResponseDto> list = new ArrayList<>();
+
+        for (Scrap scrap : scraps) {
+            Board board = scrap.getBoard();
+
+            BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+            boardRetrieveResponseDto.setAuthor(board.getMember().getName());
+            list.add(boardRetrieveResponseDto);
+        }
         
         //페이징 작업
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()

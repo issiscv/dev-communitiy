@@ -161,16 +161,6 @@ public class BoardService {
         boardRepository.deleteAllByMemberId(memberId);
     }
 
-    @Transactional
-    public void scrapBoard(Member member, Board board) {
-        member.getScrapList().add(board);
-    }
-
-    @Transactional
-    public void deScrapBoard(Member member, Board board) {
-        member.getScrapList().remove(board);
-    }
-
     public Page<Board> retrieveAllWithPagingByKeyWord(PageRequest pageRequest, String keyWord) {
         return boardRepository.findAllByKeyWordWithPaging(pageRequest, keyWord);
     }

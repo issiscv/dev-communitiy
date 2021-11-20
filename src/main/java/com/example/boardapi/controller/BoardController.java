@@ -11,10 +11,13 @@ import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
+import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.exception.exception.AlreadyScrapedException;
 import com.example.boardapi.exception.exception.DuplicatedLikeException;
 import com.example.boardapi.exception.exception.NotOwnBoardException;
 import com.example.boardapi.exception.exception.ShortInputException;
+import com.example.boardapi.repository.ScrapRepository;
+import com.example.boardapi.repository.ScrapService;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
@@ -59,6 +62,8 @@ public class BoardController {
     private final ModelMapper modelMapper;
 
     private final CommentService commentService;
+
+    private final ScrapService scrapService;
 
     //작성 POST
     @ApiOperation(value = "게시글 작성", notes = "BoardCreateRequestDto DTO 를 통해 게시글을 생성합니다.")
@@ -355,13 +360,19 @@ public class BoardController {
 
         Board board = boardService.retrieveOne(boardId);
 
-        List<Board> scrapList = member.getScrapList();
-
-        if (scrapList.contains(board)) {
-            throw new AlreadyScrapedException("이미 스크랩 하셨습니다.");
+        List<Scrap> scraps = scrapService.retrieveByMemberId(member.getId());
+        for (Scrap scrap : scraps) {
+            if (scrap.getBoard() == board) {
+                throw new AlreadyScrapedException("이미 스크랩 하셨습니다.");
+            }
         }
 
-        boardService.scrapBoard(member, board);
+        Scrap scrap = Scrap.builder()
+                .board(board)
+                .member(member)
+                .build();
+
+        scrapService.save(scrap);
 
         return ResponseEntity.noContent().build();
     }
