@@ -178,7 +178,7 @@ public class BoardController {
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByType(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
             @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type,
-            @ApiParam(value = "게시글 정렬 유형 쿼리스트링", required = true, example = "createdDate, likes, commentSize, views") @RequestParam(defaultValue = "createdDate") String sort) {
+            @ApiParam(value = "게시글 정렬 유형 쿼리스트링", required = false, example = "createdDate, likes, commentSize, views") @RequestParam(defaultValue = "createdDate") String sort) {
 
         //몇 번 페이지를 찾을지 쿼리를 날리기 위한 변수
         int num = 0;

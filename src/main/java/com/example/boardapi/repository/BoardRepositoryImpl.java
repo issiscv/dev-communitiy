@@ -58,13 +58,12 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
     //주간 베스트, 좋아요 순으로 정렬
     @Override
     public Page<Board> findByBoardTypeInDateBestBoardsWithPaging(Pageable pageable, LocalDateTime beforeSevenDay) {
-        pageable.getSort();
         List<Board> content = queryFactory
                 .selectFrom(board)
                 .where(board.createdDate.goe(beforeSevenDay))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(board.likes.desc())
+                .orderBy(board.likes.desc(), board.createdDate.desc())
                 .fetch();//count 쿼리 같이 안나감
 
         long total = queryFactory
