@@ -205,7 +205,11 @@ public class BoardController {
         List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
                     BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    boardRetrieveOneResponseDto.setContent(board.getContent().substring(0, 20));
+                    try {
+                        boardRetrieveOneResponseDto.setContent(board.getContent().substring(0, 20));
+                    } catch (StringIndexOutOfBoundsException e) {
+                        boardRetrieveOneResponseDto.setContent(board.getContent().substring(0, board.getContent().length()));
+                    }
                     return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());
