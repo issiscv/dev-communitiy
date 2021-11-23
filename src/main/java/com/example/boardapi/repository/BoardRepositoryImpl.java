@@ -27,16 +27,17 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
     public List<Board> findBoardByMember(Long memberId) {
         return queryFactory
                 .selectFrom(board)
+
                 .where(board.member.id.eq(memberId))
                 .fetch();
     }
 
     //keyword 로 검색
     @Override
-    public Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String keyWord) {
+    public Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String keyWord, String type) {
         List<Board> content = queryFactory
                 .selectFrom(board)
-                .where(keyWordLike(keyWord))
+                .where(board.content.contains(keyWord), boardTypeEq(type))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(board.createdDate.desc())
@@ -44,15 +45,21 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
 
         long total = queryFactory
                 .selectFrom(board)
-                .where(keyWordLike(keyWord))
+                .where(board.content.contains(keyWord), boardTypeEq(type))
                 .fetchCount();
 
 
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression keyWordLike(String keyWord) {
-        return StringUtils.hasText(keyWord) ? board.content.contains(keyWord).or(board.title.contains(keyWord)) : null;
+    private BooleanExpression boardTypeEq(String type) {
+        if (type.equals("free")) {
+            return board.boardType.eq(BoardType.FREE);
+        } else if (type.equals("qna")) {
+            return board.boardType.eq(BoardType.QNA);
+        } else {
+            return board.boardType.eq(BoardType.TECH);
+        }
     }
 
     //주간 베스트, 좋아요 순으로 정렬

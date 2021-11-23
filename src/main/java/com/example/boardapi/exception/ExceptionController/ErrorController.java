@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class ErrorController extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
-    public ResponseEntity notValidQueryStringExceptionHandler(NotValidQueryStringException ex, WebRequest request) {
+    public ResponseEntity inValidQueryStringExceptionHandler(InValidQueryStringException ex, WebRequest request) {
         log.info("exception = {}", ex.getMessage());
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));

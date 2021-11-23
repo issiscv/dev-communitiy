@@ -6,11 +6,10 @@ import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.exception.exception.BoardNotDeletedException;
 import com.example.boardapi.exception.exception.BoardNotFoundException;
-import com.example.boardapi.exception.exception.NotValidQueryStringException;
+import com.example.boardapi.exception.exception.InValidQueryStringException;
 import com.example.boardapi.repository.BoardRepository;
 import com.example.boardapi.repository.CommentRepository;
 import com.example.boardapi.repository.ScrapRepository;
-import com.example.boardapi.repository.ScrapService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,10 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -49,7 +49,7 @@ public class BoardService {
         } else if (type.equals("tech")) {
             board.changeBoardType(BoardType.TECH);
         } else {
-            throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
+            throw new InValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
         }
 
         Board saveBoard = boardRepository.save(board);
@@ -94,7 +94,7 @@ public class BoardService {
         Page<Board> allWithPaging = null;
 
         if (!(sort.equals("createdDate") || sort.equals("likes") || sort.equals("commentSize") || sort.equals("views"))) {
-            throw new NotValidQueryStringException("sort의 value로 createdDate, likes, commentSize, views의 퀄리 스트링만 입력해주세요.");
+            throw new InValidQueryStringException("sort의 value로 createdDate, likes, commentSize, views의 퀄리 스트링만 입력해주세요.");
         }
 
         if (type.equals("free")) {
@@ -104,7 +104,7 @@ public class BoardService {
         } else if (type.equals("tech")) {
             allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.TECH);
         } else {
-            throw new NotValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
+            throw new InValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
         }
         return allWithPaging;
     }
@@ -171,7 +171,11 @@ public class BoardService {
         boardRepository.deleteAllByMemberId(memberId);
     }
 
-    public Page<Board> retrieveAllWithPagingByKeyWord(PageRequest pageRequest, String keyWord) {
-        return boardRepository.findAllByKeyWordWithPaging(pageRequest, keyWord);
+    public Page<Board> retrieveAllWithPagingByKeyWord(PageRequest pageRequest, String keyWord, String type) {
+        List<String> list = new ArrayList(Arrays.asList("free", "qna", "tech"));
+        if (!list.contains(type)) {
+            throw new InValidQueryStringException("type의 쿼리스트링으로 free, qna, tech 만 입력하세요.");
+        }
+        return boardRepository.findAllByKeyWordWithPaging(pageRequest, keyWord, type);
     }
 }

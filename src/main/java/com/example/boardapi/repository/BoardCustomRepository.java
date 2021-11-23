@@ -13,7 +13,7 @@ public interface BoardCustomRepository {
 
     List<Board> findBoardByMember(Long memberId);
 
-    Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String keyWord);
+    Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String keyWord, String type);
 
     Page<Board> findByBoardTypeInDateBestBoardsWithPaging(Pageable pageable, LocalDateTime beforeSevenDay);
 

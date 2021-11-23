@@ -205,11 +205,6 @@ public class BoardController {
         List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
                     BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
                     boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    try {
-                        boardRetrieveOneResponseDto.setContent(board.getContent().substring(0, 20));
-                    } catch (StringIndexOutOfBoundsException e) {
-                        boardRetrieveOneResponseDto.setContent(board.getContent().substring(0, board.getContent().length()));
-                    }
                     return boardRetrieveOneResponseDto;
                 }
         ).collect(Collectors.toList());
@@ -249,7 +244,8 @@ public class BoardController {
     @GetMapping("/v2")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByKeyWord(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
-            @ApiParam(value = "검색을 위한 쿼리 스트링", required = true) @RequestParam String keyWord) {
+            @ApiParam(value = "검색을 위한 쿼리 스트링", required = true) @RequestParam(defaultValue = "") String keyWord,
+            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
 
         if (keyWord.length() < 2) {
             throw new ShortInputException("2글자 이상 입력해주세요.");
@@ -268,7 +264,7 @@ public class BoardController {
         //페이징 기준
         PageRequest pageRequest = PageRequest.of(num, 15);
         //페이징 방식 대로 조회
-        Page<Board> boardPage = boardService.retrieveAllWithPagingByKeyWord(pageRequest, keyWord);
+        Page<Board> boardPage = boardService.retrieveAllWithPagingByKeyWord(pageRequest, keyWord, type);
 
         long totalElements = boardPage.getTotalElements();
 
@@ -292,18 +288,18 @@ public class BoardController {
 
         //hateoas 기능 추가
         EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page, keyWord));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page, keyWord, type));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
 
         //페이징 hateoas 를 위한 로직이다.
         if (page > 1) {
-            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page - 1, keyWord));
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page - 1, keyWord, type));
             model.add(prev.withRel("이전"));
         }
         if (page < totalPages) {
-            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page + 1, keyWord));
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page + 1, keyWord, type));
             model.add(next.withRel("다음"));
         }
 
