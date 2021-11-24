@@ -34,10 +34,10 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
 
     //keyword 로 검색
     @Override
-    public Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String keyWord, String type) {
+    public Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String searchCond, String keyWord, String type) {
         List<Board> content = queryFactory
                 .selectFrom(board)
-                .where(board.content.contains(keyWord), boardTypeEq(type))
+                .where(searchEq(searchCond, keyWord), boardTypeEq(type))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(board.createdDate.desc())
@@ -45,11 +45,21 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
 
         long total = queryFactory
                 .selectFrom(board)
-                .where(board.content.contains(keyWord), boardTypeEq(type))
+                .where(searchEq(searchCond, keyWord), boardTypeEq(type))
                 .fetchCount();
 
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    private BooleanExpression searchEq(String searchCond, String keyWord) {
+        if (searchCond.equals("title")) {
+            return board.title.contains(keyWord);
+        } else if (searchCond.equals("content")) {
+            return board.content.contains(keyWord);
+        } else {
+            return board.title.contains(keyWord).or(board.content.contains(keyWord));
+        }
     }
 
     private BooleanExpression boardTypeEq(String type) {

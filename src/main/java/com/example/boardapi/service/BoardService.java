@@ -31,7 +31,6 @@ import java.util.List;
 @Slf4j
 public class BoardService {
 
-    private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
     private final ScrapRepository scrapRepository;
 
@@ -171,11 +170,15 @@ public class BoardService {
         boardRepository.deleteAllByMemberId(memberId);
     }
 
-    public Page<Board> retrieveAllWithPagingByKeyWord(PageRequest pageRequest, String keyWord, String type) {
-        List<String> list = new ArrayList(Arrays.asList("free", "qna", "tech"));
-        if (!list.contains(type)) {
+    public Page<Board> retrieveAllWithPagingByKeyWord(PageRequest pageRequest, String searchCond, String keyWord, String type) {
+        List<String> typeList = new ArrayList(Arrays.asList("free", "qna", "tech"));
+        List<String> searchCondList = new ArrayList(Arrays.asList("title", "content", "all"));
+        if (!typeList.contains(type)) {
             throw new InValidQueryStringException("type의 쿼리스트링으로 free, qna, tech 만 입력하세요.");
         }
-        return boardRepository.findAllByKeyWordWithPaging(pageRequest, keyWord, type);
+        if (!searchCondList.contains(searchCond)) {
+            throw new InValidQueryStringException("searchCond 의 쿼리스트링으로 title, content, all 만 입력하세요.");
+        }
+        return boardRepository.findAllByKeyWordWithPaging(pageRequest, searchCond, keyWord, type);
     }
 }
