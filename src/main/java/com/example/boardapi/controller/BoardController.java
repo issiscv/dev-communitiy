@@ -1,8 +1,5 @@
 package com.example.boardapi.controller;
 
-import com.example.boardapi.entity.Board;
-import com.example.boardapi.entity.Comment;
-import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.*;
@@ -11,6 +8,9 @@ import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
+import com.example.boardapi.entity.Board;
+import com.example.boardapi.entity.Comment;
+import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.exception.AlreadyScrapedException;
 import com.example.boardapi.exception.DuplicatedLikeException;
@@ -20,13 +20,15 @@ import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
 import com.example.boardapi.service.ScrapService;
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -173,22 +175,12 @@ public class BoardController {
     })
     @GetMapping("")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByType(
-            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
+            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(defaultValue = "1") int page,
             @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type,
             @ApiParam(value = "게시글 정렬 유형 쿼리스트링", required = false, example = "createdDate, likes, commentSize, views") @RequestParam(defaultValue = "createdDate") String sort) {
 
-        //몇 번 페이지를 찾을지 쿼리를 날리기 위한 변수
-        int num = 0;
-
-        if (page != null) {
-            num = page - 1;
-        } else {
-            //쿼리스트링이 없을 경우 1로 초기화
-            page = 1;
-        }
-
         //페이징 기준
-        PageRequest pageRequest = PageRequest.of(num, 15, Sort.by(Sort.Direction.DESC, sort, "createdDate"));
+        PageRequest pageRequest = PageRequest.of(page-1, 15);
         //페이징 방식 대로 조회
         Page<Board> boardPage = boardService.retrieveAllWithPagingByType(pageRequest, type, sort);
 
@@ -207,7 +199,7 @@ public class BoardController {
         ).collect(Collectors.toList());
 
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
-                new BoardRetrieveAllPagingResponseDto(num+1, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
+                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
 
         //ip
         String ip = getIp();
@@ -240,7 +232,7 @@ public class BoardController {
     })
     @GetMapping("/v2")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByKeyWord(
-            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(required = false) Integer page,
+            @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(defaultValue = "1") int page,
             @ApiParam(value = "검색 조건 위한 쿼리 스트링", required = true) @RequestParam String searchCond,
             @ApiParam(value = "검색을 위한 쿼리 스트링") @RequestParam(defaultValue = "") String keyWord,
             @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
@@ -249,18 +241,8 @@ public class BoardController {
             throw new ShortInputException("2글자 이상 입력해주세요.");
         }
 
-        //몇 번 페이지를 찾을지 쿼리를 날리기 위한 변수
-        int num = 0;
-
-        if (page != null) {
-            num = page - 1;
-        } else {
-            //쿼리스트링이 없을 경우 1로 초기화
-            page = 1;
-        }
-
         //페이징 기준
-        PageRequest pageRequest = PageRequest.of(num, 15);
+        PageRequest pageRequest = PageRequest.of(page-1, 15);
         //페이징 방식 대로 조회
         Page<Board> boardPage = boardService.retrieveAllWithPagingByKeyWord(pageRequest, searchCond, keyWord, type);
 
@@ -279,7 +261,7 @@ public class BoardController {
         ).collect(Collectors.toList());
 
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
-                new BoardRetrieveAllPagingResponseDto(num+1, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
+                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
 
         //ip
         String ip = getIp();

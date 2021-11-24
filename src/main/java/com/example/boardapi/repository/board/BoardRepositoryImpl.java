@@ -2,6 +2,8 @@ package com.example.boardapi.repository.board;
 
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.enumtype.BoardType;
+import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,35 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
                 .fetch();
     }
 
+    @Override
+    public Page<Board> findAllWithPaging(Pageable pageable, String type, String sort) {
+        QueryResults<Board> results = queryFactory
+                .selectFrom(board)
+                .where(boardTypeEq(type))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(orderBySortCond(sort))
+                .fetchResults();
+
+        List<Board> result = results.getResults();
+        long total = results.getTotal();
+
+        return new PageImpl<>(result, pageable, total);
+    }
+
+    private OrderSpecifier orderBySortCond(String sort) {
+        if (sort.equals("likes")) {
+            return board.likes.desc();
+        } else if (sort.equals("commentSize")) {
+            return board.commentSize.desc();
+        } else if (sort.equals("views")) {
+            return board.views.desc();
+        } else {
+            //createdDate
+            return board.createdDate.desc();
+        }
+    }
+
     //keyword 로 검색
     @Override
     public Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String searchCond, String keyWord, String type) {
@@ -56,6 +87,7 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
         } else if (searchCond.equals("content")) {
             return board.content.contains(keyWord);
         } else {
+            //all
             return board.title.contains(keyWord).or(board.content.contains(keyWord));
         }
     }
@@ -66,6 +98,7 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
         } else if (type.equals("qna")) {
             return board.boardType.eq(BoardType.QNA);
         } else {
+            //tech
             return board.boardType.eq(BoardType.TECH);
         }
     }

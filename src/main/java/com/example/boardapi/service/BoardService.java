@@ -89,22 +89,18 @@ public class BoardService {
      */
     public Page<Board> retrieveAllWithPagingByType(Pageable pageable, String type, String sort) {
         List<String> sortList = new ArrayList<>(Arrays.asList("createdDate", "likes", "commentSize", "views"));
+        List<String> typeList = new ArrayList<>(Arrays.asList("free", "qna", "tech"));
 
-        Page<Board> allWithPaging = null;
 
         if (!sortList.contains(sort)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_SORT);
         }
 
-        if (type.equals("free")) {
-            allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.FREE);
-        } else if (type.equals("qna")) {
-            allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.QNA);
-        } else if (type.equals("tech")) {
-            allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.TECH);
-        } else {
+        if (!typeList.contains(type)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
+
+        Page<Board> allWithPaging = boardRepository.findAllWithPaging(pageable, type, sort);
 
         return allWithPaging;
     }

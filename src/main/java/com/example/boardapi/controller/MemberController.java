@@ -270,23 +270,13 @@ public class MemberController {
     @GetMapping("/members/{memberId}/boards")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllOwnBoard (
             @ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
-             @RequestParam(required = false) Integer page,
-            HttpServletRequest request) {
+            @ApiParam(value = "페이지 번호", required = false) @RequestParam(defaultValue = "1") int page) {
 
         //해당 사용자가 존재하는지 검사
         Member findMember = memberService.retrieveOne(memberId);
 
-        int num = 0;
-
-        if (page == null) {
-            num = 0;
-        } else {
-            num = page - 1;
-        }
-
-
         //페이지 요청 객체
-        PageRequest pageRequest = PageRequest.of(num, 15, Sort.by(Sort.Direction.DESC, "createdDate"));
+        PageRequest pageRequest = PageRequest.of(page-1, 15, Sort.by(Sort.Direction.DESC, "createdDate"));
         //해당 페이지의 요청 결과
         Page<Board> boardPage = boardService.retrieveAllOwnBoardWithPaging(pageRequest, memberId);
         List<Board> boards = boardPage.getContent();
@@ -304,7 +294,7 @@ public class MemberController {
         }
 
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
-                new BoardRetrieveAllPagingResponseDto(num+1, totalPages, (int)totalElements, list);
+                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, list);
 
         //ip
         String ip = getIp();
@@ -312,10 +302,19 @@ public class MemberController {
         EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
 
         //hateoas 기능 추가
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId, num+1, request));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId, page));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        if (page > 1) {
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId, page-1));
+            model.add(prev.withRel("이전"));
+        }
+        if (page < totalPages) {
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllOwnBoard(memberId, page+1));
+            model.add(next.withRel("다음"));
+        }
 
         return ResponseEntity.ok().body(model);
     }
@@ -329,10 +328,7 @@ public class MemberController {
     })
     @GetMapping("/members/{memberId}/comments")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
-                                                                                             @RequestParam(defaultValue = "1") String page,
-                                                                                   HttpServletRequest request) {
-
-        int num = Integer.parseInt(page);
+                                                                                                @ApiParam(value = "페이지 번호", required = false) @RequestParam(defaultValue = "1") int page) {
         int size = 15;
 
         //해당 사용자가 존재하는지 검사
@@ -360,7 +356,7 @@ public class MemberController {
         }
 
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
-                .currentPage(Integer.parseInt(page))
+                .currentPage(page)
                 .totalPage(((list.size()-1) / size) + 1)
                 .totalElements(list.size())
                 .contents(new ArrayList<>())
@@ -368,7 +364,7 @@ public class MemberController {
 
         Collections.reverse(list);
 
-        for (int i = (num -1) * size; i < num * size; i++) {
+        for (int i = (page -1) * size; i < page * size; i++) {
             try {
                 boardRetrieveAllPagingResponseDto.getContents().add(list.get(i));
             } catch (IndexOutOfBoundsException e) {
@@ -381,10 +377,19 @@ public class MemberController {
 
         //hateoas 기능 추가
         EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page, request));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        if (page > 1) {
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page-1));
+            model.add(prev.withRel("이전"));
+        }
+        if (page < (list.size()-1) / size + 1) {
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page+1));
+            model.add(next.withRel("다음"));
+        }
 
         return ResponseEntity.ok().body(model);
     }
@@ -400,9 +405,8 @@ public class MemberController {
     })
     @GetMapping("/members/{memberId}/scraps")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllScrapBoards(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId,
-                                                                                                 @ApiParam(value = "페이지 번호", required = true) @RequestParam(defaultValue = "1") String page) {
+                                                                                                 @ApiParam(value = "페이지 번호", required = false) @RequestParam(defaultValue = "1") int page) {
 
-        int num = Integer.parseInt(page);
         int size = 15;
 
         Member member = memberService.retrieveOne(memberId);
@@ -421,7 +425,7 @@ public class MemberController {
         
         //페이징 작업
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
-                .currentPage(Integer.parseInt(page))
+                .currentPage(page)
                 .totalPage(((list.size()-1) / size) + 1)
                 .totalElements(list.size())
                 .contents(new ArrayList<>())
@@ -430,9 +434,11 @@ public class MemberController {
         Collections.reverse(list);
 
         //DTO 객체내부에 게시글 엔티티를 하나씩 채워 넣음
-        for (int i = (num -1) * size; i < num * size; i++) {
+        List<BoardRetrieveResponseDto> contents = boardRetrieveAllPagingResponseDto.getContents();
+
+        for (int i = (page -1) * size; i < page * size; i++) {
             try {
-                boardRetrieveAllPagingResponseDto.getContents().add(list.get(i));
+                contents.add(list.get(i));
             } catch (IndexOutOfBoundsException e) {
                 break;
             }
@@ -448,6 +454,16 @@ public class MemberController {
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
+
+        //페이징 hateoas 를 위한 로직이다.
+        if (page > 1) {
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllScrapBoards(memberId, page-1));
+            model.add(prev.withRel("이전"));
+        }
+        if (page < (scraps.size()-1) / size + 1) {
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllScrapBoards(memberId, page+1));
+            model.add(next.withRel("다음"));
+        }
 
         return ResponseEntity.ok(model);
     }
