@@ -19,6 +19,7 @@ import com.example.boardapi.exception.ShortInputException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
+import com.example.boardapi.service.ScrapService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +60,7 @@ public class BoardController {
 
     private final CommentService commentService;
 
-    private final CommentService.ScrapService scrapService;
+    private final ScrapService scrapService;
 
     //작성 POST
     @ApiOperation(value = "게시글 작성", notes = "BoardCreateRequestDto DTO 를 통해 게시글을 생성합니다.")

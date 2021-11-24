@@ -1,12 +1,12 @@
 spring:
   datasource:
-    url: jdbc:mysql://mysql:3305/board?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/board?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
     password: 369369rt
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         #show_sql: true -> 프린트

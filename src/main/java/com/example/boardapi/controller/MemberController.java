@@ -20,6 +20,7 @@ import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
 import com.example.boardapi.service.MemberService;
+import com.example.boardapi.service.ScrapService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +61,7 @@ public class MemberController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final CommentService commentService;
-    private final CommentService.ScrapService scrapService;
+    private final ScrapService scrapService;
 
     //회원 가입 api
     @ApiOperation(value = "회원가입", notes = "MemberJoinRequestDto DTO 를 통해 회원가입을 진행합니다.")

@@ -1,15 +1,13 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
-import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
-import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.exception.CommentNotFoundException;
 import com.example.boardapi.exception.InValidUpdateException;
 import com.example.boardapi.exception.InvalidSelectionException;
 import com.example.boardapi.exception.message.CommentExceptionMessage;
-import com.example.boardapi.repository.scrap.ScrapRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -141,22 +139,4 @@ public class CommentService {
         board.chooseSelection(true);
     }
 
-    @Service
-    @Transactional(readOnly = true)
-    @RequiredArgsConstructor
-    public static class ScrapService {
-
-        private final ScrapRepository scrapRepository;
-
-        @Transactional
-        public void save(Scrap scrap) {
-            scrapRepository.save(scrap);
-        }
-
-        @Transactional
-        public List<Scrap> retrieveByMemberId(Long memberId) {
-            return scrapRepository.findByMemberId(memberId);
-        }
-
-    }
 }

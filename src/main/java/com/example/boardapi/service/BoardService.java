@@ -9,6 +9,7 @@ import com.example.boardapi.exception.BoardNotFoundException;
 import com.example.boardapi.exception.InValidQueryStringException;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.repository.board.BoardRepository;
+import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final ScrapRepository scrapRepository;
+    private final CommentRepository commentRepository;
 
     /**
      *  게시글 저장
@@ -113,7 +115,7 @@ public class BoardService {
 
         //어제 날짜의 0시 0분 0초로 초기화 -> 즉, 날짜가 변경될때만 반영
 
-        Page<Board> allWithPaging = boardRepository.findByBoardTypeInDateBestBoardsWithPaging(pageable, beforeDate);
+        Page<Board> allWithPaging = boardRepository.findBestBoardsBySevenDaysWithPaging(pageable, beforeDate);
 
         return allWithPaging;
     }
@@ -142,11 +144,13 @@ public class BoardService {
     public void deleteBoard(Long boardId) {
 
         Board board = retrieveOne(boardId);
-        if (board.getCommentSize() > 1) {
+        if (board.getCommentSize() >= 1) {
             throw new BoardNotDeletedException(BoardExceptionMessage.BOARD_NOT_DELETE);
         }
 
+
         scrapRepository.deleteByBoardId(boardId);
+        commentRepository.deleteAllByBoardId(boardId);
         boardRepository.deleteByBoardId(boardId);
     }
 

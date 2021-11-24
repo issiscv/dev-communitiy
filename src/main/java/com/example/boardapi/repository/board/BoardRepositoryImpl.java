@@ -13,7 +13,7 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.example.boardapi.entity.QBoard.*;
+import static com.example.boardapi.entity.QBoard.board;
 
 @RequiredArgsConstructor
 public class BoardRepositoryImpl implements BoardCustomRepository{
@@ -72,7 +72,7 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
 
     //주간 베스트, 좋아요 순으로 정렬
     @Override
-    public Page<Board> findByBoardTypeInDateBestBoardsWithPaging(Pageable pageable, LocalDateTime beforeSevenDay) {
+    public Page<Board> findBestBoardsBySevenDaysWithPaging(Pageable pageable, LocalDateTime beforeSevenDay) {
         List<Board> content = queryFactory
                 .selectFrom(board)
                 .where(board.createdDate.goe(beforeSevenDay))
@@ -120,5 +120,16 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
 
         em.flush();
         em.clear();
+    }
+
+    @Override
+    public void deleteByBoardId(Long boardId) {
+        queryFactory
+                .delete(board)
+                .where(board.id.eq(boardId))
+                .execute();
+
+        em.flush();
+        em.clear();;
     }
 }
