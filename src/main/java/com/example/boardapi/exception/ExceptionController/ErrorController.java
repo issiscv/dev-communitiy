@@ -1,7 +1,6 @@
 package com.example.boardapi.exception.ExceptionController;
 
-import com.example.boardapi.exception.exception.*;
-import com.example.boardapi.exception.ErrorResult;
+import com.example.boardapi.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,7 +29,7 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
     //사용자를 못찾았을 때
     @ExceptionHandler
-    public ResponseEntity userNotFoundExceptionHandler(UserNotFoundException ex, WebRequest request) {
+    public ResponseEntity userNotFoundExceptionHandler(MemberNotFoundException ex, WebRequest request) {
         log.info("exception = {}", ex.getMessage());
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
@@ -104,7 +103,7 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
     //채택을 중복으로 할 때
     @ExceptionHandler
-    public ResponseEntity selectedCommentExistExceptionHandler(SelectedCommentExistException ex, WebRequest request) {
+    public ResponseEntity selectedCommentExistExceptionHandler(InvalidSelectionException ex, WebRequest request) {
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
 
@@ -113,7 +112,7 @@ public class ErrorController extends ResponseEntityExceptionHandler {
 
     //채택된 댓글 수정, 삭제할 때
     @ExceptionHandler
-    public ResponseEntity notValidEditExceptionHandler(NotValidUpdateException ex, WebRequest request) {
+    public ResponseEntity notValidEditExceptionHandler(InValidUpdateException ex, WebRequest request) {
         ErrorResult errorResult =
                 new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
 

@@ -1,7 +1,6 @@
-package com.example.boardapi.repository;
+package com.example.boardapi.repository.comment;
 
 import com.example.boardapi.entity.Comment;
-import com.example.boardapi.exception.exception.CommentNotFoundException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

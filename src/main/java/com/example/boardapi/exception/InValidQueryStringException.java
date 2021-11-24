@@ -1,4 +1,4 @@
-package com.example.boardapi.exception.exception;
+package com.example.boardapi.exception;
 
 //올바르지 않은 쿼리 스트링
 public class InValidQueryStringException extends RuntimeException {

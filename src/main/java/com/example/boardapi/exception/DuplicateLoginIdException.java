@@ -1,4 +1,4 @@
-package com.example.boardapi.exception.exception;
+package com.example.boardapi.exception;
 
 //중복 아이디 예외 처리
 public class DuplicateLoginIdException extends RuntimeException {

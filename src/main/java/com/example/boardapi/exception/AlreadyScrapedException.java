@@ -1,4 +1,4 @@
-package com.example.boardapi.exception.exception;
+package com.example.boardapi.exception;
 
 //이미 스크랩한 경우
 public class AlreadyScrapedException extends RuntimeException{

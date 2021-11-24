@@ -1,4 +1,4 @@
-package com.example.boardapi.exception;
+package com.example.boardapi.exception.ExceptionController;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

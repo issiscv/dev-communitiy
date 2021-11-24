@@ -1,15 +1,13 @@
-package com.example.boardapi.repository;
+package com.example.boardapi.repository.board;
 
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.enumtype.BoardType;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;

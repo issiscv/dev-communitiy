@@ -1,4 +1,4 @@
-package com.example.boardapi.exception.exception;
+package com.example.boardapi.exception;
 
 //찾고자하는 댓글이 없는 경우
 public class CommentNotFoundException extends RuntimeException{

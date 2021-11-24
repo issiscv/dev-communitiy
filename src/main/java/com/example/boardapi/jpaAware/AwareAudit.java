@@ -1,4 +1,4 @@
-package com.example.boardapi.jpa;
+package com.example.boardapi.jpaAware;
 
 import com.example.boardapi.entity.Member;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.example.boardapi.exception.exception;
+package com.example.boardapi.exception;
 
 //수정, 삭제, 프로필 조회 시 나의 회원 정보가 아닐 때
 public class NotOwnMemberException extends RuntimeException{

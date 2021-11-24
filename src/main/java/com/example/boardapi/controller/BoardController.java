@@ -12,12 +12,10 @@ import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.entity.Scrap;
-import com.example.boardapi.exception.exception.AlreadyScrapedException;
-import com.example.boardapi.exception.exception.DuplicatedLikeException;
-import com.example.boardapi.exception.exception.NotOwnBoardException;
-import com.example.boardapi.exception.exception.ShortInputException;
-import com.example.boardapi.repository.ScrapRepository;
-import com.example.boardapi.repository.ScrapService;
+import com.example.boardapi.exception.AlreadyScrapedException;
+import com.example.boardapi.exception.DuplicatedLikeException;
+import com.example.boardapi.exception.NotOwnBoardException;
+import com.example.boardapi.exception.ShortInputException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
@@ -40,9 +38,7 @@ import javax.validation.Valid;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.rmi.AlreadyBoundException;
 import java.util.ArrayList;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,7 +59,7 @@ public class BoardController {
 
     private final CommentService commentService;
 
-    private final ScrapService scrapService;
+    private final CommentService.ScrapService scrapService;
 
     //작성 POST
     @ApiOperation(value = "게시글 작성", notes = "BoardCreateRequestDto DTO 를 통해 게시글을 생성합니다.")

@@ -1,4 +1,4 @@
-package com.example.boardapi.exception.exception;
+package com.example.boardapi.exception;
 
 //입력 글자가 작을때
 public class ShortInputException extends RuntimeException{

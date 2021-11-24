@@ -1,4 +1,4 @@
-package com.example.boardapi.exception.exception;
+package com.example.boardapi.exception;
 
 //수정, 삭제 하고자 하는 글이 나의 게시글이 아닐 때
 public class NotOwnBoardException extends RuntimeException{

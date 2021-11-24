@@ -4,12 +4,12 @@ import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
-import com.example.boardapi.exception.exception.BoardNotDeletedException;
-import com.example.boardapi.exception.exception.BoardNotFoundException;
-import com.example.boardapi.exception.exception.InValidQueryStringException;
-import com.example.boardapi.repository.BoardRepository;
-import com.example.boardapi.repository.CommentRepository;
-import com.example.boardapi.repository.ScrapRepository;
+import com.example.boardapi.exception.BoardNotDeletedException;
+import com.example.boardapi.exception.BoardNotFoundException;
+import com.example.boardapi.exception.InValidQueryStringException;
+import com.example.boardapi.exception.message.BoardExceptionMessage;
+import com.example.boardapi.repository.board.BoardRepository;
+import com.example.boardapi.repository.scrap.ScrapRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -48,7 +48,7 @@ public class BoardService {
         } else if (type.equals("tech")) {
             board.changeBoardType(BoardType.TECH);
         } else {
-            throw new InValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
+            throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
 
         Board saveBoard = boardRepository.save(board);
@@ -62,7 +62,7 @@ public class BoardService {
     public Board retrieveOne(Long boardId) {
         Board findBoard = boardRepository
                 .findById(boardId)
-                .orElseThrow(() -> {throw new BoardNotFoundException("해당 게시글이 존재 하지 않습니다.");
+                .orElseThrow(() -> {throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
         });
         return findBoard;
     }
@@ -74,7 +74,7 @@ public class BoardService {
     public Board retrieveOneAndIncreaseViews(Long boardId) {
         Board findBoard = boardRepository
                 .findById(boardId)
-                .orElseThrow(() -> {throw new BoardNotFoundException("해당 게시글이 존재 하지 않습니다.");
+                .orElseThrow(() -> {throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
                 });
 
         findBoard.increaseViews();
@@ -85,15 +85,13 @@ public class BoardService {
     /**
      * 전체 조회
      */
-    public List<Board> retrieveAll() {
-        return boardRepository.findAll();
-    }
-
     public Page<Board> retrieveAllWithPagingByType(Pageable pageable, String type, String sort) {
+        List<String> sortList = new ArrayList<>(Arrays.asList("createdDate", "likes", "commentSize", "views"));
+
         Page<Board> allWithPaging = null;
 
-        if (!(sort.equals("createdDate") || sort.equals("likes") || sort.equals("commentSize") || sort.equals("views"))) {
-            throw new InValidQueryStringException("sort의 value로 createdDate, likes, commentSize, views의 퀄리 스트링만 입력해주세요.");
+        if (!sortList.contains(sort)) {
+            throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_SORT);
         }
 
         if (type.equals("free")) {
@@ -103,8 +101,9 @@ public class BoardService {
         } else if (type.equals("tech")) {
             allWithPaging = boardRepository.findAllWithPaging(pageable, BoardType.TECH);
         } else {
-            throw new InValidQueryStringException("free, qna, tech 의 쿼리스트링만 입력 가능합니다.");
+            throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
+
         return allWithPaging;
     }
 
@@ -144,7 +143,7 @@ public class BoardService {
 
         Board board = retrieveOne(boardId);
         if (board.getCommentSize() > 1) {
-            throw new BoardNotDeletedException("댓글이 있는 게시글은 삭제할 수 없습니다.");
+            throw new BoardNotDeletedException(BoardExceptionMessage.BOARD_NOT_DELETE);
         }
 
         scrapRepository.deleteByBoardId(boardId);
@@ -174,10 +173,10 @@ public class BoardService {
         List<String> typeList = new ArrayList(Arrays.asList("free", "qna", "tech"));
         List<String> searchCondList = new ArrayList(Arrays.asList("title", "content", "all"));
         if (!typeList.contains(type)) {
-            throw new InValidQueryStringException("type의 쿼리스트링으로 free, qna, tech 만 입력하세요.");
+            throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
         if (!searchCondList.contains(searchCond)) {
-            throw new InValidQueryStringException("searchCond 의 쿼리스트링으로 title, content, all 만 입력하세요.");
+            throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_SEACHCOND);
         }
         return boardRepository.findAllByKeyWordWithPaging(pageRequest, searchCond, keyWord, type);
     }

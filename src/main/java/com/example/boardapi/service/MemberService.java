@@ -2,11 +2,11 @@ package com.example.boardapi.service;
 
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
-import com.example.boardapi.exception.exception.DuplicateLoginIdException;
-import com.example.boardapi.exception.exception.UserNotFoundException;
-import com.example.boardapi.repository.MemberRepository;
-import com.example.boardapi.repository.ScrapRepository;
-import com.example.boardapi.repository.ScrapService;
+import com.example.boardapi.exception.DuplicateLoginIdException;
+import com.example.boardapi.exception.MemberNotFoundException;
+import com.example.boardapi.exception.message.MemberExceptionMessage;
+import com.example.boardapi.repository.member.MemberRepository;
+import com.example.boardapi.repository.scrap.ScrapRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -47,7 +47,7 @@ public class MemberService implements UserDetailsService{
         Member findMember = memberRepository.findById(memberId).orElse(null);
 
         if (findMember == null) {
-            throw new UserNotFoundException("해당 유저는 존재하지 않습니다.");
+            throw new MemberNotFoundException(MemberExceptionMessage.MEMBER_NOT_FOUND);
         }
 
         return findMember;
@@ -100,18 +100,19 @@ public class MemberService implements UserDetailsService{
 
         //비어있을 경우
         if (findMember != null) {
-            throw new DuplicateLoginIdException("중복된 아이디가 존재합니다.");
+            throw new DuplicateLoginIdException(MemberExceptionMessage.DUPLICATE_LOGIN_ID);
         }
     }
-    
-    
-    //스프링 시큐리티에서 활용됨
 
+    /**
+     * 스프링 시큐리티에서 활용됨
+     * 아이디 조회
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Member member = memberRepository.findByLoginId(username)
                 .orElseThrow(
-                        () -> {throw new UserNotFoundException("해당 유저가 없습니다.");}
+                        () -> {throw new MemberNotFoundException(MemberExceptionMessage.MEMBER_NOT_FOUND);}
                 );
         return member;
     }

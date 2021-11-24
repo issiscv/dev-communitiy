@@ -4,17 +4,18 @@ import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
-import com.example.boardapi.exception.exception.BoardNotFoundException;
-import com.example.boardapi.exception.exception.CommentNotFoundException;
-import com.example.boardapi.exception.exception.NotValidUpdateException;
-import com.example.boardapi.exception.exception.SelectedCommentExistException;
-import com.example.boardapi.repository.CommentRepository;
+import com.example.boardapi.entity.Scrap;
+import com.example.boardapi.exception.CommentNotFoundException;
+import com.example.boardapi.exception.InValidUpdateException;
+import com.example.boardapi.exception.InvalidSelectionException;
+import com.example.boardapi.exception.message.CommentExceptionMessage;
+import com.example.boardapi.repository.scrap.ScrapRepository;
+import com.example.boardapi.repository.comment.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
 import java.util.List;
 
 @Service
@@ -24,7 +25,6 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final EntityManager em;
     /**
      * 댓글 저장
      */
@@ -43,7 +43,7 @@ public class CommentService {
      */
     public Comment retrieveOne(Long commentId) {
         return commentRepository.findById(commentId).orElseThrow(() -> {
-            throw new CommentNotFoundException("해당 댓글이 없습니다.");
+            throw new CommentNotFoundException(CommentExceptionMessage.COMMENT_NOT_FOUND);
         }
         );
     }
@@ -59,15 +59,7 @@ public class CommentService {
      * 특정 게시글의 댓글
      */
     public List<Comment> retrieveAllByBoardId(Long boardId) {
-        List<Comment> allByBoardId;
-
-        try {
-            allByBoardId = commentRepository.findAllByBoardId(boardId);
-        } catch (Exception e) {
-            throw new BoardNotFoundException("해당 게시글이 존재하지 않습니다.");
-        }
-
-        return allByBoardId;
+        return commentRepository.findAllByBoardId(boardId);
     }
 
     /**
@@ -77,7 +69,7 @@ public class CommentService {
     public Comment editComment(Long id, CommentEditRequestDto commentEditRequestDto) {
         Comment comment = retrieveOne(id);
         if (comment.isSelected()) {
-            throw new NotValidUpdateException("채택된 댓글은 수정할 수 없습니다.");
+            throw new InValidUpdateException(CommentExceptionMessage.INVALID_COMMENT_UPDATE);
         }
         comment.changeContent(commentEditRequestDto.getContent());
         return comment;
@@ -91,14 +83,14 @@ public class CommentService {
         Comment comment = retrieveOne(id);
 
         if (comment.isSelected()) {
-            throw new NotValidUpdateException("채택된 댓글은 삭제할 수 없습니다.");
+            throw new InValidUpdateException(CommentExceptionMessage.INVALID_COMMENT_UPDATE);
         }
 
         try {
             commentRepository.deleteById(id);
 
         } catch (IllegalArgumentException e) {
-            throw new CommentNotFoundException("해당 댓글을 찾을 수 없습니다.");
+            throw new CommentNotFoundException(CommentExceptionMessage.COMMENT_NOT_FOUND);
         }
 
         board.decreaseComments();
@@ -131,7 +123,7 @@ public class CommentService {
         for (Comment c : comments) {
             //이미 채택하였으면 에러 던짐
             if (c.isSelected()) {
-                throw new SelectedCommentExistException("이미 댓글을 채택하셧습니다.");
+                throw new InvalidSelectionException(CommentExceptionMessage.INVALID_SELECTION);
             }
         }
 
@@ -147,5 +139,24 @@ public class CommentService {
 
         //게시글도 체크
         board.chooseSelection(true);
+    }
+
+    @Service
+    @Transactional(readOnly = true)
+    @RequiredArgsConstructor
+    public static class ScrapService {
+
+        private final ScrapRepository scrapRepository;
+
+        @Transactional
+        public void save(Scrap scrap) {
+            scrapRepository.save(scrap);
+        }
+
+        @Transactional
+        public List<Scrap> retrieveByMemberId(Long memberId) {
+            return scrapRepository.findByMemberId(memberId);
+        }
+
     }
 }

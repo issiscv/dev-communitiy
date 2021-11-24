@@ -12,13 +12,11 @@ import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.entity.Scrap;
-import com.example.boardapi.exception.exception.NotOwnMemberException;
-import com.example.boardapi.repository.ScrapRepository;
-import com.example.boardapi.repository.ScrapService;
+import com.example.boardapi.exception.NotOwnMemberException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.entity.Member;
-import com.example.boardapi.exception.exception.UserNotFoundException;
-import com.example.boardapi.repository.MemberRepository;
+import com.example.boardapi.exception.MemberNotFoundException;
+import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
 import com.example.boardapi.service.MemberService;
@@ -62,7 +60,7 @@ public class MemberController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final CommentService commentService;
-    private final ScrapService scrapService;
+    private final CommentService.ScrapService scrapService;
 
     //회원 가입 api
     @ApiOperation(value = "회원가입", notes = "MemberJoinRequestDto DTO 를 통해 회원가입을 진행합니다.")
@@ -132,7 +130,7 @@ public class MemberController {
                                 MemberLoginRequestDto memberLoginRequestDto) {
         //아이디가 있는지 검증을 한다.
         Member member = memberRepository.findByLoginId(memberLoginRequestDto.getLoginId()).orElseThrow(
-                () -> new UserNotFoundException("해당 아이디는 존재하지 않습니다.")
+                () -> new MemberNotFoundException("해당 아이디는 존재하지 않습니다.")
         );
 
         if (!passwordEncoder.matches(memberLoginRequestDto.getPassword(), member.getPassword())) {

@@ -1,4 +1,4 @@
-package com.example.boardapi.repository;
+package com.example.boardapi.repository.scrap;
 
 import com.example.boardapi.entity.Scrap;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,6 @@
 package com.example.boardapi.security.JWT;
 
-import com.example.boardapi.exception.exception.UserNotFoundException;
+import com.example.boardapi.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -39,7 +39,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
                 //(해당 토큰의 payload 안의 claim 안의 subject 의 아이디를 가진 user 가 없는 경우)
                 authentication = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (UserNotFoundException e) {
+            } catch (MemberNotFoundException e) {
                 request.setAttribute("exception", TokenErrorCode.NOT_EXIST_USER_TOKEN);
             }
             //securityContext 에 인증 객체를 넣어줘야 하는 이유 : securityContext 에 인증 객체가 저장 되어야 인증이 성공했다고 판단해서.
