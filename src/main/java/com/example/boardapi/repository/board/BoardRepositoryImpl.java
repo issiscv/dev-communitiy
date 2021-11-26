@@ -39,7 +39,7 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
                 .where(boardTypeEq(type))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(orderBySortCond(sort))
+                .orderBy(orderBySortCond(sort), board.createdDate.desc())
                 .fetchResults();
 
         List<Board> result = results.getResults();

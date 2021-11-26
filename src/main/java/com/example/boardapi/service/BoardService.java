@@ -41,7 +41,6 @@ public class BoardService {
      */
     @Transactional
     public Board save(Board board, Member member, String type) {
-
         //쿼리스트링에 맞게 엔티티에 매핑
         if (type.equals("free")) {
             board.changeBoardType(BoardType.FREE);
