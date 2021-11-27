@@ -33,6 +33,11 @@ public class JwtTokenProvider {
         //signature 를 Base64로 인코딩한 문자를 저장한다.
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
+
+    public Member getMember(HttpServletRequest request) {
+        String token = resolveToken(request);
+        return retrieveMember(token);
+    }
     
     //토큰 생성 -> 로그인 시 반환 해줌
     public String createToken(String loginId, List<String> roles) {
@@ -69,7 +74,7 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
-    public Member getMember(String token) {
+    public Member retrieveMember(String token) {
 
         String tokenSubject = getTokenSubject(token);
 

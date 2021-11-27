@@ -209,7 +209,7 @@ public class MemberController {
                                                                          HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         Member findMember = memberService.retrieveOne(memberId);
 
@@ -249,7 +249,7 @@ public class MemberController {
     public ResponseEntity deleteMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId, HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         Member findMember = memberService.retrieveOne(memberId);
 

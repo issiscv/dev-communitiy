@@ -5,6 +5,8 @@ import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.MemberNotFoundException;
 import com.example.boardapi.exception.message.MemberExceptionMessage;
+import com.example.boardapi.repository.board.BoardRepository;
+import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +26,10 @@ import java.util.List;
 @Slf4j
 public class MemberService implements UserDetailsService{
 
+    private final CommentRepository commentRepository;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final BoardService boardService;
-    private final CommentService commentService;
+    private final BoardRepository boardRepository;
     private final ScrapRepository scrapRepository;
 
     /**
@@ -80,12 +82,12 @@ public class MemberService implements UserDetailsService{
      * 회원 탈퇴
      */
     @Transactional
-    public void deleteMember(Long id) {
+    public void deleteMember(Long memberId) {
         try {
-            commentService.deleteAllOwnComment(id);
-            scrapRepository.deleteByMemberId(id);
-            boardService.deleteAllOwnBoard(id);
-            memberRepository.deleteById(id);
+            commentRepository.deleteAllByMemberId(memberId);
+            scrapRepository.deleteByMemberId(memberId);
+            boardRepository.deleteAllByMemberId(memberId);
+            memberRepository.deleteById(memberId);
 
         } catch (Exception e) {
             e.printStackTrace();

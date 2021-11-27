@@ -76,7 +76,7 @@ public class BoardController {
                                       @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type, HttpServletRequest request) {
         //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         //DTO 를 Board 엔티티로 매핑 하고 저장
         Board mappedBoard = modelMapper.map(boardCreateRequestDto, Board.class);
@@ -337,7 +337,7 @@ public class BoardController {
     @PutMapping("/{boardId}/scraps")
     public ResponseEntity scrapBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         Board board = boardService.retrieveOne(boardId);
 
@@ -370,18 +370,7 @@ public class BoardController {
                                                 BoardEditRequestDto boardEditRequestDto,
                                     @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
-        Board board = boardService.retrieveOne(boardId);
-
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
-
-        if (board.getMember().getId() != member.getId()) {
-            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
-        }
-
-        Board editBoard = boardService.editBoard(boardId, boardEditRequestDto);
-
-
+        Board editBoard = boardService.editBoard(boardId, boardEditRequestDto, request);
 
         BoardEditResponseDto boardEditResponseDto = modelMapper.map(editBoard, BoardEditResponseDto.class);
         boardEditResponseDto.setAuthor(editBoard.getMember().getName());
@@ -389,7 +378,6 @@ public class BoardController {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(editBoard.getId()).toUri();
-
 
         //ip
         String ip = getIp();
@@ -415,16 +403,7 @@ public class BoardController {
     @DeleteMapping("/{boardId}")
     public ResponseEntity deleteBoard(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
-        Board board = boardService.retrieveOne(boardId);
-
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
-
-        if (board.getMember().getId() != member.getId()) {
-            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
-        }
-
-        boardService.deleteBoard(boardId);
+        boardService.deleteBoard(boardId, request);
 
         return ResponseEntity.noContent().build();
     }
@@ -439,15 +418,7 @@ public class BoardController {
     public ResponseEntity updateLike(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
                                      HttpServletRequest request) {
 
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
-
-        if (member.getLikeId().contains(boardId)) {
-            throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
-        }
-
-        member.getLikeId().add(boardId);
-        boardService.updateBoardLike(boardId);
+        boardService.updateBoardLike(boardId, request);
 
         return ResponseEntity.noContent().build();
     }
@@ -455,7 +426,6 @@ public class BoardController {
     /**
      * 이 밑으로는 댓글 API
      */
-
     //특정 게시판에 댓글을 쓰는 API
     @ApiOperation(value = "게시글의 댓글 작성", notes = "게시글의 댓글을 추가합니다. CommentCreateRequestDto DTO 를 사용합니다.")
     @ApiResponses({
@@ -467,31 +437,12 @@ public class BoardController {
     public ResponseEntity<EntityModel<CommentCreateResponseDto>> createComment(@RequestBody @Valid @ApiParam(value = "댓글 DTO", required = true) CommentCreateRequestDto commentCreateRequestDto,
                                         @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
-        //글쓴이의 정보(토큰의 정보)
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
-
-        //게시글 엔티티 조회
-        Board board = boardService.retrieveOne(boardId);
-
-        //DTO 를 변환 엔티티로 변환
-        Comment comment = modelMapper.map(commentCreateRequestDto, Comment.class);
-        comment.changeBoard(board);
-        comment.changeMember(member);
-        Comment saveComment = commentService.save(member, board, comment);
-
-        //엔티티를 DTO로 변환
-        CommentCreateResponseDto commentResponseDto = modelMapper.map(saveComment, CommentCreateResponseDto.class);
-        commentResponseDto.setAuthor(member.getName());//작성자
-        commentResponseDto.setId(saveComment.getId());//댓글 기본키
-        commentResponseDto.setBoardId(board.getId());//게시글 기본키
-        commentResponseDto.setMemberId(member.getId());
-        commentResponseDto.setSelected(commentResponseDto.isSelected());
+        CommentCreateResponseDto commentResponseDto = commentService.save(boardId, commentCreateRequestDto, request);
 
         //URI
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(saveComment.getId())
+                .buildAndExpand(commentResponseDto.getId())
                 .toUri();
         //ip
         String ip = getIp();
@@ -529,7 +480,7 @@ public class BoardController {
 
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         if (comment.getMember().getId() != member.getId()) {
             throw new NotOwnBoardException("게시글의 권한이 없습니다.");
@@ -577,7 +528,7 @@ public class BoardController {
         Comment comment = commentService.retrieveOne(commentId);
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         if (comment.getMember().getId() != member.getId()) {
             throw new NotOwnBoardException("게시글의 권한이 없습니다.");
@@ -603,7 +554,7 @@ public class BoardController {
         Board board = boardService.retrieveOne(boardId);
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         if (member.getLikeId().contains(commentId)) {
             throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
@@ -631,7 +582,7 @@ public class BoardController {
             @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId, HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        Member member = jwtTokenProvider.retrieveMember(token);
 
         //해당 게시글에도 채택 됨을 알기 위해 조회
         Board board = boardService.retrieveOne(boardId);

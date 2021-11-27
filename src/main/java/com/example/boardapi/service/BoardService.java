@@ -4,13 +4,12 @@ import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
-import com.example.boardapi.exception.BoardNotDeletedException;
-import com.example.boardapi.exception.BoardNotFoundException;
-import com.example.boardapi.exception.InValidQueryStringException;
+import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
+import com.example.boardapi.security.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,6 +32,7 @@ import java.util.List;
 @Slf4j
 public class BoardService {
 
+    private final JwtTokenProvider jwtTokenProvider;
     private final BoardRepository boardRepository;
     private final ScrapRepository scrapRepository;
     private final CommentRepository commentRepository;
@@ -123,9 +124,16 @@ public class BoardService {
      * 게시글 수정
      */
     @Transactional
-    public Board editBoard(Long id, BoardEditRequestDto boardEditRequestDto) {
+    public Board editBoard(Long id, BoardEditRequestDto boardEditRequestDto, HttpServletRequest request) {
+
+        Member member = jwtTokenProvider.getMember(request);
+
         //retrieveOne 메서드에서 예외 처리 해줌
         Board board = retrieveOne(id);
+
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
         
         board.changeTitle(boardEditRequestDto.getTitle());
         board.changeContent(boardEditRequestDto.getContent());
@@ -136,9 +144,16 @@ public class BoardService {
      * 게시글 삭제
      */
     @Transactional
-    public void deleteBoard(Long boardId) {
+    public void deleteBoard(Long boardId, HttpServletRequest request) {
 
         Board board = retrieveOne(boardId);
+
+        Member member = jwtTokenProvider.getMember(request);
+
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
+
         if (board.getCommentSize() >= 1) {
             throw new BoardNotDeletedException(BoardExceptionMessage.BOARD_NOT_DELETE);
         }
@@ -157,11 +172,22 @@ public class BoardService {
     }
 
     @Transactional
-    public void updateBoardLike(Long boardId) {
+    public void updateBoardLike(Long boardId, HttpServletRequest request) {
+        Member member = jwtTokenProvider.getMember(request);
+
+        if (member.getLikeId().contains(boardId)) {
+            throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
+        }
+
+        member.getLikeId().add(boardId);
+
         Board board = retrieveOne(boardId);
+
         int like = board.getLikes();
         board.changeLike(++like);
     }
+
+
 
     @Transactional
     public void deleteAllOwnBoard(Long memberId) {

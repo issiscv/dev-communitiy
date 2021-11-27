@@ -1,19 +1,27 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.dto.comment.request.CommentCreateRequestDto;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
+import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
+import com.example.boardapi.exception.BoardNotFoundException;
 import com.example.boardapi.exception.CommentNotFoundException;
 import com.example.boardapi.exception.InValidUpdateException;
 import com.example.boardapi.exception.InvalidSelectionException;
+import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.exception.message.CommentExceptionMessage;
+import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
+import com.example.boardapi.security.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Service
@@ -22,18 +30,44 @@ import java.util.List;
 @Slf4j
 public class CommentService {
 
+    private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final ModelMapper modelMapper;
     /**
      * 댓글 저장
      */
     @Transactional
-    public Comment save(Member member, Board board, Comment comment) {
+    public CommentCreateResponseDto save(Long boardId, CommentCreateRequestDto commentCreateRequestDto, HttpServletRequest request) {
+        //글쓴이의 정보(토큰의 정보)
+        Member member = jwtTokenProvider.getMember(request);
+
+        //게시글 엔티티 조회
+        Board board = boardRepository
+                .findById(boardId)
+                .orElseThrow(() -> {throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
+                });
+
+
+        //DTO 를 변환 엔티티로 변환
+        Comment comment = modelMapper.map(commentCreateRequestDto, Comment.class);
+        comment.changeBoard(board);
+        comment.changeMember(member);
+
         Comment saveComment = commentRepository.save(comment);
+
+        //엔티티를 DTO로 변환
+        CommentCreateResponseDto commentResponseDto = modelMapper.map(saveComment, CommentCreateResponseDto.class);
+        commentResponseDto.setAuthor(member.getName());//작성자
+        commentResponseDto.setId(saveComment.getId());//댓글 기본키
+        commentResponseDto.setBoardId(board.getId());//게시글 기본키
+        commentResponseDto.setMemberId(member.getId());
+        commentResponseDto.setSelected(commentResponseDto.isSelected());
 
         member.increaseActiveScore(2);
         board.increaseComments();
 
-        return saveComment;
+        return commentResponseDto;
     }
 
     /**
