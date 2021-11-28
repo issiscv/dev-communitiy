@@ -14,14 +14,23 @@ import static com.example.boardapi.entity.QMember.*;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CommentCustomRepositoryImpl implements CommentCustomRepository{
+public class CommentCustomRepositoryImpl implements CommentCustomRepository {
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
 
-    //게시글에 해당하는 댓글 조회
     @Override
     public List<Comment> findAllByBoardId(Long boardId) {
+        List<Comment> result = queryFactory
+                .selectFrom(comment)
+                .where(comment.board.id.eq(boardId))
+                .fetch();
+        return result;
+    }
+
+    //게시글에 해당하는 댓글 조회, 회원과 페치 조인
+    @Override
+    public List<Comment> findAllByBoardIdFetchJoinWithMember(Long boardId) {
         List<Comment> result = queryFactory
                 .selectFrom(comment)
                 .join(comment.member, member).fetchJoin()

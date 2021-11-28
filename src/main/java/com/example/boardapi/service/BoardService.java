@@ -1,5 +1,8 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
+import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
+import com.example.boardapi.dto.board.response.BoardRetrieveDetailResponseDto;
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.enumtype.BoardType;
@@ -12,6 +15,7 @@ import com.example.boardapi.repository.scrap.ScrapRepository;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,26 +40,38 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final ScrapRepository scrapRepository;
     private final CommentRepository commentRepository;
+    private final ModelMapper modelMapper;
 
     /**
      *  게시글 저장
      */
     @Transactional
-    public Board save(Board board, Member member, String type) {
-        //쿼리스트링에 맞게 엔티티에 매핑
-        if (type.equals("free")) {
-            board.changeBoardType(BoardType.FREE);
-        } else if (type.equals("qna")) {
-            board.changeBoardType(BoardType.QNA);
-        } else if (type.equals("tech")) {
-            board.changeBoardType(BoardType.TECH);
-        } else {
+    public BoardCreateResponseDto save(BoardCreateRequestDto boardCreateRequestDto, BoardType type, HttpServletRequest request) {
+        List<BoardType> typeList = new ArrayList<>(Arrays.asList(BoardType.TECH, BoardType.QNA, BoardType.FREE));
+
+        if (!typeList.contains(type)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
 
+        //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
+        Member member = jwtTokenProvider.getMember(request);
+
+        //DTO 를 Board 엔티티로 매핑 하고 저장
+        Board board = modelMapper.map(boardCreateRequestDto, Board.class);
+        board.changeMember(member);
+        board.changeBoardType(type);//쿼리스트링에 맞게 엔티티에 매핑
+        
+        //댓긇 저장
         Board saveBoard = boardRepository.save(board);
+        
+        //회원 점수 3점 증가
         member.increaseActiveScore(3);
-        return saveBoard;
+
+        //응답 DTO
+        BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(saveBoard, BoardCreateResponseDto.class);
+        boardCreateResponseDto.setAuthor(member.getName());
+
+        return boardCreateResponseDto;
     }
 
     /**
@@ -73,7 +89,7 @@ public class BoardService {
      * 단건 조회 시 조회 수도 증가
      */
     @Transactional
-    public Board retrieveOneAndIncreaseViews(Long boardId) {
+    public BoardRetrieveDetailResponseDto retrieveOneAndIncreaseViews(Long boardId) {
         Board findBoard = boardRepository
                 .findById(boardId)
                 .orElseThrow(() -> {throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
@@ -81,7 +97,13 @@ public class BoardService {
 
         findBoard.increaseViews();
 
-        return findBoard;
+        //게시판 조회 시 해당 DTO 로 변환
+        BoardRetrieveDetailResponseDto boardRetrieveResponseDto = modelMapper.map(findBoard, BoardRetrieveDetailResponseDto.class);
+        boardRetrieveResponseDto.setMemberId(findBoard.getMember().getId());
+        boardRetrieveResponseDto.setAuthor(findBoard.getMember().getName());
+        boardRetrieveResponseDto.setCommentSize(findBoard.getCommentSize());
+
+        return boardRetrieveResponseDto;
     }
 
     /**

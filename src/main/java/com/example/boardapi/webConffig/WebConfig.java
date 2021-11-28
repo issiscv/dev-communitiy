@@ -1,8 +1,9 @@
-package com.example.boardapi.security;
+package com.example.boardapi.webConffig;
 
+import com.example.boardapi.converter.StringToBoardTypeConverter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -16,5 +17,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("*") // 어떤 메서드를 허용할 것인지 (GET, POST...)
                 .allowCredentials(true)
                 .maxAge(3600);
+    }
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new StringToBoardTypeConverter());
     }
 }

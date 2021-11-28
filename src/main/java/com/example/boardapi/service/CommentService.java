@@ -3,13 +3,11 @@ package com.example.boardapi.service;
 import com.example.boardapi.dto.comment.request.CommentCreateRequestDto;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
+import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
-import com.example.boardapi.exception.BoardNotFoundException;
-import com.example.boardapi.exception.CommentNotFoundException;
-import com.example.boardapi.exception.InValidUpdateException;
-import com.example.boardapi.exception.InvalidSelectionException;
+import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.exception.message.CommentExceptionMessage;
 import com.example.boardapi.repository.board.BoardRepository;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -90,8 +89,30 @@ public class CommentService {
     /**
      * 특정 게시글의 댓글
      */
-    public List<Comment> retrieveAllByBoardId(Long boardId) {
-        return commentRepository.findAllByBoardId(boardId);
+    public List<CommentRetrieveResponseDto> retrieveAllByBoardId(Long boardId) {
+        List<Comment> comments = commentRepository.findAllByBoardIdFetchJoinWithMember(boardId);
+
+        List<CommentRetrieveResponseDto> commentResponseDtoList = new ArrayList<>();
+
+        //조회한 댓글 엔티티를 DTO 로 변환
+        for (Comment comment : comments) {
+
+            CommentRetrieveResponseDto commentRetrieveResponseDto = CommentRetrieveResponseDto.builder()
+                    .id(comment.getId())
+                    .memberId(comment.getMember().getId())
+                    .boardId(boardId)
+                    .author(comment.getMember().getName())
+                    .content(comment.getContent())
+                    .createdDate(comment.getCreatedDate())
+                    .lastModifiedDate(comment.getLastModifiedDate())
+                    .likes(comment.getLikes())
+                    .isSelected(comment.isSelected())
+                    .build();
+
+            commentResponseDtoList.add(commentRetrieveResponseDto);
+        }
+
+        return commentResponseDtoList;
     }
 
     /**
@@ -146,11 +167,23 @@ public class CommentService {
     }
 
     @Transactional
-    public void selectComment(Board board, Long commentId) {
-        
-        //페치조인
-        List<Comment> comments = retrieveAllByBoardId(board.getId());
-        Comment comment = retrieveOne(commentId);
+    public void selectComment(Long boardId, Long commentId, HttpServletRequest request) {
+        //request 객체의 헤더 부분에서 회원 조회
+        Member member = jwtTokenProvider.getMember(request);
+
+        //해당 게시글에도 채택 됨을 알기 위해 조회
+        Board board = boardRepository.findById(boardId).orElseThrow(
+                () -> {
+                    throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
+                }
+        );
+
+        //자신의 게시글이 아닐경우 채택할 수 없다.(인가)
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("자신의 게시글만 채택할 수 있습니다.");
+        }
+
+        List<Comment> comments = commentRepository.findAllByBoardId(board.getId());
 
         for (Comment c : comments) {
             //이미 채택하였으면 에러 던짐
@@ -158,16 +191,17 @@ public class CommentService {
                 throw new InvalidSelectionException(CommentExceptionMessage.INVALID_SELECTION);
             }
         }
-
+        
+        //댓글에도 채택되었음으로 갱신
+        Comment comment = retrieveOne(commentId);
         comment.chooseSelection(true);
 
         //채택한 사람도 증가
-        Member boardMember = board.getMember();
-        boardMember.increaseActiveScore(10);
+        member.increaseActiveScore(10);
 
         //채택당한 사람의 활동 점수 증가
-        Member member = comment.getMember();
-        member.increaseActiveScore(20);
+        Member selectedMember = comment.getMember();
+        selectedMember.increaseActiveScore(20);
 
         //게시글도 체크
         board.chooseSelection(true);

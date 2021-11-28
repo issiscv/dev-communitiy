@@ -12,6 +12,7 @@ import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Scrap;
+import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.exception.AlreadyScrapedException;
 import com.example.boardapi.exception.DuplicatedLikeException;
 import com.example.boardapi.exception.NotOwnBoardException;
@@ -41,7 +42,6 @@ import javax.validation.Valid;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,13 +55,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class BoardController {
 
     private final BoardService boardService;
-
     private final JwtTokenProvider jwtTokenProvider;
-
     private final ModelMapper modelMapper;
-
     private final CommentService commentService;
-
     private final ScrapService scrapService;
 
     //작성 POST
@@ -73,33 +69,24 @@ public class BoardController {
     })
     @PostMapping("")
     public ResponseEntity<EntityModel<BoardCreateResponseDto>> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
-                                      @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type, HttpServletRequest request) {
-        //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.retrieveMember(token);
+                                                                           @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam BoardType type, HttpServletRequest request) {
+        //게시글 저장 후 DTO 로 변환
+        BoardCreateResponseDto boardCreateResponseDto = boardService.save(boardCreateRequestDto, type, request);
 
-        //DTO 를 Board 엔티티로 매핑 하고 저장
-        Board mappedBoard = modelMapper.map(boardCreateRequestDto, Board.class);
-        mappedBoard.changeMember(member);
-
-        Board savedBoard = boardService.save(mappedBoard, member, type);
-
-        //응답 DTO
-        BoardCreateResponseDto boardCreateResponseDto = modelMapper.map(savedBoard, BoardCreateResponseDto.class);
-        boardCreateResponseDto.setAuthor(member.getName());
-
-        //데이터베이스에 생성하였기에 주소를 설정해준다 해준다.
+        //데이터베이스에 생성하였기에 주소를 설정해준다.
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(savedBoard.getId()).toUri();
+                .buildAndExpand(boardCreateResponseDto.getId()).toUri();
+
         //profile 주소를 hateoas에 추가를 위해 ip 주소를 가져온다.
         String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<BoardCreateResponseDto> model = EntityModel.of(boardCreateResponseDto);
-        WebMvcLinkBuilder self =
-                linkTo(methodOn(this.getClass()).createBoard(new BoardCreateRequestDto(), "qna", request));
-        WebMvcLinkBuilder retrieve = linkTo(methodOn(this.getClass()).retrieveBoard(savedBoard.getId()));
+        //self
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).createBoard(new BoardCreateRequestDto(), type, request));
+        //단건 조회
+        WebMvcLinkBuilder retrieve = linkTo(methodOn(this.getClass()).retrieveBoard(boardCreateResponseDto.getId()));
 
         model.add(self.withSelfRel());
         model.add(retrieve.withRel("게시글 조회"));
@@ -116,40 +103,14 @@ public class BoardController {
     })
     @GetMapping("/{boardId}")
     public ResponseEntity<EntityModel<BoardRetrieveDetailResponseDto>> retrieveBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId) {
-        //해당 PK 에 해당하는 게시판 엔티티 조회 및 게시글 조회 검증
-        Board board = boardService.retrieveOneAndIncreaseViews(boardId);
-
+        //해당 PK 에 해당하는 게시판 엔티티 조회, 조회 수 증가
+        BoardRetrieveDetailResponseDto boardRetrieveResponseDto = boardService.retrieveOneAndIncreaseViews(boardId);
 
         //게시글에 해당하는 댓글 리스트
-        List<Comment> comments = commentService.retrieveAllByBoardId(boardId);
-        List<CommentRetrieveResponseDto> commentResponseDtoList = new ArrayList<>();
-        
-        //조회한 댓글 엔티티를 DTO 로 변환
-        for (Comment comment : comments) {
+        List<CommentRetrieveResponseDto> commentResponseDtoList = commentService.retrieveAllByBoardId(boardId);
 
-            CommentRetrieveResponseDto commentRetrieveResponseDto = CommentRetrieveResponseDto.builder()
-                    .id(comment.getId())
-                    .memberId(comment.getMember().getId())
-                    .boardId(board.getId())
-                    .author(comment.getMember().getName())
-                    .content(comment.getContent())
-                    .createdDate(comment.getCreatedDate())
-                    .lastModifiedDate(comment.getLastModifiedDate())
-                    .likes(comment.getLikes())
-                    .isSelected(comment.isSelected())
-                    .build();
-
-            commentResponseDtoList.add(commentRetrieveResponseDto);
-        }
-
-        //게시판 조회 시 해당 DTO 로 변환
-        BoardRetrieveDetailResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveDetailResponseDto.class);
-        //응답 시 필드 명이 author 이므로 따로 세팅한다.
-        boardRetrieveResponseDto.setMemberId(board.getMember().getId());
-        boardRetrieveResponseDto.setAuthor(board.getMember().getName());
+        //게시글 조회 DTO 에 댓글 값이 세팅되있지 않아 세팅해준다.
         boardRetrieveResponseDto.setComments(commentResponseDtoList);
-        boardRetrieveResponseDto.setCommentSize(board.getCommentSize());
-
 
         //ip
         String ip = getIp();
@@ -581,18 +542,7 @@ public class BoardController {
             @ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
             @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId, HttpServletRequest request) {
 
-        String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.retrieveMember(token);
-
-        //해당 게시글에도 채택 됨을 알기 위해 조회
-        Board board = boardService.retrieveOne(boardId);
-
-        if (board.getMember().getId() != member.getId()) {
-            throw new NotOwnBoardException("자신의 게시글만 채택할 수 있습니다.");
-        }
-
-        //채택 표시
-        commentService.selectComment(board, commentId);
+        commentService.selectComment(boardId, commentId, request);
 
         return ResponseEntity.noContent().build();
     }
