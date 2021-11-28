@@ -2,11 +2,14 @@ package com.example.boardapi.service;
 
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
+import com.example.boardapi.dto.board.response.BoardRetrieveAllPagingResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveDetailResponseDto;
+import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
+import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.repository.board.BoardRepository;
@@ -29,6 +32,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,10 +50,10 @@ public class BoardService {
      *  게시글 저장
      */
     @Transactional
-    public BoardCreateResponseDto save(BoardCreateRequestDto boardCreateRequestDto, BoardType type, HttpServletRequest request) {
+    public BoardCreateResponseDto save(BoardCreateRequestDto boardCreateRequestDto, BoardType boardType, HttpServletRequest request) {
         List<BoardType> typeList = new ArrayList<>(Arrays.asList(BoardType.TECH, BoardType.QNA, BoardType.FREE));
 
-        if (!typeList.contains(type)) {
+        if (!typeList.contains(boardType)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
 
@@ -59,7 +63,7 @@ public class BoardService {
         //DTO 를 Board 엔티티로 매핑 하고 저장
         Board board = modelMapper.map(boardCreateRequestDto, Board.class);
         board.changeMember(member);
-        board.changeBoardType(type);//쿼리스트링에 맞게 엔티티에 매핑
+        board.changeBoardType(boardType);//쿼리스트링에 맞게 엔티티에 매핑
         
         //댓긇 저장
         Board saveBoard = boardRepository.save(board);
@@ -109,22 +113,42 @@ public class BoardService {
     /**
      * 전체 조회
      */
-    public Page<Board> retrieveAllWithPagingByType(Pageable pageable, String type, String sort) {
-        List<String> sortList = new ArrayList<>(Arrays.asList("createdDate", "likes", "commentSize", "views"));
-        List<String> typeList = new ArrayList<>(Arrays.asList("free", "qna", "tech"));
-
-
-        if (!sortList.contains(sort)) {
+    public BoardRetrieveAllPagingResponseDto retrieveAllWithPagingByType(int page, BoardType boardType, SortType sortType) {
+        List<SortType> sortList = new ArrayList<>(Arrays.asList(SortType.CREATEDATE, SortType.LIKES, SortType.COMMENTSIZE, SortType.VIEWS));
+        List<BoardType> typeList = new ArrayList<>(Arrays.asList(BoardType.TECH, BoardType.QNA, BoardType.FREE));
+        
+        //정렬 조건에 맞지 않으면 에로
+        if (!sortList.contains(sortType)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_SORT);
         }
-
-        if (!typeList.contains(type)) {
+        
+        //게시글 타입에 맞지 않으면 에로
+        if (!typeList.contains(boardType)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
 
-        Page<Board> allWithPaging = boardRepository.findAllWithPaging(pageable, type, sort);
+        //페이징 기준
+        PageRequest pageRequest = PageRequest.of(page-1, 15);
+        Page<Board> boardPage = boardRepository.findAllWithPaging(pageRequest, boardType, sortType);
 
-        return allWithPaging;
+        //총 게시글 수
+        long totalElements = boardPage.getTotalElements();
+        //총 페이지 수
+        int totalPages = boardPage.getTotalPages();
+        //해당 페이지의 컨텐트들
+        List<Board> content = boardPage.getContent();
+
+        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
+                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+                    return boardRetrieveOneResponseDto;
+                }
+        ).collect(Collectors.toList());
+
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
+                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
+
+        return boardRetrieveAllPagingResponseDto;
     }
 
     //일, 주, 월 이내의 best 게시글 10개 조회

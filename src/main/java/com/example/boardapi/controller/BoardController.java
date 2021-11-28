@@ -13,6 +13,7 @@ import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.entity.enumtype.BoardType;
+import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.AlreadyScrapedException;
 import com.example.boardapi.exception.DuplicatedLikeException;
 import com.example.boardapi.exception.NotOwnBoardException;
@@ -69,9 +70,9 @@ public class BoardController {
     })
     @PostMapping("")
     public ResponseEntity<EntityModel<BoardCreateResponseDto>> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
-                                                                           @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam BoardType type, HttpServletRequest request) {
+                                                                           @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam(value = "type") BoardType boardType, HttpServletRequest request) {
         //게시글 저장 후 DTO 로 변환
-        BoardCreateResponseDto boardCreateResponseDto = boardService.save(boardCreateRequestDto, type, request);
+        BoardCreateResponseDto boardCreateResponseDto = boardService.save(boardCreateRequestDto, boardType, request);
 
         //데이터베이스에 생성하였기에 주소를 설정해준다.
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -84,7 +85,7 @@ public class BoardController {
         //hateoas 기능 추가
         EntityModel<BoardCreateResponseDto> model = EntityModel.of(boardCreateResponseDto);
         //self
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).createBoard(new BoardCreateRequestDto(), type, request));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).createBoard(new BoardCreateRequestDto(), boardType, request));
         //단건 조회
         WebMvcLinkBuilder retrieve = linkTo(methodOn(this.getClass()).retrieveBoard(boardCreateResponseDto.getId()));
 
@@ -126,8 +127,6 @@ public class BoardController {
         return ResponseEntity.ok().body(model);
     }
 
-
-
     //전체 조회 GET
     @ApiOperation(value = "게시글 전체 조회", notes = "쿼리스트링을 사용하여 게시글 종류를 구분하여 조회합니다.")
     @ApiResponses({
@@ -137,48 +136,30 @@ public class BoardController {
     @GetMapping("")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByType(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(defaultValue = "1") int page,
-            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type,
-            @ApiParam(value = "게시글 정렬 유형 쿼리스트링", required = false, example = "createdDate, likes, commentSize, views") @RequestParam(defaultValue = "createdDate") String sort) {
+            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam(value = "type") BoardType boardType,
+            @ApiParam(value = "게시글 정렬 유형 쿼리스트링", required = false, example = "createdDate, likes, commentSize, views") @RequestParam(value = "sort", defaultValue = "createdDate") SortType sortType) {
 
-        //페이징 기준
-        PageRequest pageRequest = PageRequest.of(page-1, 15);
         //페이징 방식 대로 조회
-        Page<Board> boardPage = boardService.retrieveAllWithPagingByType(pageRequest, type, sort);
-
-        long totalElements = boardPage.getTotalElements();
-
-        //총 페이지 수
-        int totalPages = boardPage.getTotalPages();
-        //해당 페이지의 컨텐트들
-        List<Board> content = boardPage.getContent();
-
-        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
-                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
-                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    return boardRetrieveOneResponseDto;
-                }
-        ).collect(Collectors.toList());
-
-        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
-                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = boardService.retrieveAllWithPagingByType(page, boardType, sortType);
+        int totalPages = boardRetrieveAllPagingResponseDto.getTotalPages();
 
         //ip
         String ip = getIp();
 
         //hateoas 기능 추가
         EntityModel<BoardRetrieveAllPagingResponseDto> model = EntityModel.of(boardRetrieveAllPagingResponseDto);
-        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page, type, sort));
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page, boardType, sortType));
         //self
         model.add(self.withSelfRel());
         model.add(Link.of("http://"+ip+":8080/swagger-ui/#/", "profile"));
 
         //페이징 hateoas 를 위한 로직이다.
         if (page > 1) {
-            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page - 1, type, sort));
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page - 1, boardType, sortType));
             model.add(prev.withRel("이전"));
         }
         if (page < totalPages) {
-            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page + 1, type, sort));
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoardByType(page + 1, boardType, sortType));
             model.add(next.withRel("다음"));
         }
 

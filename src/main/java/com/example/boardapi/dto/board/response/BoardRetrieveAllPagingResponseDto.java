@@ -17,7 +17,7 @@ public class BoardRetrieveAllPagingResponseDto {
     private int currentPage;
 
     @ApiModelProperty(required = true, value = "총 페이지 수", example = "10")
-    private int totalPage;
+    private int totalPages;
 
     @ApiModelProperty(required = true, value = "총 게시글 수", example = "252")
     private int totalElements;

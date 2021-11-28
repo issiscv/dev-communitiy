@@ -9,11 +9,11 @@ public class StringToBoardTypeConverter implements Converter<String, BoardType> 
     public BoardType convert(String source) {
         BoardType boardType = BoardType.ERROR;
 
-        if (source.equals("free")) {
+        if (source.equalsIgnoreCase("free")) {
             boardType = BoardType.FREE;
-        } else if (source.equals("qna")) {
+        } else if (source.equalsIgnoreCase("qna")) {
             boardType = BoardType.QNA;
-        } else if (source.equals("tech")) {
+        } else if (source.equalsIgnoreCase("tech")) {
             boardType = BoardType.TECH;
         }
 

@@ -357,7 +357,7 @@ public class MemberController {
 
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
                 .currentPage(page)
-                .totalPage(((list.size()-1) / size) + 1)
+                .totalPages(((list.size()-1) / size) + 1)
                 .totalElements(list.size())
                 .contents(new ArrayList<>())
                 .build();
@@ -426,7 +426,7 @@ public class MemberController {
         //페이징 작업
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
                 .currentPage(page)
-                .totalPage(((list.size()-1) / size) + 1)
+                .totalPages(((list.size()-1) / size) + 1)
                 .totalElements(list.size())
                 .contents(new ArrayList<>())
                 .build();

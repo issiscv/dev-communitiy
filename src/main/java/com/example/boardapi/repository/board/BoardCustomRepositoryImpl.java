@@ -2,6 +2,7 @@ package com.example.boardapi.repository.board;
 
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.enumtype.BoardType;
+import com.example.boardapi.entity.enumtype.SortType;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -18,7 +19,7 @@ import java.util.List;
 import static com.example.boardapi.entity.QBoard.board;
 
 @RequiredArgsConstructor
-public class BoardRepositoryImpl implements BoardCustomRepository{
+public class BoardCustomRepositoryImpl implements BoardCustomRepository{
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
@@ -27,19 +28,18 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
     public List<Board> findBoardByMember(Long memberId) {
         return queryFactory
                 .selectFrom(board)
-
                 .where(board.member.id.eq(memberId))
                 .fetch();
     }
 
     @Override
-    public Page<Board> findAllWithPaging(Pageable pageable, String type, String sort) {
+    public Page<Board> findAllWithPaging(Pageable pageable, BoardType boardType, SortType sortType) {
         QueryResults<Board> results = queryFactory
                 .selectFrom(board)
-                .where(boardTypeEq(type))
+                .where(board.boardType.eq(boardType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(orderBySortCond(sort), board.createdDate.desc())
+                .orderBy(orderBySortCond(sortType), board.createdDate.desc())
                 .fetchResults();
 
         List<Board> result = results.getResults();
@@ -48,12 +48,12 @@ public class BoardRepositoryImpl implements BoardCustomRepository{
         return new PageImpl<>(result, pageable, total);
     }
 
-    private OrderSpecifier orderBySortCond(String sort) {
-        if (sort.equals("likes")) {
+    private OrderSpecifier orderBySortCond(SortType sortType) {
+        if (sortType.equals(SortType.LIKES)) {
             return board.likes.desc();
-        } else if (sort.equals("commentSize")) {
+        } else if (sortType.equals(SortType.COMMENTSIZE)) {
             return board.commentSize.desc();
-        } else if (sort.equals("views")) {
+        } else if (sortType.equals(SortType.VIEWS)) {
             return board.views.desc();
         } else {
             //createdDate
