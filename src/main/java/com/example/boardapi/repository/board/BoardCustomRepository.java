@@ -15,7 +15,7 @@ public interface BoardCustomRepository {
 
     Page<Board> findAllWithPaging(Pageable pageable, BoardType boardType, SortType sortType);
 
-    Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String searchCond, String keyWord, String type);
+    Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String searchCond, String keyWord, BoardType type);
 
     Page<Board> findBestBoardsBySevenDaysWithPaging(Pageable pageable, LocalDateTime beforeSevenDay);
 

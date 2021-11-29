@@ -23,7 +23,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 public class CommentController {
 
     private final CommentService commentService;
-    private final ModelMapper modelMapper;
 
     @GetMapping("/comments/{commentId}")
     public ResponseEntity retrieveComment(@PathVariable Long commentId) {

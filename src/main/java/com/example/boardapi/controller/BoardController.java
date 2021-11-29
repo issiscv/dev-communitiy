@@ -9,14 +9,8 @@ import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.entity.Board;
-import com.example.boardapi.entity.Comment;
-import com.example.boardapi.entity.Member;
-import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.entity.enumtype.SortType;
-import com.example.boardapi.exception.AlreadyScrapedException;
-import com.example.boardapi.exception.DuplicatedLikeException;
-import com.example.boardapi.exception.NotOwnBoardException;
 import com.example.boardapi.exception.ShortInputException;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
@@ -29,8 +23,6 @@ import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -44,7 +36,6 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -71,8 +62,10 @@ public class BoardController {
     @PostMapping("")
     public ResponseEntity<EntityModel<BoardCreateResponseDto>> createBoard(@ApiParam(value = "게시글 생성 DTO", required = true) @RequestBody @Valid BoardCreateRequestDto boardCreateRequestDto,
                                                                            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam(value = "type") BoardType boardType, HttpServletRequest request) {
+        //jwt 해석
+        String token = jwtTokenProvider.resolveToken(request);
         //게시글 저장 후 DTO 로 변환
-        BoardCreateResponseDto boardCreateResponseDto = boardService.save(boardCreateRequestDto, boardType, request);
+        BoardCreateResponseDto boardCreateResponseDto = boardService.save(boardCreateRequestDto, boardType, token);
 
         //데이터베이스에 생성하였기에 주소를 설정해준다.
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -175,35 +168,16 @@ public class BoardController {
     @GetMapping("/v2")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByKeyWord(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(defaultValue = "1") int page,
-            @ApiParam(value = "검색 조건 위한 쿼리 스트링", required = true) @RequestParam String searchCond,
+            @ApiParam(value = "검색 조건 위한 쿼리 스트링", required = true, example = "all, title, content") @RequestParam String searchCond,
             @ApiParam(value = "검색을 위한 쿼리 스트링") @RequestParam(defaultValue = "") String keyWord,
-            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam String type) {
+            @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam BoardType type) {
 
         if (keyWord.length() < 2) {
             throw new ShortInputException("2글자 이상 입력해주세요.");
         }
 
-        //페이징 기준
-        PageRequest pageRequest = PageRequest.of(page-1, 15);
         //페이징 방식 대로 조회
-        Page<Board> boardPage = boardService.retrieveAllWithPagingByKeyWord(pageRequest, searchCond, keyWord, type);
-
-        long totalElements = boardPage.getTotalElements();
-
-        //총 페이지 수
-        int totalPages = boardPage.getTotalPages();
-        //해당 페이지의 컨텐트들
-        List<Board> content = boardPage.getContent();
-
-        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
-                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
-                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    return boardRetrieveOneResponseDto;
-                }
-        ).collect(Collectors.toList());
-
-        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
-                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = boardService.retrieveAllWithPagingByKeyWord(page, searchCond, keyWord, type);
 
         //ip
         String ip = getIp();
@@ -220,7 +194,7 @@ public class BoardController {
             WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page - 1, searchCond, keyWord, type));
             model.add(prev.withRel("이전"));
         }
-        if (page < totalPages) {
+        if (page < boardRetrieveAllPagingResponseDto.getTotalPages()) {
             WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllBoardByKeyWord(page + 1, searchCond, keyWord, type));
             model.add(next.withRel("다음"));
         }
@@ -237,20 +211,7 @@ public class BoardController {
     @GetMapping("/best-likes")
     public ResponseEntity<EntityModel<BoardRetrieveAllByWeekResponseDto>> retrieveAllBoardWeeklyBestByType() {
 
-        PageRequest pageRequest = PageRequest.of(0, 10);
-
-        Page<Board> page = boardService.retrieveByTypeAndWeeklyBestBoardsWithPaging(pageRequest);
-
-        List<Board> content = page.getContent();
-
-        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
-                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
-                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-                    return boardRetrieveOneResponseDto;
-                }
-        ).collect(Collectors.toList());
-
-        BoardRetrieveAllByWeekResponseDto boardRetrieveAllByDateResponseDto = new BoardRetrieveAllByWeekResponseDto(boardRetrieveOneResponseDtoList);
+        BoardRetrieveAllByWeekResponseDto boardRetrieveAllByDateResponseDto = boardService.retrieveByTypeAndWeeklyBestBoardsWithPaging();
 
         //ip
         String ip = getIp();
@@ -279,23 +240,8 @@ public class BoardController {
     @PutMapping("/{boardId}/scraps")
     public ResponseEntity scrapBoard(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.retrieveMember(token);
 
-        Board board = boardService.retrieveOne(boardId);
-
-        List<Scrap> scraps = scrapService.retrieveByMemberId(member.getId());
-        for (Scrap scrap : scraps) {
-            if (scrap.getBoard() == board) {
-                throw new AlreadyScrapedException("이미 스크랩 하셨습니다.");
-            }
-        }
-
-        Scrap scrap = Scrap.builder()
-                .board(board)
-                .member(member)
-                .build();
-
-        scrapService.save(scrap);
+        scrapService.save(boardId, token);
 
         return ResponseEntity.noContent().build();
     }
@@ -312,7 +258,9 @@ public class BoardController {
                                                 BoardEditRequestDto boardEditRequestDto,
                                     @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
-        Board editBoard = boardService.editBoard(boardId, boardEditRequestDto, request);
+        String token = jwtTokenProvider.resolveToken(request);
+
+        Board editBoard = boardService.editBoard(boardId, boardEditRequestDto, token);
 
         BoardEditResponseDto boardEditResponseDto = modelMapper.map(editBoard, BoardEditResponseDto.class);
         boardEditResponseDto.setAuthor(editBoard.getMember().getName());
@@ -345,7 +293,9 @@ public class BoardController {
     @DeleteMapping("/{boardId}")
     public ResponseEntity deleteBoard(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
 
-        boardService.deleteBoard(boardId, request);
+        String token = jwtTokenProvider.resolveToken(request);
+
+        boardService.deleteBoard(boardId, token);
 
         return ResponseEntity.noContent().build();
     }
@@ -359,8 +309,8 @@ public class BoardController {
     @PutMapping("/{boardId}/likes")
     public ResponseEntity updateLike(@ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
                                      HttpServletRequest request) {
-
-        boardService.updateBoardLike(boardId, request);
+        String token = jwtTokenProvider.resolveToken(request);
+        boardService.updateBoardLike(boardId, token);
 
         return ResponseEntity.noContent().build();
     }
@@ -378,8 +328,8 @@ public class BoardController {
     @PostMapping("/{boardId}/comments")
     public ResponseEntity<EntityModel<CommentCreateResponseDto>> createComment(@RequestBody @Valid @ApiParam(value = "댓글 DTO", required = true) CommentCreateRequestDto commentCreateRequestDto,
                                         @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
-
-        CommentCreateResponseDto commentResponseDto = commentService.save(boardId, commentCreateRequestDto, request);
+        String token = jwtTokenProvider.resolveToken(request);
+        CommentCreateResponseDto commentResponseDto = commentService.save(boardId, commentCreateRequestDto, token);
 
         //URI
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -411,28 +361,15 @@ public class BoardController {
             @ApiResponse(code = 401, message = "토큰 검증 실패(인증 실패)")
     })
     @PutMapping("/{boardId}/comments/{commentId}")
-    public ResponseEntity<EntityModel<CommentEditResponseDto>> editComment(@ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
+    public ResponseEntity<EntityModel<CommentEditResponseDto>> editComment(
+            @ApiParam(value = "댓글 수정 DTO", required = true) @RequestBody @Valid CommentEditRequestDto commentEditRequestDto,
                                       @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId,
                                       @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId,
                                                                            HttpServletRequest request) {
-        //게시글이 존재하는지 검사
-        Board board = boardService.retrieveOne(boardId);
-        //댓글 수정
-        Comment comment = commentService.editComment(commentId, commentEditRequestDto);
-
-
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.retrieveMember(token);
 
-        if (comment.getMember().getId() != member.getId()) {
-            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
-        }
-
-        CommentEditResponseDto commentEditResponseDto = modelMapper.map(comment, CommentEditResponseDto.class);
-        commentEditResponseDto.setAuthor(comment.getMember().getName());
-        commentEditResponseDto.setBoardId(boardId);
-        commentEditResponseDto.setMemberId(member.getId());
-        commentEditResponseDto.setSelected(comment.isSelected());
+        //댓글 수정
+        CommentEditResponseDto commentEditResponseDto = commentService.editComment(commentId, boardId, commentEditRequestDto, token);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .build()
@@ -463,21 +400,10 @@ public class BoardController {
     public ResponseEntity deleteComment(@ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
                                         @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId,
                                         HttpServletRequest request) {
-        //게시글이 존재하는지 검사
-        Board board = boardService.retrieveOne(boardId);
-
-        //댓글이 존재하는 확인
-        Comment comment = commentService.retrieveOne(commentId);
-
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.retrieveMember(token);
-
-        if (comment.getMember().getId() != member.getId()) {
-            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
-        }
 
         //삭제
-        commentService.deleteComment(board, commentId);
+        commentService.deleteComment(boardId, commentId, token);
 
         return ResponseEntity.noContent().build();
     }
@@ -493,18 +419,11 @@ public class BoardController {
                                             @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId
     ,HttpServletRequest request) {
         //게시글이 존재하는지 검사
-        Board board = boardService.retrieveOne(boardId);
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.retrieveMember(token);
-
-        if (member.getLikeId().contains(commentId)) {
-            throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
-        }
-
 
         //댓글이 존재하는지 같이 검사한다.
-        commentService.updateCommentLike(member, commentId);
+        commentService.updateCommentLike(boardId, commentId, token);
 
         return ResponseEntity.noContent().build();
     }
@@ -522,8 +441,8 @@ public class BoardController {
     public ResponseEntity selectComment(
             @ApiParam(value = "게시글 PK", required = true) @PathVariable Long boardId,
             @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId, HttpServletRequest request) {
-
-        commentService.selectComment(boardId, commentId, request);
+        String token = jwtTokenProvider.resolveToken(request);
+        commentService.selectComment(boardId, commentId, token);
 
         return ResponseEntity.noContent().build();
     }

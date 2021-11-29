@@ -1,14 +1,11 @@
 package com.example.boardapi.service;
 
 import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
-import com.example.boardapi.dto.board.response.BoardCreateResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveAllPagingResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveDetailResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
+import com.example.boardapi.dto.board.request.BoardEditRequestDto;
+import com.example.boardapi.dto.board.response.*;
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.enumtype.BoardType;
-import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
@@ -25,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -50,7 +46,7 @@ public class BoardService {
      *  게시글 저장
      */
     @Transactional
-    public BoardCreateResponseDto save(BoardCreateRequestDto boardCreateRequestDto, BoardType boardType, HttpServletRequest request) {
+    public BoardCreateResponseDto save(BoardCreateRequestDto boardCreateRequestDto, BoardType boardType, String token) {
         List<BoardType> typeList = new ArrayList<>(Arrays.asList(BoardType.TECH, BoardType.QNA, BoardType.FREE));
 
         if (!typeList.contains(boardType)) {
@@ -58,7 +54,7 @@ public class BoardService {
         }
 
         //request 헤더 값을 가져와, 회원 조회 : 누가 작성했는지 알기 위해서
-        Member member = jwtTokenProvider.getMember(request);
+        Member member = jwtTokenProvider.getMember(token);
 
         //DTO 를 Board 엔티티로 매핑 하고 저장
         Board board = modelMapper.map(boardCreateRequestDto, Board.class);
@@ -152,14 +148,26 @@ public class BoardService {
     }
 
     //일, 주, 월 이내의 best 게시글 10개 조회
-    public Page<Board> retrieveByTypeAndWeeklyBestBoardsWithPaging(Pageable pageable) {
+    public BoardRetrieveAllByWeekResponseDto retrieveByTypeAndWeeklyBestBoardsWithPaging() {
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        
+        //7일 전 날짜의 0시 0분 0초로 초기화 -> 즉, 날짜가 변경될때만 반영
         LocalDateTime beforeDate = LocalDateTime.of(LocalDate.now().minusDays(7), LocalTime.of(0,0,0));
 
-        //어제 날짜의 0시 0분 0초로 초기화 -> 즉, 날짜가 변경될때만 반영
+        Page<Board> allWithPaging = boardRepository.findBestBoardsBySevenDaysWithPaging(pageRequest, beforeDate);
 
-        Page<Board> allWithPaging = boardRepository.findBestBoardsBySevenDaysWithPaging(pageable, beforeDate);
+        List<Board> content = allWithPaging.getContent();
 
-        return allWithPaging;
+        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().filter(board -> board.getLikes() > 0).map(board -> {
+                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+                    return boardRetrieveOneResponseDto;
+                }
+        ).collect(Collectors.toList());
+
+        BoardRetrieveAllByWeekResponseDto boardRetrieveAllByDateResponseDto = new BoardRetrieveAllByWeekResponseDto(boardRetrieveOneResponseDtoList);
+
+        return boardRetrieveAllByDateResponseDto;
     }
 
     public Page<Board> retrieveAllOwnBoardWithPaging(Pageable page, Long memberId) {
@@ -170,9 +178,9 @@ public class BoardService {
      * 게시글 수정
      */
     @Transactional
-    public Board editBoard(Long id, BoardEditRequestDto boardEditRequestDto, HttpServletRequest request) {
+    public Board editBoard(Long id, BoardEditRequestDto boardEditRequestDto, String token) {
 
-        Member member = jwtTokenProvider.getMember(request);
+        Member member = jwtTokenProvider.getMember(token);
 
         //retrieveOne 메서드에서 예외 처리 해줌
         Board board = retrieveOne(id);
@@ -190,11 +198,11 @@ public class BoardService {
      * 게시글 삭제
      */
     @Transactional
-    public void deleteBoard(Long boardId, HttpServletRequest request) {
+    public void deleteBoard(Long boardId, String token) {
 
         Board board = retrieveOne(boardId);
 
-        Member member = jwtTokenProvider.getMember(request);
+        Member member = jwtTokenProvider.getMember(token);
 
         if (board.getMember().getId() != member.getId()) {
             throw new NotOwnBoardException("게시글의 권한이 없습니다.");
@@ -218,8 +226,8 @@ public class BoardService {
     }
 
     @Transactional
-    public void updateBoardLike(Long boardId, HttpServletRequest request) {
-        Member member = jwtTokenProvider.getMember(request);
+    public void updateBoardLike(Long boardId, String token) {
+        Member member = jwtTokenProvider.getMember(token);
 
         if (member.getLikeId().contains(boardId)) {
             throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
@@ -240,15 +248,39 @@ public class BoardService {
         boardRepository.deleteAllByMemberId(memberId);
     }
 
-    public Page<Board> retrieveAllWithPagingByKeyWord(PageRequest pageRequest, String searchCond, String keyWord, String type) {
-        List<String> typeList = new ArrayList(Arrays.asList("free", "qna", "tech"));
+    public BoardRetrieveAllPagingResponseDto retrieveAllWithPagingByKeyWord(int page, String searchCond, String keyWord, BoardType type) {
+        List<BoardType> typeList = new ArrayList(Arrays.asList(BoardType.FREE, BoardType.QNA, BoardType.TECH));
         List<String> searchCondList = new ArrayList(Arrays.asList("title", "content", "all"));
+
+        //페이징 기준
+        PageRequest pageRequest = PageRequest.of(page-1, 15);
+
         if (!typeList.contains(type)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_TYPE);
         }
         if (!searchCondList.contains(searchCond)) {
             throw new InValidQueryStringException(BoardExceptionMessage.INVALID_QUERYSTRING_SEACHCOND);
         }
-        return boardRepository.findAllByKeyWordWithPaging(pageRequest, searchCond, keyWord, type);
+
+        Page<Board> boardPage = boardRepository.findAllByKeyWordWithPaging(pageRequest, searchCond, keyWord, type);
+
+        long totalElements = boardPage.getTotalElements();
+
+        //총 페이지 수
+        int totalPages = boardPage.getTotalPages();
+        //해당 페이지의 컨텐트들
+        List<Board> content = boardPage.getContent();
+
+        List<BoardRetrieveResponseDto> boardRetrieveOneResponseDtoList = content.stream().map(board -> {
+                    BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+                    boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+                    return boardRetrieveOneResponseDto;
+                }
+        ).collect(Collectors.toList());
+
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
+                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
+
+        return boardRetrieveAllPagingResponseDto;
     }
 }
