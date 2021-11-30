@@ -7,14 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter @Setter
 @ApiModel(description = "회원 조회 응답 DTO")
 public class MemberRetrieveResponseDto {
+
+    @ApiModelProperty(required = true, value = "회원 PK", example = "14")
+    private String id;
 
     @ApiModelProperty(required = true, value = "회원 아이디", example = "jisoo")
     private String loginId;

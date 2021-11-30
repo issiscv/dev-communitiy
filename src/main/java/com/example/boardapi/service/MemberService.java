@@ -1,5 +1,10 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
+import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
+import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
+import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
+import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.exception.DuplicateLoginIdException;
@@ -9,8 +14,11 @@ import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
+import com.example.boardapi.security.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,7 +26,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service("userDetailsService")
 @RequiredArgsConstructor
@@ -31,15 +41,33 @@ public class MemberService implements UserDetailsService{
     private final PasswordEncoder passwordEncoder;
     private final BoardRepository boardRepository;
     private final ScrapRepository scrapRepository;
+    private final ModelMapper modelMapper;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
      * 회원 가입
      */
     @Transactional
-    public Member join(Member member) {
-        findDuplicatedLogin(member.getLoginId());
+    public MemberJoinResponseDto join(MemberJoinRequestDto memberJoinRequestDto) {
+
+        findDuplicatedLogin(memberJoinRequestDto.getLoginId());
+
+        Member member = Member.builder()
+                .loginId(memberJoinRequestDto.getLoginId())
+                .password(memberJoinRequestDto.getPassword())
+                .name(memberJoinRequestDto.getName())
+                .age(memberJoinRequestDto.getAge())
+                .address(memberJoinRequestDto.getAddress())
+                .password(passwordEncoder.encode(memberJoinRequestDto.getPassword()))
+                .roles(Collections.singletonList("ROLE_USER"))// 최초 가입시 USER 로 설정,
+                // 단 한개의 객체만 저장 가능한 컬렉션을 만들고 싶을 때 사용한다.
+                .build();
+
         Member saveMember = memberRepository.save(member);
-        return saveMember;
+
+        MemberJoinResponseDto memberJoinResponseDto = modelMapper.map(saveMember, MemberJoinResponseDto.class);
+
+        return memberJoinResponseDto;
     }
 
     /**
@@ -55,11 +83,29 @@ public class MemberService implements UserDetailsService{
         return findMember;
     }
 
+    public MemberRetrieveResponseDto retrieveOneWithDto(Long memberId) {
+        Member findMember = retrieveOne(memberId);
+
+        MemberRetrieveResponseDto memberRetrieveResponseDto = modelMapper.map(findMember, MemberRetrieveResponseDto.class);
+
+        return memberRetrieveResponseDto;
+    }
+
     /**
      * 전체 조회
      */
     public List<Member> retrieveAll() {
         return memberRepository.findAll();
+    }
+
+    public List<MemberRetrieveResponseDto> retrieveAllWithDto() {
+        List<Member> members = retrieveAll();
+
+        List<MemberRetrieveResponseDto> memberRetrieveResponseDtos = members.stream().map(
+                m -> modelMapper.map(m, MemberRetrieveResponseDto.class))
+                .collect(Collectors.toList());
+
+        return memberRetrieveResponseDtos;
     }
 
     /**
@@ -117,5 +163,21 @@ public class MemberService implements UserDetailsService{
                         () -> {throw new MemberNotFoundException(MemberExceptionMessage.MEMBER_NOT_FOUND);}
                 );
         return member;
+    }
+
+    public MemberLoginResponseDto login(MemberLoginRequestDto memberLoginRequestDto) {
+        //아이디가 있는지 검증을 한다.
+        Member member = memberRepository.findByLoginId(memberLoginRequestDto.getLoginId()).orElseThrow(
+                () -> new MemberNotFoundException("해당 아이디는 존재하지 않습니다.")
+        );
+
+        if (!passwordEncoder.matches(memberLoginRequestDto.getPassword(), member.getPassword())) {
+            throw new BadCredentialsException("비밀번호가 틀렸습니다.");
+        }
+
+        String token = jwtTokenProvider.createToken(member.getLoginId(), member.getRoles());
+        MemberLoginResponseDto memberLoginResponseDto = new MemberLoginResponseDto(token, member.getId());
+
+        return memberLoginResponseDto;
     }
 }

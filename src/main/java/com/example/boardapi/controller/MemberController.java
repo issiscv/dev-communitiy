@@ -1,27 +1,29 @@
 package com.example.boardapi.controller;
 
-import com.example.boardapi.entity.Board;
-import com.example.boardapi.entity.Comment;
 import com.example.boardapi.dto.board.response.BoardRetrieveAllPagingResponseDto;
 import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
-import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
 import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
+import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
 import com.example.boardapi.dto.member.response.MemberEditResponseDto;
-import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
+import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
+import com.example.boardapi.entity.Board;
+import com.example.boardapi.entity.Comment;
+import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.exception.NotOwnMemberException;
-import com.example.boardapi.security.JWT.JwtTokenProvider;
-import com.example.boardapi.entity.Member;
-import com.example.boardapi.exception.MemberNotFoundException;
 import com.example.boardapi.repository.member.MemberRepository;
+import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
 import com.example.boardapi.service.MemberService;
 import com.example.boardapi.service.ScrapService;
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -33,7 +35,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -43,8 +44,9 @@ import javax.validation.Valid;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -73,32 +75,19 @@ public class MemberController {
     public ResponseEntity<EntityModel<MemberJoinResponseDto>> createMember(@ApiParam(value = "회원 객체 DTO", required = true) @RequestBody @Valid
                                                                       MemberJoinRequestDto memberJoinRequestDto) {
 
-        Member member = Member.builder()
-                .loginId(memberJoinRequestDto.getLoginId())
-                .password(memberJoinRequestDto.getPassword())
-                .name(memberJoinRequestDto.getName())
-                .age(memberJoinRequestDto.getAge())
-                .address(memberJoinRequestDto.getAddress())
-                .password(passwordEncoder.encode(memberJoinRequestDto.getPassword()))
-                .roles(Collections.singletonList("ROLE_USER"))// 최초 가입시 USER 로 설정,
-                // 단 한개의 객체만 저장 가능한 컬렉션을 만들고 싶을 때 사용한다.
-                .build();
-
         //회원 가입 저장
-        Member joinMember = memberService.join(member);
+        MemberJoinResponseDto memberJoinResponseDto = memberService.join(memberJoinRequestDto);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(joinMember.getId())
+                .buildAndExpand(memberJoinResponseDto.getId())
                 .toUri();
-
-        MemberJoinResponseDto mappedResponseDto = modelMapper.map(joinMember, MemberJoinResponseDto.class);
 
         //ip
         String ip = getIp();
 
         //hateoas 기능 추가
-        EntityModel<MemberJoinResponseDto> model = EntityModel.of(mappedResponseDto);
+        EntityModel<MemberJoinResponseDto> model = EntityModel.of(memberJoinResponseDto);
         WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).createMember(memberJoinRequestDto));
         WebMvcLinkBuilder login = linkTo(methodOn(this.getClass()).login(new MemberLoginRequestDto()));
         //self
@@ -107,17 +96,6 @@ public class MemberController {
         model.add(login.withRel("로그인"));
 
         return ResponseEntity.created(uri).body(model);
-    }
-
-    private String getIp() {
-        String ip = "";
-        try {
-            InetAddress local = InetAddress.getLocalHost();
-            ip = local.getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        return ip;
     }
 
     //로그인
@@ -129,17 +107,8 @@ public class MemberController {
     @PostMapping("/members/login")
     public ResponseEntity<EntityModel<MemberLoginResponseDto>> login(@ApiParam(value = "회원 가입 DTO", required = true) @RequestBody @Valid
                                 MemberLoginRequestDto memberLoginRequestDto) {
-        //아이디가 있는지 검증을 한다.
-        Member member = memberRepository.findByLoginId(memberLoginRequestDto.getLoginId()).orElseThrow(
-                () -> new MemberNotFoundException("해당 아이디는 존재하지 않습니다.")
-        );
 
-        if (!passwordEncoder.matches(memberLoginRequestDto.getPassword(), member.getPassword())) {
-            throw new BadCredentialsException("비밀번호가 틀렸습니다.");
-        }
-
-        String token = jwtTokenProvider.createToken(member.getLoginId(), member.getRoles());
-        MemberLoginResponseDto memberLoginResponseDto = new MemberLoginResponseDto(token, member.getId());
+        MemberLoginResponseDto memberLoginResponseDto = memberService.login(memberLoginRequestDto);
 
         //ip
         String ip = getIp();
@@ -162,9 +131,8 @@ public class MemberController {
     })
     @GetMapping("/members/{memberId}")
     public ResponseEntity<EntityModel<MemberRetrieveResponseDto>> retrieveMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
-        Member member = memberService.retrieveOne(memberId);
 
-        MemberRetrieveResponseDto memberRetrieveResponseDto = modelMapper.map(member, MemberRetrieveResponseDto.class);
+        MemberRetrieveResponseDto memberRetrieveResponseDto = memberService.retrieveOneWithDto(memberId);
 
         //ip
         String ip = getIp();
@@ -187,13 +155,9 @@ public class MemberController {
     @GetMapping("/members")
     public ResponseEntity<List<MemberRetrieveResponseDto>> retrieveAllMember() {
 
-        List<Member> members = memberService.retrieveAll();
+        List<MemberRetrieveResponseDto> memberRetrieveResponseDtos = memberService.retrieveAllWithDto();
 
-        List<MemberRetrieveResponseDto> collect = members.stream().map(
-                m -> modelMapper.map(m, MemberRetrieveResponseDto.class))
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(collect);
+        return ResponseEntity.ok(memberRetrieveResponseDtos);
     }
 
     //회원 정보 수정 api
@@ -466,5 +430,16 @@ public class MemberController {
         }
 
         return ResponseEntity.ok(model);
+    }
+
+    private String getIp() {
+        String ip = "";
+        try {
+            InetAddress local = InetAddress.getLocalHost();
+            ip = local.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return ip;
     }
 }

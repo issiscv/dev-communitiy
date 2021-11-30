@@ -178,7 +178,7 @@ public class BoardService {
      * 게시글 수정
      */
     @Transactional
-    public Board editBoard(Long id, BoardEditRequestDto boardEditRequestDto, String token) {
+    public BoardEditResponseDto editBoard(Long id, BoardEditRequestDto boardEditRequestDto, String token) {
 
         Member member = jwtTokenProvider.getMember(token);
 
@@ -186,12 +186,15 @@ public class BoardService {
         Board board = retrieveOne(id);
 
         if (board.getMember().getId() != member.getId()) {
-            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+            throw new NotOwnBoardException(BoardExceptionMessage.NOT_OWN_BOARD);
         }
         
         board.changeTitle(boardEditRequestDto.getTitle());
         board.changeContent(boardEditRequestDto.getContent());
-        return board;
+
+        BoardEditResponseDto boardEditResponseDto = modelMapper.map(board, BoardEditResponseDto.class);
+        boardEditResponseDto.setAuthor(board.getMember().getName());
+        return boardEditResponseDto;
     }
 
     /**
@@ -205,7 +208,7 @@ public class BoardService {
         Member member = jwtTokenProvider.getMember(token);
 
         if (board.getMember().getId() != member.getId()) {
-            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+            throw new NotOwnBoardException(BoardExceptionMessage.NOT_OWN_BOARD);
         }
 
         if (board.getCommentSize() >= 1) {
@@ -230,7 +233,7 @@ public class BoardService {
         Member member = jwtTokenProvider.getMember(token);
 
         if (member.getLikeId().contains(boardId)) {
-            throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
+            throw new DuplicatedLikeException(BoardExceptionMessage.DUPLICATED_LIKE);
         }
 
         member.getLikeId().add(boardId);

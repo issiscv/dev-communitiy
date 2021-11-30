@@ -1,13 +1,15 @@
 package com.example.boardapi.security.JWT;
 
 import com.example.boardapi.entity.Member;
+import com.example.boardapi.exception.MemberNotFoundException;
+import com.example.boardapi.exception.message.MemberExceptionMessage;
+import com.example.boardapi.repository.member.MemberRepository;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -23,7 +25,8 @@ public class JwtTokenProvider {
 
     private String secretKey = "balladang";
     //MemberService 에서 UserDetailsService 를 상속 받았다.
-    private final UserDetailsService userDetailsService;
+//    private final UserDetailsService userDetailsService;
+    private final MemberRepository memberRepository;
     
     //토큰 유효시간 30분
     private long tokenValidTime = 24 * 60 * 60 * 1000L;
@@ -65,16 +68,24 @@ public class JwtTokenProvider {
         String tokenSubject = getTokenSubject(token); // 토큰을 파싱해서 payload 에 저장되있는 subject 를 받는다. -> 회원이 로그인 할 때 썼던 아이디
 
         //userDetailsService 를 상속 받아서 쓰는 이유는 인증 객체를 만들어 줄때 userDetails 객체로 넣어야 하니깐.
-        UserDetails userDetails = userDetailsService.loadUserByUsername(tokenSubject); // Member 엔티티를 받아야 한다.
+//        UserDetails userDetails = userDetailsService.loadUserByUsername(tokenSubject); // Member 엔티티를 받아야 한다.
+        UserDetails userDetails = memberRepository.findByLoginId(tokenSubject)
+                .orElseThrow(
+                        () -> {throw new MemberNotFoundException(MemberExceptionMessage.MEMBER_NOT_FOUND);}
+                );
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     public Member getMember(String token) {
 
-        String tokenSubject = getTokenSubject(token);
+        String loginId = getTokenSubject(token);
 
         //userDetailsService 를 상속 받아서 쓰는 이유는 인증 객체를 만들어 줄때 userDetails 객체로 넣어야 하니깐.
-        Member member = (Member)userDetailsService.loadUserByUsername(tokenSubject); // Member 엔티티를 받아야 한다.
+//        Member member = (Member)userDetailsService.loadUserByUsername(tokenSubject); // Member 엔티티를 받아야 한다.
+        Member member = memberRepository.findByLoginId(loginId)
+                .orElseThrow(
+                        () -> {throw new MemberNotFoundException(MemberExceptionMessage.MEMBER_NOT_FOUND);}
+                );
         return member;
     }
 

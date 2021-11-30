@@ -8,7 +8,6 @@ import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
-import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.ShortInputException;
@@ -260,14 +259,11 @@ public class BoardController {
 
         String token = jwtTokenProvider.resolveToken(request);
 
-        Board editBoard = boardService.editBoard(boardId, boardEditRequestDto, token);
-
-        BoardEditResponseDto boardEditResponseDto = modelMapper.map(editBoard, BoardEditResponseDto.class);
-        boardEditResponseDto.setAuthor(editBoard.getMember().getName());
+        BoardEditResponseDto boardEditResponseDto = boardService.editBoard(boardId, boardEditRequestDto, token);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(editBoard.getId()).toUri();
+                .buildAndExpand(boardEditResponseDto.getId()).toUri();
 
         //ip
         String ip = getIp();
@@ -428,8 +424,6 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
-
-    
     //댓글 채택: 채택 수정, 채택 취소 안됨
     @ApiOperation(value = "게시글의 댓글 채택", notes = "게시글의 댓글을 채택합니다.")
     @ApiResponses({
