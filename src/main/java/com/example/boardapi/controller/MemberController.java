@@ -13,7 +13,6 @@ import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Scrap;
-import com.example.boardapi.exception.NotOwnMemberException;
 import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
@@ -33,7 +32,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -173,18 +171,9 @@ public class MemberController {
                                                                          HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
-
-        Member findMember = memberService.retrieveOne(memberId);
-
-        if (findMember.getId() != member.getId()) {
-            throw new NotOwnMemberException("권한이 없습니다.");
-        }
 
         //수정
-        memberService.editMember(memberId, memberEditRequestDto);
-
-        MemberEditResponseDto mappedResponseDto = modelMapper.map(findMember, MemberEditResponseDto.class);
+        MemberEditResponseDto memberEditResponseDto = memberService.editMember(memberId, memberEditRequestDto, token);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .build().toUri();
@@ -193,7 +182,7 @@ public class MemberController {
         String ip = getIp();
 
         //hateoas 기능 추가
-        EntityModel<MemberEditResponseDto> model = EntityModel.of(mappedResponseDto);
+        EntityModel<MemberEditResponseDto> model = EntityModel.of(memberEditResponseDto);
         WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).editMember(memberEditRequestDto, memberId, request));
         //self
         model.add(self.withSelfRel());
@@ -213,16 +202,9 @@ public class MemberController {
     public ResponseEntity deleteMember(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId, HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
-        Member member = jwtTokenProvider.getMember(token);
+        memberService.deleteMember(memberId, token);
 
-        Member findMember = memberService.retrieveOne(memberId);
-
-        if (findMember.getId() != member.getId()) {
-            throw new NotOwnMemberException("권한이 없습니다.");
-        }
-
-        memberService.deleteMember(memberId);
-        return new ResponseEntity("성공적으로 회원 탈퇴가 되었습니다.", HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     //특정 사용자가 작성한 게시글 조회

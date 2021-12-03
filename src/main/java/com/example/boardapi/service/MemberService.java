@@ -2,6 +2,7 @@ package com.example.boardapi.service;
 
 import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
 import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
+import com.example.boardapi.dto.member.response.MemberEditResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
@@ -9,6 +10,7 @@ import com.example.boardapi.entity.Member;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.MemberNotFoundException;
+import com.example.boardapi.exception.NotOwnMemberException;
 import com.example.boardapi.exception.message.MemberExceptionMessage;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
@@ -77,6 +79,7 @@ public class MemberService implements UserDetailsService{
         Member findMember = memberRepository.findById(memberId).orElse(null);
 
         if (findMember == null) {
+            log.info("들가냐?");
             throw new MemberNotFoundException(MemberExceptionMessage.MEMBER_NOT_FOUND);
         }
 
@@ -112,16 +115,30 @@ public class MemberService implements UserDetailsService{
      * 회원 정보 수정
      */
     @Transactional
-    public void editMember(Long id, MemberEditRequestDto editMemberDto) {
-        Member findMember = retrieveOne(id);
+    public MemberEditResponseDto editMember(Long memberId, MemberEditRequestDto memberEditRequestDto, String token) {
+
+        //토큰의 member
+        Member member = jwtTokenProvider.getMember(token);
+
+        //아이디의 member
+        Member findMember = retrieveOne(memberId);
+
+        if (findMember.getId() != member.getId()) {
+            throw new NotOwnMemberException("권한이 없습니다.");
+        }
 
         //수정한 비밀번호를 인코딩
-        String password = editMemberDto.getPassword();
+        String password = memberEditRequestDto.getPassword();
         String encode = passwordEncoder.encode(password);
         //인코딩 후 다시 설정
-        editMemberDto.setPassword(encode);
+        memberEditRequestDto.setPassword(encode);
 
-        findMember.changeMemberInfo(editMemberDto);
+        //
+        findMember.changeMemberInfo(memberEditRequestDto);
+
+        MemberEditResponseDto mappedResponseDto = modelMapper.map(findMember, MemberEditResponseDto.class);
+
+        return mappedResponseDto;
     }
 
     /**
@@ -129,15 +146,27 @@ public class MemberService implements UserDetailsService{
      */
     @Transactional
     public void deleteMember(Long memberId) {
-        try {
-            commentRepository.deleteAllByMemberId(memberId);
-            scrapRepository.deleteByMemberId(memberId);
-            boardRepository.deleteAllByMemberId(memberId);
-            memberRepository.deleteById(memberId);
+        commentRepository.deleteAllByMemberId(memberId);
+        scrapRepository.deleteByMemberId(memberId);
+        boardRepository.deleteAllByMemberId(memberId);
+        memberRepository.deleteById(memberId);
+    }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+    @Transactional
+    public void deleteMember(Long memberId, String token) {
+
+        Member member = jwtTokenProvider.getMember(token);
+
+        Member findMember = retrieveOne(memberId);
+
+        if (findMember.getId() != member.getId()) {
+            throw new NotOwnMemberException("권한이 없습니다.");
         }
+        commentRepository.deleteAllByMemberId(memberId);
+        scrapRepository.deleteByMemberId(memberId);
+        boardRepository.deleteAllByMemberId(memberId);
+        memberRepository.deleteById(memberId);
+
     }
 
     /**
