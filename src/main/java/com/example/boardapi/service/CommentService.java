@@ -11,9 +11,9 @@ import com.example.boardapi.entity.Member;
 import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.exception.message.CommentExceptionMessage;
+import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
-import com.example.boardapi.security.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -179,10 +179,6 @@ public class CommentService {
         commentRepository.deleteById(id);
 
         board.decreaseComments();
-    }
-
-    public List<Comment> retrieveAllOwnComment(Long id) {
-        return commentRepository.findAllByMemberId(id);
     }
 
     @Transactional

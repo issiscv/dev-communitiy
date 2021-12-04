@@ -8,9 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import javax.persistence.EntityManager;
 import java.util.List;
 
-import static com.example.boardapi.entity.QBoard.*;
-import static com.example.boardapi.entity.QComment.*;
-import static com.example.boardapi.entity.QMember.*;
+import static com.example.boardapi.entity.QBoard.board;
+import static com.example.boardapi.entity.QComment.comment;
+import static com.example.boardapi.entity.QMember.member;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -63,7 +63,20 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
 
         return result;
     }
-    
+
+    @Override
+    public List<Comment> findAllByMemberIdWithGroupByBoardId(Long memberId) {
+        List<Comment> result = queryFactory
+                .selectFrom(comment)
+                .join(comment.board, board).fetchJoin()
+                .join(comment.member, member).fetchJoin()
+                .where(comment.member.id.eq(memberId))
+                .groupBy(board.id)
+                .fetch();
+
+        return result;
+    }
+
     //특정 회원이 작성한 게시글 삭제
     @Override
     public void deleteAllByMemberId(Long memberId) {

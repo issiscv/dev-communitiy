@@ -16,7 +16,7 @@ import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
-import com.example.boardapi.security.JWT.JwtTokenProvider;
+import com.example.boardapi.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
-public class MemberService implements UserDetailsService{
+public class MemberService implements UserDetailsService {
 
     private final CommentRepository commentRepository;
     private final MemberRepository memberRepository;

@@ -8,7 +8,7 @@ import com.example.boardapi.exception.BoardNotFoundException;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
-import com.example.boardapi.security.JWT.JwtTokenProvider;
+import com.example.boardapi.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,9 +54,9 @@ public class ScrapService {
         scrapRepository.save(scrap);
     }
 
-    @Transactional
     public List<Scrap> retrieveByMemberId(Long memberId) {
         return scrapRepository.findByMemberId(memberId);
     }
+
 
 }

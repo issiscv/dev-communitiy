@@ -14,5 +14,9 @@ public interface CommentCustomRepository {
 
     List<Comment> findAllByMemberId(Long memberId);
 
+    List<Comment> findAllByMemberIdWithGroupByBoardId(Long memberId);
+
     void deleteAllByMemberId(Long memberId);
+
+
 }

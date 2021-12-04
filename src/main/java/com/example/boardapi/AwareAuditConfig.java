@@ -1,4 +1,4 @@
-package com.example.boardapi.jpaAware;
+package com.example.boardapi;
 
 import com.example.boardapi.entity.Member;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Configuration
-public class AwareAudit implements AuditorAware<String> {
+public class AwareAuditConfig implements AuditorAware<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {

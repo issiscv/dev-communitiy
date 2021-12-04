@@ -4,21 +4,23 @@ import com.example.boardapi.dto.board.request.BoardCreateRequestDto;
 import com.example.boardapi.dto.board.request.BoardEditRequestDto;
 import com.example.boardapi.dto.board.response.*;
 import com.example.boardapi.entity.Board;
+import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
+import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
+import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
-import com.example.boardapi.security.JWT.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,7 +83,8 @@ public class BoardService {
     public Board retrieveOne(Long boardId) {
         Board findBoard = boardRepository
                 .findById(boardId)
-                .orElseThrow(() -> {throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
+                .orElseThrow(() -> {
+                    throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
         });
         return findBoard;
     }
@@ -92,7 +96,8 @@ public class BoardService {
     public BoardRetrieveDetailResponseDto retrieveOneAndIncreaseViews(Long boardId) {
         Board findBoard = boardRepository
                 .findById(boardId)
-                .orElseThrow(() -> {throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
+                .orElseThrow(() -> {
+                    throw new BoardNotFoundException(BoardExceptionMessage.BOARD_NOT_FOUND);
                 });
 
         findBoard.increaseViews();
@@ -169,9 +174,78 @@ public class BoardService {
 
         return boardRetrieveAllByDateResponseDto;
     }
+    
+    //회원의 게시글
+    public BoardRetrieveAllPagingResponseDto retrieveAllOwnBoardWithPaging(int page, Long memberId) {
 
-    public Page<Board> retrieveAllOwnBoardWithPaging(Pageable page, Long memberId) {
-        return boardRepository.findBoardByMemberWithPaging(page, memberId);
+        //페이지 요청 객체
+        PageRequest pageRequest = PageRequest.of(page-1, 15, Sort.by(Sort.Direction.DESC, "createdDate"));
+
+        //조회
+        Page<Board> boardPage = boardRepository.findBoardByMemberWithPaging(pageRequest, memberId);
+
+        //page 객체의 content
+        List<Board> boards = boardPage.getContent();
+
+        int totalPages = boardPage.getTotalPages();
+        long totalElements = boardPage.getTotalElements();
+
+        List<BoardRetrieveResponseDto> list = new ArrayList<>();
+
+        for (Board board : boards) {
+            BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+            boardRetrieveOneResponseDto.setBoardType(board.getBoardType());
+
+            list.add(boardRetrieveOneResponseDto);
+        }
+
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
+                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, list);
+
+        return boardRetrieveAllPagingResponseDto;
+    }
+    //회원의 댓글의 게시글
+    public BoardRetrieveAllPagingResponseDto retrieveAllBoardByOwnCommentWithPaging(int page, Long id) {
+        //페이지 크기
+        int size = 15;
+
+        //내가 쓴 댓글을 검색
+        List<Comment> comments = commentRepository.findAllByMemberIdWithGroupByBoardId(id);
+
+        //댓글의 게시글
+        List<BoardRetrieveResponseDto> list = new ArrayList<>();
+
+        for (Comment comment : comments) {
+            Board board = comment.getBoard();
+
+            BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
+
+            list.add(boardRetrieveOneResponseDto);
+        }
+
+        //페이징을 위한 게시글 DTO 값 세팅
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
+                .currentPage(page)
+                .totalPages(((list.size()-1) / size) + 1)
+                .totalElements(list.size())
+                .contents(new ArrayList<>())
+                .build();
+
+        //가장 나중에 댓글을 단 게시글이 상단에 위치하기 위해
+        Collections.reverse(list);
+        
+        //셀프 페이징
+        for (int i = (page -1) * size; i < page * size; i++) {
+            try {
+                boardRetrieveAllPagingResponseDto.getContents().add(list.get(i));
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+
+        return boardRetrieveAllPagingResponseDto;
     }
 
     /**
@@ -284,6 +358,47 @@ public class BoardService {
         BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
                 new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, boardRetrieveOneResponseDtoList);
 
+        return boardRetrieveAllPagingResponseDto;
+    }
+
+    public BoardRetrieveAllPagingResponseDto retrieveAllBoardByMemberScrapWithPaging(int page, Long memberId) {
+        //1페이지의 크기
+        int size = 15;
+        
+        //사용자의 스크랩 목록 조회
+        List<Scrap> scraps = scrapRepository.findByMemberId(memberId);
+
+        //스크랩한 게시글 DTO 저장소
+        List<BoardRetrieveResponseDto> list = new ArrayList<>();
+
+        for (Scrap scrap : scraps) {
+            Board board = scrap.getBoard();
+
+            BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
+            boardRetrieveResponseDto.setAuthor(board.getMember().getName());
+            list.add(boardRetrieveResponseDto);
+        }
+
+        //페이징 작업
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
+                .currentPage(page)
+                .totalPages(((list.size()-1) / size) + 1)//총 페이지 수
+                .totalElements(list.size())//총 게시글 수
+                .contents(new ArrayList<>())//해당 페이지에 맞는 게시글들
+                .build();
+
+        Collections.reverse(list);
+
+        //DTO 객체내부에 게시글 엔티티를 하나씩 채워 넣음
+        List<BoardRetrieveResponseDto> contents = boardRetrieveAllPagingResponseDto.getContents();
+
+        for (int i = (page -1) * size; i < page * size; i++) {
+            try {
+                contents.add(list.get(i));
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
         return boardRetrieveAllPagingResponseDto;
     }
 }

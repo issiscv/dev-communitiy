@@ -11,7 +11,7 @@ import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.ShortInputException;
-import com.example.boardapi.security.JWT.JwtTokenProvider;
+import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
 import com.example.boardapi.service.ScrapService;

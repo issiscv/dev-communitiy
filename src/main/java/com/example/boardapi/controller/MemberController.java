@@ -1,7 +1,6 @@
 package com.example.boardapi.controller;
 
 import com.example.boardapi.dto.board.response.BoardRetrieveAllPagingResponseDto;
-import com.example.boardapi.dto.board.response.BoardRetrieveResponseDto;
 import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
 import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
@@ -9,12 +8,9 @@ import com.example.boardapi.dto.member.response.MemberEditResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
-import com.example.boardapi.entity.Board;
-import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
-import com.example.boardapi.entity.Scrap;
+import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.member.MemberRepository;
-import com.example.boardapi.security.JWT.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
 import com.example.boardapi.service.MemberService;
@@ -26,9 +22,6 @@ import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -42,8 +35,6 @@ import javax.validation.Valid;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -221,26 +212,9 @@ public class MemberController {
         //해당 사용자가 존재하는지 검사
         Member findMember = memberService.retrieveOne(memberId);
 
-        //페이지 요청 객체
-        PageRequest pageRequest = PageRequest.of(page-1, 15, Sort.by(Sort.Direction.DESC, "createdDate"));
         //해당 페이지의 요청 결과
-        Page<Board> boardPage = boardService.retrieveAllOwnBoardWithPaging(pageRequest, memberId);
-        List<Board> boards = boardPage.getContent();
-        int totalPages = boardPage.getTotalPages();
-        long totalElements = boardPage.getTotalElements();
-
-        List<BoardRetrieveResponseDto> list = new ArrayList<>();
-
-        for (Board board : boards) {
-            BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
-            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-            boardRetrieveOneResponseDto.setBoardType(board.getBoardType());
-
-            list.add(boardRetrieveOneResponseDto);
-        }
-
-        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
-                new BoardRetrieveAllPagingResponseDto(page, totalPages, (int)totalElements, list);
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = boardService.retrieveAllOwnBoardWithPaging(page, memberId);
+        int totalPages = boardRetrieveAllPagingResponseDto.getTotalPages();
 
         //ip
         String ip = getIp();
@@ -275,48 +249,12 @@ public class MemberController {
     @GetMapping("/members/{memberId}/comments")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllOwnComment(@ApiParam(value = "회원의 PK", required = true) @PathVariable Long memberId,
                                                                                                 @ApiParam(value = "페이지 번호", required = false) @RequestParam(defaultValue = "1") int page) {
-        int size = 15;
-
         //해당 사용자가 존재하는지 검사
         Member findMember = memberService.retrieveOne(memberId);
 
         //회원의 댓글
-        List<Comment> comments = commentService.retrieveAllOwnComment(memberId);
-
-        List<BoardRetrieveResponseDto> list = new ArrayList<>();
-
-        for (Comment comment : comments) {
-
-            Board board = boardService.retrieveOne(comment.getBoard().getId());
-
-            BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
-
-            boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
-            boardRetrieveOneResponseDto.setBoardType(board.getBoardType());
-
-            if (list.contains(boardRetrieveOneResponseDto)) {
-                continue;
-            }
-
-            list.add(boardRetrieveOneResponseDto);
-        }
-
-        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
-                .currentPage(page)
-                .totalPages(((list.size()-1) / size) + 1)
-                .totalElements(list.size())
-                .contents(new ArrayList<>())
-                .build();
-
-        Collections.reverse(list);
-
-        for (int i = (page -1) * size; i < page * size; i++) {
-            try {
-                boardRetrieveAllPagingResponseDto.getContents().add(list.get(i));
-            } catch (IndexOutOfBoundsException e) {
-                break;
-            }
-        }
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = boardService.retrieveAllBoardByOwnCommentWithPaging(page, memberId);
+        int totalPages = boardRetrieveAllPagingResponseDto.getTotalPages();
 
         //ip
         String ip = getIp();
@@ -332,7 +270,7 @@ public class MemberController {
             WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page-1));
             model.add(prev.withRel("이전"));
         }
-        if (page < (list.size()-1) / size + 1) {
+        if (page < totalPages) {
             WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllOwnComment(memberId, page+1));
             model.add(next.withRel("다음"));
         }
@@ -352,43 +290,12 @@ public class MemberController {
     @GetMapping("/members/{memberId}/scraps")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllScrapBoards(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId,
                                                                                                  @ApiParam(value = "페이지 번호", required = false) @RequestParam(defaultValue = "1") int page) {
-
-        int size = 15;
-
+        
+        //해당 회원이 존재하는지 검사
         Member member = memberService.retrieveOne(memberId);
 
-        List<Scrap> scraps = scrapService.retrieveByMemberId(memberId);
-
-        List<BoardRetrieveResponseDto> list = new ArrayList<>();
-
-        for (Scrap scrap : scraps) {
-            Board board = scrap.getBoard();
-
-            BoardRetrieveResponseDto boardRetrieveResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
-            boardRetrieveResponseDto.setAuthor(board.getMember().getName());
-            list.add(boardRetrieveResponseDto);
-        }
-        
-        //페이징 작업
-        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto = BoardRetrieveAllPagingResponseDto.builder()
-                .currentPage(page)
-                .totalPages(((list.size()-1) / size) + 1)
-                .totalElements(list.size())
-                .contents(new ArrayList<>())
-                .build();
-
-        Collections.reverse(list);
-
-        //DTO 객체내부에 게시글 엔티티를 하나씩 채워 넣음
-        List<BoardRetrieveResponseDto> contents = boardRetrieveAllPagingResponseDto.getContents();
-
-        for (int i = (page -1) * size; i < page * size; i++) {
-            try {
-                contents.add(list.get(i));
-            } catch (IndexOutOfBoundsException e) {
-                break;
-            }
-        }
+        BoardRetrieveAllPagingResponseDto boardRetrieveAllPagingResponseDto =
+                boardService.retrieveAllBoardByMemberScrapWithPaging(page, memberId);
 
         //ip
         String ip = getIp();
@@ -406,7 +313,7 @@ public class MemberController {
             WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllScrapBoards(memberId, page-1));
             model.add(prev.withRel("이전"));
         }
-        if (page < (scraps.size()-1) / size + 1) {
+        if (page < boardRetrieveAllPagingResponseDto.getTotalPages()) {
             WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllScrapBoards(memberId, page+1));
             model.add(next.withRel("다음"));
         }

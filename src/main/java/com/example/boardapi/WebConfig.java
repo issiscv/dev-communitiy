@@ -1,4 +1,4 @@
-package com.example.boardapi.webConffig;
+package com.example.boardapi;
 
 import com.example.boardapi.converter.StringToBoardTypeConverter;
 import com.example.boardapi.converter.StringToSortConverter;
