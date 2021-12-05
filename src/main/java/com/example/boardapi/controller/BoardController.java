@@ -9,6 +9,7 @@ import com.example.boardapi.dto.comment.response.CommentCreateResponseDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
 import com.example.boardapi.entity.enumtype.BoardType;
+import com.example.boardapi.entity.enumtype.SearchCond;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.ShortInputException;
 import com.example.boardapi.jwt.JwtTokenProvider;
@@ -167,7 +168,7 @@ public class BoardController {
     @GetMapping("/v2")
     public ResponseEntity<EntityModel<BoardRetrieveAllPagingResponseDto>> retrieveAllBoardByKeyWord(
             @ApiParam(value = "페이징을 위한 쿼리 스트링", required = false) @RequestParam(defaultValue = "1") int page,
-            @ApiParam(value = "검색 조건 위한 쿼리 스트링", required = true, example = "all, title, content") @RequestParam String searchCond,
+            @ApiParam(value = "검색 조건 위한 쿼리 스트링", required = true, example = "all, title, content") @RequestParam SearchCond searchCond,
             @ApiParam(value = "검색을 위한 쿼리 스트링") @RequestParam(defaultValue = "") String keyWord,
             @ApiParam(value = "게시글 종류 쿼리 스트링", required = true, example = "tech, qna, free") @RequestParam BoardType type) {
 

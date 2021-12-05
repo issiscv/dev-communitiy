@@ -8,6 +8,7 @@ import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Scrap;
 import com.example.boardapi.entity.enumtype.BoardType;
+import com.example.boardapi.entity.enumtype.SearchCond;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
@@ -205,6 +206,7 @@ public class BoardService {
 
         return boardRetrieveAllPagingResponseDto;
     }
+
     //회원의 댓글의 게시글
     public BoardRetrieveAllPagingResponseDto retrieveAllBoardByOwnCommentWithPaging(int page, Long id) {
         //페이지 크기
@@ -325,9 +327,10 @@ public class BoardService {
         boardRepository.deleteAllByMemberId(memberId);
     }
 
-    public BoardRetrieveAllPagingResponseDto retrieveAllWithPagingByKeyWord(int page, String searchCond, String keyWord, BoardType type) {
+    //검색
+    public BoardRetrieveAllPagingResponseDto retrieveAllWithPagingByKeyWord(int page, SearchCond searchCond, String keyWord, BoardType type) {
         List<BoardType> typeList = new ArrayList(Arrays.asList(BoardType.FREE, BoardType.QNA, BoardType.TECH));
-        List<String> searchCondList = new ArrayList(Arrays.asList("title", "content", "all"));
+        List<SearchCond> searchCondList = new ArrayList(Arrays.asList(SearchCond.ALL, SearchCond.TITLE, SearchCond.CONTENT));
 
         //페이징 기준
         PageRequest pageRequest = PageRequest.of(page-1, 15);
@@ -360,6 +363,7 @@ public class BoardService {
 
         return boardRetrieveAllPagingResponseDto;
     }
+
 
     public BoardRetrieveAllPagingResponseDto retrieveAllBoardByMemberScrapWithPaging(int page, Long memberId) {
         //1페이지의 크기

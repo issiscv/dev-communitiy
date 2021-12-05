@@ -1,6 +1,7 @@
 package com.example.boardapi;
 
 import com.example.boardapi.converter.StringToBoardTypeConverter;
+import com.example.boardapi.converter.StringToSearchCondConverter;
 import com.example.boardapi.converter.StringToSortConverter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
@@ -24,5 +25,6 @@ public class WebConfig implements WebMvcConfigurer {
     public void addFormatters(FormatterRegistry registry) {
         registry.addConverter(new StringToBoardTypeConverter());
         registry.addConverter(new StringToSortConverter());
+        registry.addConverter(new StringToSearchCondConverter());
     }
 }

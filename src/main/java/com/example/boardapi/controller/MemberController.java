@@ -10,23 +10,18 @@ import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.jwt.JwtTokenProvider;
-import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.service.BoardService;
-import com.example.boardapi.service.CommentService;
 import com.example.boardapi.service.MemberService;
-import com.example.boardapi.service.ScrapService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -47,12 +42,7 @@ public class MemberController {
 
     private final MemberService memberService;
     private final BoardService boardService;
-    private final ModelMapper modelMapper;
-    private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final CommentService commentService;
-    private final ScrapService scrapService;
 
     //회원 가입 api
     @ApiOperation(value = "회원가입", notes = "MemberJoinRequestDto DTO 를 통해 회원가입을 진행합니다.")
@@ -278,9 +268,7 @@ public class MemberController {
         return ResponseEntity.ok().body(model);
     }
 
-    /**
-     * 사용자의 스크랩 목록
-     */
+     //사용자의 스크랩 목록
     @ApiOperation(value = "사용자의 스크랩 목록", notes = "사용자의 스크랩을 조회합니다.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "조회 성공"),

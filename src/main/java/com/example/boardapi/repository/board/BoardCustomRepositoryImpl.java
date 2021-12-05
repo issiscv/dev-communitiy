@@ -2,6 +2,7 @@ package com.example.boardapi.repository.board;
 
 import com.example.boardapi.entity.Board;
 import com.example.boardapi.entity.enumtype.BoardType;
+import com.example.boardapi.entity.enumtype.SearchCond;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.OrderSpecifier;
@@ -63,7 +64,7 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository{
 
     //keyword 로 검색
     @Override
-    public Page<Board> findAllByKeyWordWithPaging(Pageable pageable, String searchCond, String keyWord, BoardType type) {
+    public Page<Board> findAllByKeyWordWithPaging(Pageable pageable, SearchCond searchCond, String keyWord, BoardType type) {
         List<Board> content = queryFactory
                 .selectFrom(board)
                 .where(searchEq(searchCond, keyWord), board.boardType.eq(type))
@@ -81,10 +82,10 @@ public class BoardCustomRepositoryImpl implements BoardCustomRepository{
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression searchEq(String searchCond, String keyWord) {
-        if (searchCond.equals("title")) {
+    private BooleanExpression searchEq(SearchCond searchCond, String keyWord) {
+        if (searchCond.equals(SearchCond.TITLE)) {
             return board.title.contains(keyWord);
-        } else if (searchCond.equals("content")) {
+        } else if (searchCond.equals(SearchCond.CONTENT)) {
             return board.content.contains(keyWord);
         } else {
             //all

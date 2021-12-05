@@ -1,5 +1,6 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.dto.member.request.MemberJoinRequestDto;
 import com.example.boardapi.dto.member.request.MemberLoginRequestDto;
 import com.example.boardapi.dto.member.response.MemberEditResponseDto;
@@ -7,16 +8,15 @@ import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.entity.Member;
-import com.example.boardapi.dto.member.request.MemberEditRequestDto;
 import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.MemberNotFoundException;
 import com.example.boardapi.exception.NotOwnMemberException;
 import com.example.boardapi.exception.message.MemberExceptionMessage;
+import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.member.MemberRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
-import com.example.boardapi.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -79,7 +79,6 @@ public class MemberService implements UserDetailsService {
         Member findMember = memberRepository.findById(memberId).orElse(null);
 
         if (findMember == null) {
-            log.info("들가냐?");
             throw new MemberNotFoundException(MemberExceptionMessage.MEMBER_NOT_FOUND);
         }
 
@@ -124,7 +123,7 @@ public class MemberService implements UserDetailsService {
         Member findMember = retrieveOne(memberId);
 
         if (findMember.getId() != member.getId()) {
-            throw new NotOwnMemberException("권한이 없습니다.");
+            throw new NotOwnMemberException(MemberExceptionMessage.NOT_OWN_MEMBER);
         }
 
         //수정한 비밀번호를 인코딩
@@ -160,7 +159,7 @@ public class MemberService implements UserDetailsService {
         Member findMember = retrieveOne(memberId);
 
         if (findMember.getId() != member.getId()) {
-            throw new NotOwnMemberException("권한이 없습니다.");
+            throw new NotOwnMemberException(MemberExceptionMessage.NOT_OWN_MEMBER);
         }
         commentRepository.deleteAllByMemberId(memberId);
         scrapRepository.deleteByMemberId(memberId);
@@ -194,14 +193,17 @@ public class MemberService implements UserDetailsService {
         return member;
     }
 
+    /**
+     * 로그인
+     */
     public MemberLoginResponseDto login(MemberLoginRequestDto memberLoginRequestDto) {
         //아이디가 있는지 검증을 한다.
         Member member = memberRepository.findByLoginId(memberLoginRequestDto.getLoginId()).orElseThrow(
-                () -> new MemberNotFoundException("해당 아이디는 존재하지 않습니다.")
+                () -> new MemberNotFoundException()
         );
 
         if (!passwordEncoder.matches(memberLoginRequestDto.getPassword(), member.getPassword())) {
-            throw new BadCredentialsException("비밀번호가 틀렸습니다.");
+            throw new BadCredentialsException(MemberExceptionMessage.INVALID_PASSWORD);
         }
 
         String token = jwtTokenProvider.createToken(member.getLoginId(), member.getRoles());
