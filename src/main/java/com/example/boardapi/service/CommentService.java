@@ -79,6 +79,17 @@ public class CommentService {
         );
     }
 
+    public CommentRetrieveResponseDto retrieveOneWithDto(Long commentId) {
+        Comment comment = retrieveOne(commentId);
+
+        CommentRetrieveResponseDto commentRetrieveResponseDto = modelMapper.map(comment, CommentRetrieveResponseDto.class);
+        commentRetrieveResponseDto.setAuthor(comment.getMember().getName());
+        commentRetrieveResponseDto.setMemberId(comment.getMember().getId());
+        commentRetrieveResponseDto.setBoardId(comment.getBoard().getId());
+
+        return commentRetrieveResponseDto;
+    }
+
     /**
      * 전체 조회
      */
@@ -149,12 +160,39 @@ public class CommentService {
 
         return commentEditResponseDto;
     }
+    
+    //오버로딩
+    //게시글이 존재하는지 검사 X
+    @Transactional
+    public CommentEditResponseDto editComment(Long commentId, CommentEditRequestDto commentEditRequestDto, String token) {
+
+        Member member = jwtTokenProvider.getMember(token);
+
+        Comment comment = retrieveOne(commentId);
+
+        if (comment.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
+
+        if (comment.isSelected()) {
+            throw new InValidUpdateException(CommentExceptionMessage.INVALID_COMMENT_UPDATE);
+        }
+        comment.changeContent(commentEditRequestDto.getContent());
+
+        CommentEditResponseDto commentEditResponseDto = modelMapper.map(comment, CommentEditResponseDto.class);
+        commentEditResponseDto.setAuthor(comment.getMember().getName());
+        commentEditResponseDto.setBoardId(comment.getBoard().getId());
+        commentEditResponseDto.setMemberId(member.getId());
+        commentEditResponseDto.setSelected(comment.isSelected());
+
+        return commentEditResponseDto;
+    }
 
     /**
      * 댓글 삭제
      */
     @Transactional
-    public void deleteComment(Long boardId, Long id, String token) {
+    public void deleteComment(Long boardId, Long commentId, String token) {
 
         //게시글이 존재하는지 검사
         Board board = boardRepository.findById(boardId).orElseThrow(
@@ -164,7 +202,7 @@ public class CommentService {
         );
 
         //댓글이 존재하는 확인
-        Comment comment = retrieveOne(id);
+        Comment comment = retrieveOne(commentId);
 
         Member member = jwtTokenProvider.getMember(token);
 
@@ -176,7 +214,29 @@ public class CommentService {
             throw new InValidUpdateException(CommentExceptionMessage.INVALID_COMMENT_UPDATE);
         }
 
-        commentRepository.deleteById(id);
+        commentRepository.deleteById(commentId);
+
+        board.decreaseComments();
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId, String token) {
+
+        //댓글이 존재하는 확인
+        Comment comment = retrieveOne(commentId);
+        Board board = comment.getBoard();
+
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (comment.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("게시글의 권한이 없습니다.");
+        }
+
+        if (comment.isSelected()) {
+            throw new InValidUpdateException(CommentExceptionMessage.INVALID_COMMENT_UPDATE);
+        }
+
+        commentRepository.deleteById(commentId);
 
         board.decreaseComments();
     }
@@ -203,6 +263,25 @@ public class CommentService {
         Comment comment = retrieveOne(commentId);
         int like = comment.getLikes();
         
+        //댓글 좋아요 수 1 증가
+        comment.setLikes(++like);
+    }
+    //개시글 좋아요 기능 오버로딩
+    @Transactional
+    public void updateCommentLike(Long commentId, String token) {
+        Member member = jwtTokenProvider.getMember(token);
+
+        if (member.getLikeId().contains(commentId)) {
+            throw new DuplicatedLikeException("이미 좋아요를 눌렀습니다.");
+        }
+
+        //회원의 좋아요 id 추가
+        member.getLikeId().add(commentId);
+
+        //댓글 엔티티 조회
+        Comment comment = retrieveOne(commentId);
+        int like = comment.getLikes();
+
         //댓글 좋아요 수 1 증가
         comment.setLikes(++like);
     }
@@ -240,6 +319,44 @@ public class CommentService {
         
         //댓글에도 채택되었음으로 갱신
         Comment comment = retrieveOne(commentId);
+        comment.chooseSelection(true);
+
+        //채택한 사람도 증가
+        member.increaseActiveScore(10);
+
+        //채택당한 사람의 활동 점수 증가
+        Member selectedMember = comment.getMember();
+        selectedMember.increaseActiveScore(20);
+
+        //게시글도 체크
+        board.chooseSelection(true);
+    }
+
+    @Transactional
+    public void selectComment(Long commentId, String token) {
+        //request 객체의 헤더 부분에서 회원 조회
+        Member member = jwtTokenProvider.getMember(token);
+        
+        //댓글 조회
+        Comment comment = retrieveOne(commentId);
+        //댓글의 게시글
+        Board board = comment.getBoard();
+        
+        //자신의 게시글이 아닐경우 채택할 수 없다.(인가)
+        if (board.getMember().getId() != member.getId()) {
+            throw new NotOwnBoardException("자신의 게시글만 채택할 수 있습니다.");
+        }
+
+        List<Comment> comments = commentRepository.findAllByBoardId(board.getId());
+
+        for (Comment c : comments) {
+            //이미 채택하였으면 에러 던짐
+            if (c.isSelected()) {
+                throw new InvalidSelectionException(CommentExceptionMessage.INVALID_SELECTION);
+            }
+        }
+
+        //댓글에도 채택되었음으로 갱신
         comment.chooseSelection(true);
 
         //채택한 사람도 증가
