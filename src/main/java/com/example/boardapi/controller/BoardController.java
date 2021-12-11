@@ -15,6 +15,7 @@ import com.example.boardapi.exception.ShortInputException;
 import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.CommentService;
+import com.example.boardapi.service.NoticeService;
 import com.example.boardapi.service.ScrapService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -51,6 +52,7 @@ public class BoardController {
     private final ModelMapper modelMapper;
     private final CommentService commentService;
     private final ScrapService scrapService;
+    private final NoticeService noticeService;
 
     //작성 POST
     @ApiOperation(value = "게시글 작성", notes = "BoardCreateRequestDto DTO 를 통해 게시글을 생성합니다.")
@@ -327,6 +329,7 @@ public class BoardController {
                                         @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
         CommentCreateResponseDto commentResponseDto = commentService.save(boardId, commentCreateRequestDto, token);
+        noticeService.saveNotice(boardId, token);
 
         //URI
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
