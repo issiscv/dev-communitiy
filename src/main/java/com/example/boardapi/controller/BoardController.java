@@ -311,6 +311,8 @@ public class BoardController {
         String token = jwtTokenProvider.resolveToken(request);
         boardService.updateBoardLike(boardId, token);
 
+        noticeService.saveNoticeOnBoardLike(boardId, token);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -329,7 +331,7 @@ public class BoardController {
                                         @ApiParam(value = "게시판 PK", required = true) @PathVariable Long boardId, HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
         CommentCreateResponseDto commentResponseDto = commentService.save(boardId, commentCreateRequestDto, token);
-        noticeService.saveNotice(boardId, token);
+        noticeService.saveNoticeOnComment(boardId, token);
 
         //URI
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -424,6 +426,7 @@ public class BoardController {
 
         //댓글이 존재하는지 같이 검사한다.
         commentService.updateCommentLike(boardId, commentId, token);
+        noticeService.saveNoticeOnCommentLike(commentId, token);
 
         return ResponseEntity.noContent().build();
     }
@@ -441,6 +444,7 @@ public class BoardController {
             @ApiParam(value = "댓글 PK", required = true) @PathVariable Long commentId, HttpServletRequest request) {
         String token = jwtTokenProvider.resolveToken(request);
         commentService.selectComment(boardId, commentId, token);
+        noticeService.saveNoticeOnSelection(commentId, token);
 
         return ResponseEntity.noContent().build();
     }
