@@ -3,14 +3,19 @@ package com.example.boardapi.entity;
 import com.example.boardapi.entity.enumtype.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Notice {
@@ -23,6 +28,8 @@ public class Notice {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    private String title;
+
     //누가
     private String loginId;
     
@@ -32,4 +39,10 @@ public class Notice {
     
     //읽었는지
     private boolean isChecked;
+
+    @CreatedDate
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
 }

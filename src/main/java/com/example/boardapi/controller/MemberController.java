@@ -8,10 +8,12 @@ import com.example.boardapi.dto.member.response.MemberEditResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
+import com.example.boardapi.dto.notice.NoticeRetrieveAllPagingResponseDto;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.MemberService;
+import com.example.boardapi.service.NoticeService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -40,6 +42,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class MemberController {
 
+    private final NoticeService noticeService;
     private final MemberService memberService;
     private final BoardService boardService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -307,6 +310,14 @@ public class MemberController {
         }
 
         return ResponseEntity.ok(model);
+    }
+
+    //사용자의 알림 조회
+    @GetMapping("/members/{memberId}/notices")
+    public ResponseEntity retrieveAllNotice(@PathVariable Long memberId, @RequestParam(defaultValue = "1") int page) {
+        NoticeRetrieveAllPagingResponseDto noticeRetrieveAllPagingResponseDto = noticeService.retrieveNoticeDtoList(page, memberId);
+
+        return ResponseEntity.ok(noticeRetrieveAllPagingResponseDto);
     }
 
     private String getIp() {
