@@ -146,6 +146,23 @@ public class ErrorController extends ResponseEntityExceptionHandler {
         return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
     }
 
+    //자신의 알림이 아닐 경우
+    @ExceptionHandler
+    public ResponseEntity notOwnNoticeExceptionHandler(NotOwnNoticeException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    //알림이 PK에 해당하는 알림이 없을 경우
+    @ExceptionHandler
+    public ResponseEntity noticeNotFoundException(NoticeNotFoundException ex, WebRequest request) {
+        ErrorResult errorResult =
+                new ErrorResult(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
+
+        return new ResponseEntity(errorResult, HttpStatus.BAD_REQUEST);
+    }
 
     //검증 오류
     @Override

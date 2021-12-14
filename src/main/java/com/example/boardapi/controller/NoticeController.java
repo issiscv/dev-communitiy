@@ -14,12 +14,5 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
-    //알림 조회
-    @PutMapping("/notices/{noticeId}")
-    public ResponseEntity updateReadNotice(@PathVariable Long noticeId, @RequestParam(defaultValue = "1") int page) {
 
-        noticeService.updateNoticeOne(noticeId);
-
-        return ResponseEntity.noContent().build();
-    }
 }

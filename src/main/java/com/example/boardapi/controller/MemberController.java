@@ -320,7 +320,27 @@ public class MemberController {
         return ResponseEntity.ok(noticeRetrieveAllPagingResponseDto);
     }
 
+    //사용자의 단건 알림 갱신
+    @PutMapping("/members/{memberId}/notices/{noticeId}")
+    public ResponseEntity updateNotice(@PathVariable Long memberId, @PathVariable Long noticeId, HttpServletRequest request) {
 
+        String token = jwtTokenProvider.resolveToken(request);
+
+        noticeService.updateNoticeOne(memberId, noticeId, token);
+
+        return ResponseEntity.noContent().build();
+    }
+    
+    //사용자의 모든 알림 갱신
+    @PutMapping("/members/{memberId}/notices")
+    public ResponseEntity updateAllNotice(@PathVariable Long memberId, HttpServletRequest request) {
+
+        String token = jwtTokenProvider.resolveToken(request);
+
+        noticeService.updateNoticeAll(memberId, token);
+
+        return ResponseEntity.noContent().build();
+    }
 
     private String getIp() {
         String ip = "";

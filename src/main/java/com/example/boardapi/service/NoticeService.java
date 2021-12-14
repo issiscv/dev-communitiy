@@ -7,7 +7,9 @@ import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Notice;
 import com.example.boardapi.entity.enumtype.MessageType;
-import com.example.boardapi.exception.BoardNotFoundException;
+import com.example.boardapi.exception.NotOwnNoticeException;
+import com.example.boardapi.exception.NoticeNotFoundException;
+import com.example.boardapi.exception.message.NoticeExceptionMessage;
 import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.notice.NoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -167,14 +169,39 @@ public class NoticeService {
     }
 
     @Transactional
-    public void updateNoticeOne(Long noticeId) {
+    public void updateNoticeOne(Long memberId, Long noticeId, String token) {
 
+        //해당 회원이 존재하는지 검사 및 토큰 해석
+        Member member = jwtTokenProvider.getMember(token);
+
+        //토큰의 회원이 알림 상태 변경의 권한이 있는지
+        if (!member.getId().equals(memberId)) {
+            throw new NotOwnNoticeException(NoticeExceptionMessage.NOT_OWN_NOTICE);
+        }
+        
+        //알림 조회
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(
                 () -> {
-                    throw new BoardNotFoundException("그런 알림 없다");
+                    throw new NoticeNotFoundException(NoticeExceptionMessage.NOTICE_NOT_FOUND);
                 }
         );
-
+        
+        //알림 상태 변경
         notice.changeChecked();
+    }
+
+    @Transactional
+    public void updateNoticeAll(Long memberId, String token) {
+        
+        //해당 회원이 존재하는지 검사 및 토큰 해석
+        Member member = jwtTokenProvider.getMember(token);
+
+        //토큰의 회원이 알림 상태 변경의 권한이 있는지
+        if (!member.getId().equals(memberId)) {
+            throw new NotOwnNoticeException(NoticeExceptionMessage.NOT_OWN_NOTICE);
+        }
+        
+        //벌크 연산
+        noticeRepository.updateNoticeChecked(memberId);
     }
 }
