@@ -45,4 +45,8 @@ public class Notice {
 
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
+
+    public void changeChecked() {
+        this.isChecked = true;
+    }
 }

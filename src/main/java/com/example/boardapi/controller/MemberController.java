@@ -314,11 +314,13 @@ public class MemberController {
 
     //사용자의 알림 조회
     @GetMapping("/members/{memberId}/notices")
-    public ResponseEntity retrieveAllNotice(@PathVariable Long memberId, @RequestParam(defaultValue = "1") int page) {
+    public ResponseEntity<NoticeRetrieveAllPagingResponseDto> retrieveAllNotice(@PathVariable Long memberId, @RequestParam(defaultValue = "1") int page) {
         NoticeRetrieveAllPagingResponseDto noticeRetrieveAllPagingResponseDto = noticeService.retrieveNoticeDtoList(page, memberId);
 
         return ResponseEntity.ok(noticeRetrieveAllPagingResponseDto);
     }
+
+
 
     private String getIp() {
         String ip = "";

@@ -7,6 +7,7 @@ import com.example.boardapi.entity.Comment;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.entity.Notice;
 import com.example.boardapi.entity.enumtype.MessageType;
+import com.example.boardapi.exception.BoardNotFoundException;
 import com.example.boardapi.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.notice.NoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -139,7 +140,7 @@ public class NoticeService {
         noticeRepository.save(notice);
     }
 
-    //회원의 알림
+    //회원의 알림 조회
     public NoticeRetrieveAllPagingResponseDto retrieveNoticeDtoList(int page, Long memberId) {
 
         PageRequest pageRequest = PageRequest.of(page-1, 10, Sort.by(Sort.Direction.DESC, "createdDate"));
@@ -163,5 +164,17 @@ public class NoticeService {
                 new NoticeRetrieveAllPagingResponseDto(page, totalPages, totalElements, noticeRetrieveResponseDtos);
 
         return noticeRetrieveAllPagingResponseDto;
+    }
+
+    @Transactional
+    public void updateNoticeOne(Long noticeId) {
+
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(
+                () -> {
+                    throw new BoardNotFoundException("그런 알림 없다");
+                }
+        );
+
+        notice.changeChecked();
     }
 }
