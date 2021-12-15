@@ -313,8 +313,14 @@ public class MemberController {
     }
 
     //사용자의 알림 조회
+    @ApiOperation(value = "사용자의 알림 목록", notes = "사용자의 알림을 조회합니다.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "알림 조회 성공"),
+            @ApiResponse(code = 400, message = "존재하지 않는 회원 입니다.")
+    })
     @GetMapping("/members/{memberId}/notices")
-    public ResponseEntity<EntityModel<NoticeRetrieveAllPagingResponseDto>> retrieveAllNotice(@PathVariable Long memberId, @RequestParam(defaultValue = "1") int page) {
+    public ResponseEntity<EntityModel<NoticeRetrieveAllPagingResponseDto>> retrieveAllNotice(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId,
+                                                                                             @ApiParam(value = "페이지 번호", required = false) @RequestParam(defaultValue = "1") int page) {
         NoticeRetrieveAllPagingResponseDto noticeRetrieveAllPagingResponseDto = noticeService.retrieveNoticeDtoList(page, memberId);
 
         EntityModel<NoticeRetrieveAllPagingResponseDto> model = EntityModel.of(noticeRetrieveAllPagingResponseDto);
@@ -335,8 +341,15 @@ public class MemberController {
     }
 
     //사용자의 단건 알림 갱신
+    @ApiOperation(value = "사용자의 알림 읽기", notes = "사용자의 알림을 읽음으로 수정.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "알림 읽음 성공"),
+            @ApiResponse(code = 400, message = "수정 실패")
+    })
     @PutMapping("/members/{memberId}/notices/{noticeId}")
-    public ResponseEntity updateNotice(@PathVariable Long memberId, @PathVariable Long noticeId, HttpServletRequest request) {
+    public ResponseEntity updateNotice(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId,
+                                       @ApiParam(value = "알림 PK", required = true) @PathVariable Long noticeId,
+                                       HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
 
@@ -346,8 +359,14 @@ public class MemberController {
     }
     
     //사용자의 모든 알림 갱신
+    @ApiOperation(value = "사용자의 모든 알림 읽기", notes = "사용자의 모든 알림을 읽음으로 수정.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "모든 알림 읽음 성공"),
+            @ApiResponse(code = 400, message = "수정 실패")
+    })
     @PutMapping("/members/{memberId}/notices")
-    public ResponseEntity updateAllNotice(@PathVariable Long memberId, HttpServletRequest request) {
+    public ResponseEntity updateAllNotice(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId,
+                                          HttpServletRequest request) {
 
         String token = jwtTokenProvider.resolveToken(request);
 
