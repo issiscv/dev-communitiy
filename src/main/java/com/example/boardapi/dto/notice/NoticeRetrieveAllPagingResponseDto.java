@@ -16,5 +16,5 @@ public class NoticeRetrieveAllPagingResponseDto {
 
     private int totalElements;
 
-    private List<NoticeRetrieveResponseDto> noticeRetrieveResponseDtoList;
+    private List<NoticeRetrieveResponseDto> content;
 }

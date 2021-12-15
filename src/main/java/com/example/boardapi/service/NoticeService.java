@@ -54,6 +54,7 @@ public class NoticeService {
 
         Notice notice = Notice.builder()
                 .member(member)
+                .board(board)
                 .title(board.getTitle())
                 .loginId(commentMember.getLoginId())//액션을 취한 사용자의 아이디
                 .messageType(MessageType.COMMENT)//어떤 유형인지
@@ -80,6 +81,7 @@ public class NoticeService {
 
         Notice notice = Notice.builder()
                 .member(member)
+                .board(board)
                 .title(board.getTitle())
                 .loginId(likeMember.getLoginId())//액션을 취한 사용자의 아이디
                 .messageType(MessageType.BOARD_LIKE)//어떤 유형인지
@@ -106,6 +108,7 @@ public class NoticeService {
 
         Notice notice = Notice.builder()
                 .member(member)
+                .board(comment.getBoard())
                 .title(comment.getBoard().getTitle())
                 .loginId(likeMember.getLoginId())//액션을 취한 사용자의 아이디
                 .messageType(MessageType.COMMENT_LIKE)//어떤 유형인지
@@ -133,6 +136,7 @@ public class NoticeService {
 
         Notice notice = Notice.builder()
                 .member(member)
+                .board(comment.getBoard())
                 .title(comment.getBoard().getTitle())
                 .loginId(selectionMember.getLoginId())//액션을 취한 사용자의 아이디
                 .messageType(MessageType.SELECTION)//어떤 유형인지
@@ -152,15 +156,14 @@ public class NoticeService {
         int totalPages = retrieveAllNoticeWithPaging.getTotalPages();
         int totalElements = (int) retrieveAllNoticeWithPaging.getTotalElements();
 
-
         List<NoticeRetrieveResponseDto> noticeRetrieveResponseDtos = content.stream().map(n -> {
             NoticeRetrieveResponseDto noticeRetrieveResponseDto = modelMapper.map(n, NoticeRetrieveResponseDto.class);
             noticeRetrieveResponseDto.setNoticeId(n.getId());
             noticeRetrieveResponseDto.setMemberId(n.getMember().getId());
+            noticeRetrieveResponseDto.setBoardId(n.getBoard().getId());
 
             return noticeRetrieveResponseDto;
         }).collect(Collectors.toList());
-        log.info("size = {}", content.size());
 
         NoticeRetrieveAllPagingResponseDto noticeRetrieveAllPagingResponseDto =
                 new NoticeRetrieveAllPagingResponseDto(page, totalPages, totalElements, noticeRetrieveResponseDtos);
@@ -174,18 +177,18 @@ public class NoticeService {
         //해당 회원이 존재하는지 검사 및 토큰 해석
         Member member = jwtTokenProvider.getMember(token);
 
-        //토큰의 회원이 알림 상태 변경의 권한이 있는지
-        if (!member.getId().equals(memberId)) {
-            throw new NotOwnNoticeException(NoticeExceptionMessage.NOT_OWN_NOTICE);
-        }
-        
         //알림 조회
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(
                 () -> {
                     throw new NoticeNotFoundException(NoticeExceptionMessage.NOTICE_NOT_FOUND);
                 }
         );
-        
+
+        //토큰의 회원이 알림 상태 변경의 권한이 있는지
+        if (!member.getId().equals(memberId) || member.getId() != notice.getMember().getId()) {
+            throw new NotOwnNoticeException(NoticeExceptionMessage.NOT_OWN_NOTICE);
+        }
+
         //알림 상태 변경
         notice.changeChecked();
     }

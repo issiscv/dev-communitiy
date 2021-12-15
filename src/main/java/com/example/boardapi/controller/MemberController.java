@@ -314,10 +314,24 @@ public class MemberController {
 
     //사용자의 알림 조회
     @GetMapping("/members/{memberId}/notices")
-    public ResponseEntity<NoticeRetrieveAllPagingResponseDto> retrieveAllNotice(@PathVariable Long memberId, @RequestParam(defaultValue = "1") int page) {
+    public ResponseEntity<EntityModel<NoticeRetrieveAllPagingResponseDto>> retrieveAllNotice(@PathVariable Long memberId, @RequestParam(defaultValue = "1") int page) {
         NoticeRetrieveAllPagingResponseDto noticeRetrieveAllPagingResponseDto = noticeService.retrieveNoticeDtoList(page, memberId);
 
-        return ResponseEntity.ok(noticeRetrieveAllPagingResponseDto);
+        EntityModel<NoticeRetrieveAllPagingResponseDto> model = EntityModel.of(noticeRetrieveAllPagingResponseDto);
+        WebMvcLinkBuilder self = linkTo(methodOn(this.getClass()).retrieveAllNotice(memberId, page));
+
+        model.add(self.withSelfRel());
+
+        if (page > 1) {
+            WebMvcLinkBuilder prev = linkTo(methodOn(this.getClass()).retrieveAllNotice(memberId, page));
+            model.add(prev.withRel("이전"));
+        }
+        if (page < noticeRetrieveAllPagingResponseDto.getTotalPages()) {
+            WebMvcLinkBuilder next = linkTo(methodOn(this.getClass()).retrieveAllNotice(memberId, page));
+            model.add(next.withRel("다음"));
+        }
+
+        return ResponseEntity.ok(model);
     }
 
     //사용자의 단건 알림 갱신

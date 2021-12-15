@@ -15,6 +15,8 @@ public class NoticeRetrieveResponseDto {
 
     private Long memberId;
 
+    private Long boardId;
+
     private String title;
 
     //누가
