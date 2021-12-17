@@ -71,7 +71,7 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                 .join(comment.board, board).fetchJoin()
                 .join(comment.member, member).fetchJoin()
                 .where(comment.member.id.eq(memberId))
-                .groupBy(board.id)
+                .orderBy(comment.createdDate.desc())
                 .fetch();
 
         return result;

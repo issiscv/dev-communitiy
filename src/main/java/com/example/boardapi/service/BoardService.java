@@ -224,6 +224,8 @@ public class BoardService {
             BoardRetrieveResponseDto boardRetrieveOneResponseDto = modelMapper.map(board, BoardRetrieveResponseDto.class);
             boardRetrieveOneResponseDto.setAuthor(board.getMember().getName());
 
+            if (list.contains(boardRetrieveOneResponseDto)) continue;
+
             list.add(boardRetrieveOneResponseDto);
         }
 
@@ -235,9 +237,6 @@ public class BoardService {
                 .contents(new ArrayList<>())
                 .build();
 
-        //가장 나중에 댓글을 단 게시글이 상단에 위치하기 위해
-        Collections.reverse(list);
-        
         //셀프 페이징
         for (int i = (page -1) * size; i < page * size; i++) {
             try {
