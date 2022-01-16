@@ -3,7 +3,7 @@ package com.example.boardapi.controller;
 import com.example.boardapi.dto.comment.request.CommentEditRequestDto;
 import com.example.boardapi.dto.comment.response.CommentEditResponseDto;
 import com.example.boardapi.dto.comment.response.CommentRetrieveResponseDto;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.service.CommentService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

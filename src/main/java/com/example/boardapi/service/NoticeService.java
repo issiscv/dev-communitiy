@@ -10,7 +10,7 @@ import com.example.boardapi.entity.enumtype.MessageType;
 import com.example.boardapi.exception.NotOwnNoticeException;
 import com.example.boardapi.exception.NoticeNotFoundException;
 import com.example.boardapi.exception.message.NoticeExceptionMessage;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.notice.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -161,6 +161,7 @@ public class NoticeService {
             noticeRetrieveResponseDto.setNoticeId(n.getId());
             noticeRetrieveResponseDto.setMemberId(n.getMember().getId());
             noticeRetrieveResponseDto.setBoardId(n.getBoard().getId());
+            noticeRetrieveResponseDto.setBoardType(n.getBoard().getBoardType());
 
             return noticeRetrieveResponseDto;
         }).collect(Collectors.toList());

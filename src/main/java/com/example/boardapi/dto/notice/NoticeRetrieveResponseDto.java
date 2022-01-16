@@ -1,5 +1,6 @@
 package com.example.boardapi.dto.notice;
 
+import com.example.boardapi.entity.enumtype.BoardType;
 import com.example.boardapi.entity.enumtype.MessageType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,6 +24,9 @@ public class NoticeRetrieveResponseDto {
 
     @ApiModelProperty(required = true, value = "게시글 PK", example = "20")
     private Long boardId;
+
+    @ApiModelProperty(required = true, value = "게시글 종륲", example = "QNA, TECH, FREE")
+    private BoardType boardType;
 
     @ApiModelProperty(required = true, value = "게시글 제목", example = "제목입니다.")
     private String title;

@@ -1,4 +1,4 @@
-package com.example.boardapi;
+package com.example.boardapi.config;
 
 import com.example.boardapi.converter.StringToBoardTypeConverter;
 import com.example.boardapi.converter.StringToSearchCondConverter;

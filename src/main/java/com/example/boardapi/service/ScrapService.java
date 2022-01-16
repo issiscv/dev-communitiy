@@ -8,7 +8,7 @@ import com.example.boardapi.exception.BoardNotFoundException;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

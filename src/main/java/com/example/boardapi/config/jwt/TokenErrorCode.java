@@ -1,4 +1,4 @@
-package com.example.boardapi.jwt;
+package com.example.boardapi.config.jwt;
 
 public abstract class TokenErrorCode {
 

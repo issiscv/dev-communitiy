@@ -1,4 +1,4 @@
-package com.example.boardapi.jwt;
+package com.example.boardapi.config.jwt;
 
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.exception.MemberNotFoundException;

@@ -1,8 +1,8 @@
-package com.example.boardapi;
+package com.example.boardapi.config.security;
 
-import com.example.boardapi.jwt.CustomAuthenticationEntryPoint;
-import com.example.boardapi.jwt.JwtAuthenticationFilter;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.CustomAuthenticationEntryPoint;
+import com.example.boardapi.config.jwt.JwtAuthenticationFilter;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

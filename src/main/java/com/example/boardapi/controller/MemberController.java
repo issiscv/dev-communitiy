@@ -10,7 +10,7 @@ import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
 import com.example.boardapi.dto.notice.NoticeRetrieveAllPagingResponseDto;
 import com.example.boardapi.entity.Member;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.service.BoardService;
 import com.example.boardapi.service.MemberService;
 import com.example.boardapi.service.NoticeService;

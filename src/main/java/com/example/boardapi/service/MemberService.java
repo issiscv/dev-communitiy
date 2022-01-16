@@ -12,7 +12,7 @@ import com.example.boardapi.exception.DuplicateLoginIdException;
 import com.example.boardapi.exception.MemberNotFoundException;
 import com.example.boardapi.exception.NotOwnMemberException;
 import com.example.boardapi.exception.message.MemberExceptionMessage;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.member.MemberRepository;

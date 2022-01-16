@@ -1,4 +1,4 @@
-package com.example.boardapi;
+package com.example.boardapi.config;
 
 import com.example.boardapi.entity.Member;
 import org.springframework.context.annotation.Configuration;

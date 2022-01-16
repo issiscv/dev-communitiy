@@ -12,7 +12,7 @@ import com.example.boardapi.entity.enumtype.SearchCond;
 import com.example.boardapi.entity.enumtype.SortType;
 import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import com.example.boardapi.repository.scrap.ScrapRepository;

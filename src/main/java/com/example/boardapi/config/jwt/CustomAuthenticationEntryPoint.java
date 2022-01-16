@@ -1,4 +1,4 @@
-package com.example.boardapi.jwt;
+package com.example.boardapi.config.jwt;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;

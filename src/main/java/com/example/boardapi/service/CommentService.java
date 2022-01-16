@@ -11,7 +11,7 @@ import com.example.boardapi.entity.Member;
 import com.example.boardapi.exception.*;
 import com.example.boardapi.exception.message.BoardExceptionMessage;
 import com.example.boardapi.exception.message.CommentExceptionMessage;
-import com.example.boardapi.jwt.JwtTokenProvider;
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.board.BoardRepository;
 import com.example.boardapi.repository.comment.CommentRepository;
 import lombok.RequiredArgsConstructor;
