@@ -1,5 +1,6 @@
 package com.example.boardapi.service;
 
+import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.dto.notice.NoticeRetrieveAllPagingResponseDto;
 import com.example.boardapi.dto.notice.NoticeRetrieveResponseDto;
 import com.example.boardapi.entity.Board;
@@ -10,14 +11,12 @@ import com.example.boardapi.entity.enumtype.MessageType;
 import com.example.boardapi.exception.NotOwnNoticeException;
 import com.example.boardapi.exception.NoticeNotFoundException;
 import com.example.boardapi.exception.message.NoticeExceptionMessage;
-import com.example.boardapi.config.jwt.JwtTokenProvider;
 import com.example.boardapi.repository.notice.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -149,7 +148,7 @@ public class NoticeService {
     //회원의 알림 조회
     public NoticeRetrieveAllPagingResponseDto retrieveNoticeDtoList(int page, Long memberId) {
 
-        PageRequest pageRequest = PageRequest.of(page-1, 10, Sort.by(Sort.Direction.DESC, "createdDate"));
+        PageRequest pageRequest = PageRequest.of(page-1, 10);
         Page<Notice> retrieveAllNoticeWithPaging = noticeRepository.findByMemberIdWithPaging(pageRequest, memberId);
 
         List<Notice> content = retrieveAllNoticeWithPaging.getContent();

@@ -36,6 +36,7 @@ public class NoticeCustomRepositoryImpl implements NoticeCustomRepository {
         QueryResults<Notice> results = queryFactory
                 .selectFrom(notice)
                 .where(notice.member.id.eq(memberId))
+                .orderBy(notice.createdDate.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
