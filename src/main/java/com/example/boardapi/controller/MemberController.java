@@ -383,7 +383,7 @@ public class MemberController {
             @ApiResponse(code = 400, message = "카운트 실패")
     })
     @GetMapping("/members/{memberId}/notices/counts")
-    public ResponseEntity retrieveAllNotCheckedNotice(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+    public ResponseEntity<NoticeNotCheckedResponseDto> retrieveAllNotCheckedNotice(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
 
         Long count = noticeService.countNotCheckedNotice(memberId);
         NoticeNotCheckedResponseDto dto = NoticeNotCheckedResponseDto.builder()
