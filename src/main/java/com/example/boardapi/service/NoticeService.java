@@ -208,4 +208,8 @@ public class NoticeService {
         //벌크 연산
         noticeRepository.updateNoticeChecked(memberId);
     }
+
+    public Long countNotCheckedNotice(Long memberId) {
+        return noticeRepository.countByNotCheckedAndMemberId(memberId);
+    }
 }

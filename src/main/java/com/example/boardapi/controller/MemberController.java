@@ -8,6 +8,7 @@ import com.example.boardapi.dto.member.response.MemberEditResponseDto;
 import com.example.boardapi.dto.member.response.MemberJoinResponseDto;
 import com.example.boardapi.dto.member.response.MemberLoginResponseDto;
 import com.example.boardapi.dto.member.response.MemberRetrieveResponseDto;
+import com.example.boardapi.dto.notice.NoticeNotCheckedResponseDto;
 import com.example.boardapi.dto.notice.NoticeRetrieveAllPagingResponseDto;
 import com.example.boardapi.entity.Member;
 import com.example.boardapi.config.jwt.JwtTokenProvider;
@@ -373,6 +374,22 @@ public class MemberController {
         noticeService.updateNoticeAll(memberId, token);
 
         return ResponseEntity.noContent().build();
+    }
+
+    //사용자의 안읽은 알림 카운트
+    @ApiOperation(value = "사용자의 안읽은 알림 카운트", notes = "사용자의 안읽은 알림의 개수 카운트")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "읽지 않은 알림 카운트 성공"),
+            @ApiResponse(code = 400, message = "카운트 실패")
+    })
+    @GetMapping("/members/{memberId}/notices/counts")
+    public ResponseEntity retrieveAllNotCheckedNotice(@ApiParam(value = "회원 PK", required = true) @PathVariable Long memberId) {
+
+        Long count = noticeService.countNotCheckedNotice(memberId);
+        NoticeNotCheckedResponseDto dto = NoticeNotCheckedResponseDto.builder()
+                .count(count)
+                .build();
+        return ResponseEntity.ok(dto);
     }
 
     private String getIp() {

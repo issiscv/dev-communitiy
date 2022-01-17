@@ -18,7 +18,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         String message = (String)request.getAttribute("exception");
-        String details = authException.getMessage();
 
         //X-AUTH-TOKEN 헤더를 넣지 않으면 null
         if (message == null) {

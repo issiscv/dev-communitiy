@@ -54,4 +54,13 @@ public class NoticeCustomRepositoryImpl implements NoticeCustomRepository {
                 .where(notice.member.id.eq(memberId))
                 .execute();
     }
+
+    @Override
+    public Long countByNotCheckedAndMemberId(Long memberId) {
+        return queryFactory
+                .select(notice.count())
+                .from(notice)
+                .where(notice.member.id.eq(memberId), notice.isChecked.eq(false))
+                .fetchCount();
+    }
 }
