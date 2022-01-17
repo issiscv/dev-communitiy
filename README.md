@@ -24,4 +24,4 @@
 ![board-entity](https://user-images.githubusercontent.com/66157892/149706422-b5a9a773-bec0-4854-8ab9-e1e7338f2e20.png)
 
 ## 서비스 구조
-![service](https://user-images.githubusercontent.com/66157892/149710773-2f53a3e2-a4c6-4728-8cc7-5b35cdf46785.PNG)
+![service2](https://user-images.githubusercontent.com/66157892/149711671-8c5ea30d-7cd2-4caf-82d4-13e5694a960f.png)
